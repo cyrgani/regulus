@@ -412,7 +412,7 @@ fn strip_comments(code: &str) -> String {
         .join("\n")
 }
 
-pub fn parse(code: &str) -> ProgResult<Value> {
+pub fn run(code: &str) -> ProgResult<Value> {
     let without_comments = strip_comments(code);
 
     let tokens = tokenize(&without_comments)?;
@@ -436,7 +436,8 @@ mod tests {
     }
 
     #[test]
+	#[allow(unused_must_use)]
     fn test_name() {
-        dbg!(parse(&read_file("./programs/test.prog")));
+        dbg!(run(&read_file("./programs/test.prog")));
     }
 }
