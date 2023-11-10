@@ -1,21 +1,17 @@
 use crate::{Atom, Function, ProgError};
 
 pub fn functions() -> Vec<Function> {
-    vec![
-        list(),
-        push(),
-        index(),
-    ]
+    vec![list(), push(), index()]
 }
 
 fn list() -> Function {
     Function {
         name: String::from("list"),
         argc: None,
-        callback: |functions, storage, args| {
+        callback: |program, storage, args| {
             let mut list = vec![];
             for arg in args {
-                list.push(arg.eval(functions, storage)?);
+                list.push(arg.eval(program, storage)?);
             }
             Ok(Atom::List(list))
         },
@@ -26,11 +22,11 @@ fn push() -> Function {
     Function {
         name: String::from("push"),
         argc: None,
-        callback: |functions, storage, args| {
+        callback: |program, storage, args| {
             args[0]
-                .eval(functions, storage)?
+                .eval(program, storage)?
                 .list()?
-                .push(args[1].eval(functions, storage)?);
+                .push(args[1].eval(program, storage)?);
             Ok(Atom::Null)
         },
     }
@@ -39,12 +35,12 @@ fn index() -> Function {
     Function {
         name: String::from("list"),
         argc: None,
-        callback: |functions, storage, args| {
+        callback: |program, storage, args| {
             Ok(Atom::Int(
                 args[0]
-                    .eval(functions, storage)?
+                    .eval(program, storage)?
                     .list()?
-                    .get(args[1].eval(functions, storage)?.int()? as usize)
+                    .get(args[1].eval(program, storage)?.int()? as usize)
                     .ok_or(ProgError("Unable to index list!".to_string()))?
                     .int()?,
             ))

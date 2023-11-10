@@ -1,4 +1,4 @@
-use std::{collections::HashMap, error::Error, fmt};
+use std::{collections::HashMap, error, fmt};
 
 mod modules {
     pub mod core;
@@ -19,7 +19,7 @@ impl fmt::Display for ProgError {
     }
 }
 
-impl Error for ProgError {}
+impl error::Error for ProgError {}
 
 /// A shorthand alias for `Result<T, ProgError>`.
 pub type ProgResult<T> = Result<T, ProgError>;
@@ -71,8 +71,6 @@ impl Argument {
     }
 }
 
-static mut FUNCTIONS: Vec<Function> = vec![];
-
 impl FunctionCall {
     fn eval(&self, program: &[Argument], storage: &mut Storage) -> ProgResult<Atom> {
         if let Some(argc) = self.function.argc {
@@ -95,16 +93,6 @@ impl FunctionCall {
     }
 }
 
-fn get_function(name: &str) -> ProgResult<Function> {
-    unsafe {
-        FUNCTIONS
-            .iter()
-            .find(|function| function.name == name)
-            .ok_or(ProgError(format!("No function `{name}` found!")))
-            .cloned()
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum Atom {
     Int(i32),
@@ -112,6 +100,7 @@ pub enum Atom {
     Null,
     List(Vec<Atom>),
     String(String),
+    Function(Function),
 }
 
 impl TryFrom<&str> for Atom {
@@ -159,6 +148,16 @@ impl Atom {
 }
 
 fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
+    let functions = all_functions();
+
+    let get_function = |name| {
+        functions
+            .iter()
+            .find(|function| function.name == name)
+            .ok_or(ProgError(format!("No function `{name}` found!")))
+            .cloned()
+    };
+
     let mut tokens = vec![];
     let mut current = String::new();
     let mut in_string = false;
@@ -170,7 +169,8 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
                     current.push(c);
                 } else {
                     if !current.is_empty() {
-                        tokens.push(Token::Function(get_function(&current)?));
+                        let current2 = current.clone();
+                        tokens.push(Token::Function(get_function(current2)?));
                         current.clear();
                     }
                     tokens.push(Token::LeftParen);
@@ -188,10 +188,10 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
                         current.clear();
                     }
                     tokens.push(match c {
-						')' => Token::RightParen,
-            			',' => Token::Comma,
-						_ => unreachable!(),
-					});
+                        ')' => Token::RightParen,
+                        ',' => Token::Comma,
+                        _ => unreachable!(),
+                    });
                 }
             }
             '"' => {
@@ -280,7 +280,7 @@ fn strip_comments(code: &str) -> String {
         .join("\n")
 }
 
-fn add_functions() {
+fn all_functions() -> Vec<Function> {
     use modules::*;
 
     let mut functions = vec![];
@@ -294,14 +294,10 @@ fn add_functions() {
         functions.extend(module)
     }
 
-    unsafe {
-        FUNCTIONS = functions;
-    }
+    functions
 }
 
 pub fn run(code: &str) -> ProgResult<Atom> {
-    add_functions();
-
     let without_comments = strip_comments(code);
 
     let tokens = tokenize(&without_comments)?;

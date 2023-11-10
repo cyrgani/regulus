@@ -7,4 +7,5 @@ _(
 		assign(b, +(c, b)),
 		debug(b),
 	))
+#def(f,x,+(x,2))
 )
