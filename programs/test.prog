@@ -1,1 +1,10 @@
-+(2,-(4,1))
+_(
+	assign(a, 1),
+	assign(b, 1),
+	while(true, _(
+		assign(c, a),
+		assign(a, b),
+		assign(b, +(c, b)),
+		debug(b),
+	))
+)

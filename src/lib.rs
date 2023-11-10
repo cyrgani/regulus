@@ -32,21 +32,8 @@ enum Token {
     LeftParen,
     Comma,
     RightParen,
-    Quote,
     Atom(Atom),
     Name(String),
-}
-
-impl From<char> for Token {
-    fn from(value: char) -> Self {
-        match value {
-            '(' => Self::LeftParen,
-            ')' => Self::RightParen,
-            ',' => Self::Comma,
-            '"' => Self::Quote,
-            _ => unreachable!(),
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -186,7 +173,7 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
                         tokens.push(Token::Function(get_function(&current)?));
                         current.clear();
                     }
-                    tokens.push(Token::from(c));
+                    tokens.push(Token::LeftParen);
                 }
             }
             ')' | ',' => {
@@ -200,7 +187,11 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
                         });
                         current.clear();
                     }
-                    tokens.push(Token::from(c));
+                    tokens.push(match c {
+						')' => Token::RightParen,
+            			',' => Token::Comma,
+						_ => unreachable!(),
+					});
                 }
             }
             '"' => {
@@ -208,7 +199,6 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
                     tokens.push(Token::Atom(Atom::String(current.clone())));
                 }
                 in_string = !in_string;
-                //tokens.push(Token::Quote)
             }
             ' ' | '\n' | '\t' => (),
             _ => current.push(c),
@@ -259,7 +249,6 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                     ))
                 }
             },
-            Token::Quote => (),
             Token::Name(name) => {
                 let new_id = program.len();
                 program.push(Argument::Variable(name.clone()));
@@ -319,7 +308,6 @@ pub fn run(code: &str) -> ProgResult<Atom> {
 
     let program = build_program(&tokens)?;
 
-    dbg!(&program);
     let mut storage = HashMap::new();
     program
         .first()
