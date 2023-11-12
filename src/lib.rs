@@ -8,8 +8,6 @@ mod modules {
     pub mod math;
 }
 
-/// A error type that should be returned by interpreters.
-/// Contains a message that is a `String`.
 #[derive(Debug)]
 pub struct ProgError(pub String);
 
@@ -28,7 +26,7 @@ type Storage = HashMap<String, Atom>;
 
 #[derive(Debug, Clone)]
 enum Token {
-    Function(Function),
+    Function(String),
     LeftParen,
     Comma,
     RightParen,
@@ -40,7 +38,7 @@ enum Token {
 struct FunctionCall {
     arg_locations: Vec<usize>,
     parent: Option<usize>,
-    function: Function,
+	name: String,
 }
 
 #[derive(Debug, Clone)]
@@ -73,12 +71,14 @@ impl Argument {
 
 impl FunctionCall {
     fn eval(&self, program: &[Argument], storage: &mut Storage) -> ProgResult<Atom> {
-        if let Some(argc) = self.function.argc {
+		let function = get_function(&self.name, storage)?;
+        
+		if let Some(argc) = function.argc {
             let arg_len = self.arg_locations.len();
             if argc != arg_len {
                 return Err(ProgError(format!(
                     "expected `{argc}` args, found `{arg_len}` args for `{:?}`",
-                    self.function.name
+                    function.name
                 )));
             }
         }
@@ -89,7 +89,7 @@ impl FunctionCall {
             .map(|&i| program[i].clone())
             .collect::<Vec<_>>();
 
-        return (self.function.callback)(program, storage, args);
+        (function.callback)(program, storage, args)
     }
 }
 
@@ -147,17 +147,24 @@ impl Atom {
     }
 }
 
+fn get_function(name: &str, storage: &Storage) -> ProgResult<Function> {
+    storage
+        .values()
+        .find_map(|atom| {
+            if let Atom::Function(function) = atom {
+                if function.name == name {
+                    Some(function.clone())
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        })
+        .ok_or(ProgError(format!("No function `{name}` found!")))
+}
+
 fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
-    let functions = all_functions();
-
-    let get_function = |name| {
-        functions
-            .iter()
-            .find(|function| function.name == name)
-            .ok_or(ProgError(format!("No function `{name}` found!")))
-            .cloned()
-    };
-
     let mut tokens = vec![];
     let mut current = String::new();
     let mut in_string = false;
@@ -169,8 +176,7 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
                     current.push(c);
                 } else {
                     if !current.is_empty() {
-                        let current2 = current.clone();
-                        tokens.push(Token::Function(get_function(current2)?));
+                        tokens.push(Token::Function(current.clone()));
                         current.clear();
                     }
                     tokens.push(Token::LeftParen);
@@ -220,7 +226,7 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                 program.push(Argument::FunctionCall(FunctionCall {
                     arg_locations: vec![],
                     parent: current,
-                    function: f.clone(),
+					name: f.clone(),
                 }));
                 if let Some(parent) = current {
                     if let Argument::FunctionCall(call) = &mut program[parent] {
@@ -297,6 +303,16 @@ fn all_functions() -> Vec<Function> {
     functions
 }
 
+fn initial_storage() -> Storage {
+	let functions = all_functions();
+
+    let mut storage = HashMap::new();
+    for function in functions {
+        storage.insert(function.name.clone(), Atom::Function(function));
+    }
+    storage
+}
+
 pub fn run(code: &str) -> ProgResult<Atom> {
     let without_comments = strip_comments(code);
 
@@ -304,7 +320,8 @@ pub fn run(code: &str) -> ProgResult<Atom> {
 
     let program = build_program(&tokens)?;
 
-    let mut storage = HashMap::new();
+    let mut storage = initial_storage();
+
     program
         .first()
         .ok_or(ProgError("No function was found!".to_string()))?
