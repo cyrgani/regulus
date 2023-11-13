@@ -1,4 +1,4 @@
-use std::{collections::HashMap, error, fmt};
+use std::{collections::HashMap, error, fmt, rc::Rc};
 
 mod modules {
     pub mod core;
@@ -38,15 +38,26 @@ enum Token {
 struct FunctionCall {
     arg_locations: Vec<usize>,
     parent: Option<usize>,
-	name: String,
+    name: String,
 }
 
-#[derive(Debug, Clone)]
+type Callback = dyn Fn(&[Argument], &mut Storage, Vec<Argument>) -> ProgResult<Atom>;
+
+#[derive(Clone)]
 pub struct Function {
     name: String,
     argc: Option<usize>,
-    callback:
-        fn(program: &[Argument], storage: &mut Storage, args: Vec<Argument>) -> ProgResult<Atom>,
+    callback: Rc<Callback>,
+}
+
+// the callback cannot be debugged
+impl fmt::Debug for Function {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Function")
+            .field("name", &self.name)
+            .field("argc", &self.argc)
+            .finish()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -71,9 +82,9 @@ impl Argument {
 
 impl FunctionCall {
     fn eval(&self, program: &[Argument], storage: &mut Storage) -> ProgResult<Atom> {
-		let function = get_function(&self.name, storage)?;
-        
-		if let Some(argc) = function.argc {
+        let function = get_function(&self.name, storage)?;
+
+        if let Some(argc) = function.argc {
             let arg_len = self.arg_locations.len();
             if argc != arg_len {
                 return Err(ProgError(format!(
@@ -226,7 +237,7 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                 program.push(Argument::FunctionCall(FunctionCall {
                     arg_locations: vec![],
                     parent: current,
-					name: f.clone(),
+                    name: f.clone(),
                 }));
                 if let Some(parent) = current {
                     if let Argument::FunctionCall(call) = &mut program[parent] {
@@ -304,7 +315,7 @@ fn all_functions() -> Vec<Function> {
 }
 
 fn initial_storage() -> Storage {
-	let functions = all_functions();
+    let functions = all_functions();
 
     let mut storage = HashMap::new();
     for function in functions {
