@@ -6,6 +6,7 @@ mod modules {
     pub mod list;
     pub mod logic;
     pub mod math;
+	pub mod string;
 }
 
 #[derive(Debug)]
@@ -214,6 +215,7 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
             '"' => {
                 if in_string {
                     tokens.push(Token::Atom(Atom::String(current.clone())));
+					current.clear();
                 }
                 in_string = !in_string;
             }
@@ -301,12 +303,14 @@ fn all_functions() -> Vec<Function> {
     use modules::*;
 
     let mut functions = vec![];
+
     for module in [
         core::functions(),
         debug::functions(),
         math::functions(),
         logic::functions(),
         list::functions(),
+		string::functions(),
     ] {
         functions.extend(module)
     }
@@ -331,6 +335,7 @@ pub fn run(code: &str) -> ProgResult<Atom> {
 
     let program = build_program(&tokens)?;
 
+	dbg!(&program);
     let mut storage = initial_storage();
 
     program

@@ -7,6 +7,8 @@ _(
 #		assign(b, +(c, b)),
 #		debug(b),
 #	))
-	def(nachfolger, x, +(x, 1)),
-	debug(nachfolger(nachfolger(2)))
+#	def(nachfolger, x, +(x, 1)),
+#	debug(nachfolger(nachfolger(2))),
+	assign(c, "hello"),
+	debug(len(c)),
 )

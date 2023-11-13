@@ -10,12 +10,12 @@ fn main() {
                 let result = run(&code);
                 match result {
                     Ok(atom) => println!("{:?}", atom),
-                    Err(error) => eprintln!("{}", error),
+                    Err(error) => eprintln!("Error: {}", error),
                 }
             }
-            Err(error) => eprintln!("{}", error),
+            Err(error) => eprintln!("Error: {}", error),
         }
     } else {
-        eprintln!("No souce file was given!");
+        eprintln!("Error: No source file was given!");
     }
 }
