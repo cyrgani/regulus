@@ -21,7 +21,12 @@ use prelude::*;
 pub enum ErrorClass {
     TypeError,
     OverflowError,
-    OtherError,
+	NameError,
+	SyntaxError,
+	ArgumentError,
+	AssignError,
+	IndexError,
+	IoError,
 }
 
 #[derive(Debug)]
@@ -95,7 +100,7 @@ impl Argument {
                 Some(value) => Ok(value.clone()),
                 None => Err(ProgError {
                     msg: format!("No variable named `{var}` found!"),
-                    class: OtherError,
+                    class: NameError,
                 }),
             },
         }
@@ -114,7 +119,7 @@ impl FunctionCall {
                         "expected `{argc}` args, found `{arg_len}` args for `{:?}`",
                         function.name
                     ),
-                    class: OtherError,
+                    class: ArgumentError,
                 });
             }
         }
@@ -156,6 +161,14 @@ impl TryFrom<&str> for Atom {
     }
 }
 
+macro_rules! my {
+	() => {
+		
+	};
+}
+
+my!();
+
 impl Atom {
     fn int(&self) -> ProgResult<i32> {
         match self {
@@ -193,11 +206,20 @@ impl Atom {
             }),
         }
     }
+	fn function(&self) -> ProgResult<Function> {
+        match self {
+            Self::Function(v) => Ok(v.clone()),
+            _ => Err(ProgError {
+                msg: format!("{:?} is not a Function!", self),
+                class: TypeError,
+            }),
+        }
+    }
 
     fn format(&self) -> String {
         match self {
             Atom::Bool(val) => val.to_string(),
-            Atom::Function(val) => "FunctionTODO".to_owned(),
+            Atom::Function(val) => format!("{}()", val.name),
             Atom::Int(val) => val.to_string(),
             Atom::List(val) => format!(
                 "[{}]",
@@ -228,7 +250,7 @@ fn get_function(name: &str, storage: &Storage) -> ProgResult<Function> {
         })
         .ok_or(ProgError {
             msg: format!("No function `{name}` found!"),
-            class: OtherError,
+            class: NameError,
         })
 }
 
@@ -307,7 +329,7 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                 0 => {
                     return Err(ProgError {
                         msg: "found `LeftParen` without existing function!".to_string(),
-                        class: OtherError,
+                        class: SyntaxError,
                     })
                 }
                 _ => current = Some(program.len() - 1),
@@ -322,7 +344,7 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                 None => {
                     return Err(ProgError {
                         msg: "found `RightParen` without existing function!".to_string(),
-                        class: OtherError,
+                        class: SyntaxError,
                     })
                 }
             },
@@ -399,7 +421,7 @@ pub fn run(code: &str) -> ProgResult<Atom> {
         .first()
         .ok_or(ProgError {
             msg: "No function was found!".to_string(),
-            class: OtherError,
+            class: SyntaxError,
         })?
         .eval(&program, &mut storage)
 }

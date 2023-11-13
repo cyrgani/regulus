@@ -29,7 +29,7 @@ fn assign() -> Function {
             } else {
                 Err(ProgError {
                     msg: "Error during assignment: no variable was given to assign to!".to_string(),
-                    class: OtherError,
+                    class: AssignError,
                 })
             }
         }),
@@ -101,19 +101,19 @@ fn def() -> Function {
                     } else {
                         Err(ProgError {
                             msg: "Error during definition: no function body was given!".to_string(),
-                            class: OtherError,
+                            class: AssignError,
                         })
                     }
                 } else {
                     Err(ProgError {
                         msg: "Error during definition: no argument was given!".to_string(),
-                        class: OtherError,
+                        class: AssignError,
                     })
                 }
             } else {
                 Err(ProgError {
                     msg: "Error during definition: no variable was given to define to!".to_string(),
-                    class: OtherError,
+                    class: AssignError,
                 })
             }
         }),

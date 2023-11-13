@@ -30,7 +30,7 @@ fn input() -> Function {
                 Ok(_) => Ok(Atom::String(input)),
                 Err(error) => Err(ProgError {
                     msg: format!("Error while reading input: {}", error),
-                    class: OtherError,
+                    class: IoError,
                 }),
             }
         }),
