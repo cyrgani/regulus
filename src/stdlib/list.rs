@@ -33,7 +33,7 @@ fn push() -> Function {
 }
 fn index() -> Function {
     Function {
-        name: String::from("list"),
+        name: String::from("index"),
         argc: None,
         callback: Rc::new(|program, storage, args| {
             Ok(Atom::Int(

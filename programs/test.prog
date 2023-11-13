@@ -1,14 +1,11 @@
 _(
-#	assign(a, 1),
-#	assign(b, 1),
-#	while(true, _(
-#		assign(c, a),
-##		assign(a, b),
-#		assign(b, +(c, b)),
-#		debug(b),
-#	))
-#	def(nachfolger, x, +(x, 1)),
-#	debug(nachfolger(nachfolger(2))),
-	assign(c, 1),
-	debug(len(c)),
+	assign(l, list(
+		+(0,1),
+		3,
+		"hello",
+		true,
+		null,
+		list(1)
+	)),
+	debug(l),
 )
