@@ -1,7 +1,6 @@
 use std::{collections::HashMap, error, fmt, rc::Rc};
 
-use ErrorClass::*;
-mod modules {
+mod stdlib {
     pub mod core;
     pub mod debug;
     pub mod list;
@@ -9,6 +8,15 @@ mod modules {
     pub mod math;
     pub mod string;
 }
+
+mod prelude {
+	pub use super::*;
+	pub use ErrorClass::*;
+	pub use std::rc::Rc;
+}
+
+use prelude::*;
+
 
 #[derive(Debug)]
 pub enum ErrorClass {
@@ -334,7 +342,7 @@ fn strip_comments(code: &str) -> String {
 }
 
 fn all_functions() -> Vec<Function> {
-    use modules::*;
+    use stdlib::*;
 
     let mut functions = vec![];
 

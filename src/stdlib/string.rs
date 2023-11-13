@@ -1,5 +1,4 @@
-use crate::{Atom, Function};
-use std::rc::Rc;
+use crate::prelude::*;
 
 pub fn functions() -> Vec<Function> {
     vec![len()]

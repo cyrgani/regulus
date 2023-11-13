@@ -1,5 +1,4 @@
-use crate::{Argument, Atom, ErrorClass::*, Function, ProgError};
-use std::rc::Rc;
+use crate::prelude::*;
 
 pub fn functions() -> Vec<Function> {
     vec![run(), assign(), if_fn(), ifelse(), while_fn(), def()]

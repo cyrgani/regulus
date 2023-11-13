@@ -1,5 +1,4 @@
-use crate::{Atom, Function, ProgError};
-use std::rc::Rc;
+use crate::prelude::*;
 
 pub fn functions() -> Vec<Function> {
     vec![add(), subtract(), multiply()]
