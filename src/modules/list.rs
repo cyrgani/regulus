@@ -42,7 +42,10 @@ fn index() -> Function {
                     .eval(program, storage)?
                     .list()?
                     .get(args[1].eval(program, storage)?.int()? as usize)
-                    .ok_or(ProgError("Unable to index list!".to_string()))?
+                    .ok_or(ProgError {
+                        msg: "Unable to index list!".to_string(),
+                        class: crate::ErrorClass::OtherError,
+                    })?
                     .int()?,
             ))
         }),

@@ -1,4 +1,4 @@
-use crate::{Argument, Atom, Function, ProgError};
+use crate::{Argument, Atom, ErrorClass::*, Function, ProgError};
 use std::rc::Rc;
 
 pub fn functions() -> Vec<Function> {
@@ -28,9 +28,10 @@ fn assign() -> Function {
                 storage.insert(var.clone(), val);
                 Ok(Atom::Null)
             } else {
-                Err(ProgError(
-                    "Error during assignment: no variable was given to assign to!".to_string(),
-                ))
+                Err(ProgError {
+                    msg: "Error during assignment: no variable was given to assign to!".to_string(),
+                    class: OtherError,
+                })
             }
         }),
     }
@@ -99,19 +100,22 @@ fn def() -> Function {
                         storage.insert(var.clone(), Atom::Function(function));
                         Ok(Atom::Null)
                     } else {
-                        Err(ProgError(
-                            "Error during definition: no function body was given!".to_string(),
-                        ))
+                        Err(ProgError {
+                            msg: "Error during definition: no function body was given!".to_string(),
+                            class: OtherError,
+                        })
                     }
                 } else {
-                    Err(ProgError(
-                        "Error during definition: no argument was given!".to_string(),
-                    ))
+                    Err(ProgError {
+                        msg: "Error during definition: no argument was given!".to_string(),
+                        class: OtherError,
+                    })
                 }
             } else {
-                Err(ProgError(
-                    "Error during definition: no variable was given to define to!".to_string(),
-                ))
+                Err(ProgError {
+                    msg: "Error during definition: no variable was given to define to!".to_string(),
+                    class: OtherError,
+                })
             }
         }),
     }

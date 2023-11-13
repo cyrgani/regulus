@@ -9,6 +9,6 @@ _(
 #	))
 #	def(nachfolger, x, +(x, 1)),
 #	debug(nachfolger(nachfolger(2))),
-	assign(c, "hello"),
+	assign(c, 1),
 	debug(len(c)),
 )

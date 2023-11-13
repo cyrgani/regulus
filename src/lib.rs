@@ -1,20 +1,31 @@
 use std::{collections::HashMap, error, fmt, rc::Rc};
 
+use ErrorClass::*;
 mod modules {
     pub mod core;
     pub mod debug;
     pub mod list;
     pub mod logic;
     pub mod math;
-	pub mod string;
+    pub mod string;
 }
 
 #[derive(Debug)]
-pub struct ProgError(pub String);
+pub enum ErrorClass {
+    TypeError,
+    OverflowError,
+    OtherError,
+}
+
+#[derive(Debug)]
+pub struct ProgError {
+    pub msg: String,
+    pub class: ErrorClass,
+}
 
 impl fmt::Display for ProgError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{:?}: {}", self.class, self.msg)
     }
 }
 
@@ -75,7 +86,10 @@ impl Argument {
             Argument::Atom(atom) => Ok(atom.clone()),
             Argument::Variable(var) => match storage.get(var) {
                 Some(value) => Ok(value.clone()),
-                None => Err(ProgError(format!("No variable named `{var}` found!"))),
+                None => Err(ProgError {
+                    msg: format!("No variable named `{var}` found!"),
+                    class: OtherError,
+                }),
             },
         }
     }
@@ -88,10 +102,13 @@ impl FunctionCall {
         if let Some(argc) = function.argc {
             let arg_len = self.arg_locations.len();
             if argc != arg_len {
-                return Err(ProgError(format!(
-                    "expected `{argc}` args, found `{arg_len}` args for `{:?}`",
-                    function.name
-                )));
+                return Err(ProgError {
+                    msg: format!(
+                        "expected `{argc}` args, found `{arg_len}` args for `{:?}`",
+                        function.name
+                    ),
+                    class: OtherError,
+                });
             }
         }
 
@@ -136,25 +153,37 @@ impl Atom {
     fn int(&self) -> ProgResult<i32> {
         match self {
             Self::Int(v) => Ok(*v),
-            _ => Err(ProgError(format!("{:?} is not an Int!", self))),
+            _ => Err(ProgError {
+                msg: format!("{:?} is not a Int!", self),
+                class: TypeError,
+            }),
         }
     }
     fn bool(&self) -> ProgResult<bool> {
         match self {
             Self::Bool(v) => Ok(*v),
-            _ => Err(ProgError(format!("{:?} is not a Bool!", self))),
+            _ => Err(ProgError {
+                msg: format!("{:?} is not a Bool!", self),
+                class: TypeError,
+            }),
         }
     }
     fn list(&self) -> ProgResult<Vec<Atom>> {
         match self {
             Self::List(v) => Ok(v.clone()),
-            _ => Err(ProgError(format!("{:?} is not a List!", self))),
+            _ => Err(ProgError {
+                msg: format!("{:?} is not a List!", self),
+                class: TypeError,
+            }),
         }
     }
     fn string(&self) -> ProgResult<String> {
         match self {
             Self::String(v) => Ok(v.clone()),
-            _ => Err(ProgError(format!("{:?} is not a String!", self))),
+            _ => Err(ProgError {
+                msg: format!("{:?} is not a String!", self),
+                class: TypeError,
+            }),
         }
     }
 }
@@ -173,7 +202,10 @@ fn get_function(name: &str, storage: &Storage) -> ProgResult<Function> {
                 None
             }
         })
-        .ok_or(ProgError(format!("No function `{name}` found!")))
+        .ok_or(ProgError {
+            msg: format!("No function `{name}` found!"),
+            class: OtherError,
+        })
 }
 
 fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
@@ -215,7 +247,7 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
             '"' => {
                 if in_string {
                     tokens.push(Token::Atom(Atom::String(current.clone())));
-					current.clear();
+                    current.clear();
                 }
                 in_string = !in_string;
             }
@@ -249,9 +281,10 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
             }
             Token::LeftParen => match program.len() {
                 0 => {
-                    return Err(ProgError(
-                        "found `LeftParen` without existing function!".to_string(),
-                    ))
+                    return Err(ProgError {
+                        msg: "found `LeftParen` without existing function!".to_string(),
+                        class: OtherError,
+                    })
                 }
                 _ => current = Some(program.len() - 1),
             },
@@ -263,9 +296,10 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                     }
                 }
                 None => {
-                    return Err(ProgError(
-                        "found `RightParen` without existing function!".to_string(),
-                    ))
+                    return Err(ProgError {
+                        msg: "found `RightParen` without existing function!".to_string(),
+                        class: OtherError,
+                    })
                 }
             },
             Token::Name(name) => {
@@ -310,7 +344,7 @@ fn all_functions() -> Vec<Function> {
         math::functions(),
         logic::functions(),
         list::functions(),
-		string::functions(),
+        string::functions(),
     ] {
         functions.extend(module)
     }
@@ -335,11 +369,13 @@ pub fn run(code: &str) -> ProgResult<Atom> {
 
     let program = build_program(&tokens)?;
 
-	dbg!(&program);
     let mut storage = initial_storage();
 
     program
         .first()
-        .ok_or(ProgError("No function was found!".to_string()))?
+        .ok_or(ProgError {
+            msg: "No function was found!".to_string(),
+            class: OtherError,
+        })?
         .eval(&program, &mut storage)
 }

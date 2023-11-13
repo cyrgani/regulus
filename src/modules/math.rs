@@ -16,7 +16,10 @@ fn add() -> Function {
                 .checked_add(args[1].eval(program, storage)?.int()?)
             {
                 Some(i) => Ok(Atom::Int(i)),
-                None => Err(ProgError("overflow occured during addition!".to_string())),
+                None => Err(ProgError {
+                    msg: "overflow occured during addition!".to_string(),
+                    class: crate::ErrorClass::OverflowError,
+                }),
             }
         }),
     }
@@ -33,9 +36,10 @@ fn subtract() -> Function {
                 .checked_sub(args[1].eval(program, storage)?.int()?)
             {
                 Some(i) => Ok(Atom::Int(i)),
-                None => Err(ProgError(
-                    "overflow occured during subtraction!".to_string(),
-                )),
+                None => Err(ProgError {
+                    msg: "overflow occured during subtraction!".to_string(),
+                    class: crate::ErrorClass::OverflowError,
+                }),
             }
         }),
     }
@@ -52,9 +56,10 @@ fn multiply() -> Function {
                 .checked_mul(args[1].eval(program, storage)?.int()?)
             {
                 Some(i) => Ok(Atom::Int(i)),
-                None => Err(ProgError(
-                    "overflow occured during multiplication!".to_string(),
-                )),
+                None => Err(ProgError {
+                    msg: "overflow occured during multiplication!".to_string(),
+                    class: crate::ErrorClass::OverflowError,
+                }),
             }
         }),
     }

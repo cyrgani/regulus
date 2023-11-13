@@ -1,4 +1,4 @@
-use newlang::run;
+use newlang::{run, Atom};
 use std::{env, fs};
 
 fn main() {
@@ -9,7 +9,10 @@ fn main() {
             Ok(code) => {
                 let result = run(&code);
                 match result {
-                    Ok(atom) => println!("{:?}", atom),
+                    Ok(atom) => match atom {
+                        Atom::Null => (),
+                        _ => println!("{:?}", atom),
+                    },
                     Err(error) => eprintln!("Error: {}", error),
                 }
             }

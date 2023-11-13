@@ -11,7 +11,7 @@ fn len() -> Function {
         argc: Some(1),
         callback: Rc::new(|program, storage, args| {
             let len = args[0].eval(program, storage)?.string()?.len();
-			Ok(Atom::Int(len as i32))
+            Ok(Atom::Int(len as i32))
         }),
     }
 }
