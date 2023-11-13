@@ -1,15 +1,21 @@
-use atxlang::*;
-use std::fs;
+use newlang::run;
+use std::{env, fs};
 
 fn main() {
-    test_prog();
-}
-
-/// Reads a file and returns the content.
-fn read_file(file_path: &str) -> String {
-    fs::read_to_string(file_path).unwrap_or_else(|_| panic!("No file {file_path} was found!"))
-}
-
-fn test_prog() {
-    run(&read_file("./programs/test.prog")).unwrap();
+    let args = env::args().collect::<Vec<_>>();
+    if let Some(file_path) = args.get(1) {
+        let file = fs::read_to_string(file_path);
+        match file {
+            Ok(code) => {
+                let result = run(&code);
+                match result {
+                    Ok(atom) => println!("{:?}", atom),
+                    Err(error) => eprintln!("{}", error),
+                }
+            }
+            Err(error) => eprintln!("{}", error),
+        }
+    } else {
+        eprintln!("No souce file was given!");
+    }
 }

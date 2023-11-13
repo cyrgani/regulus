@@ -1,11 +1,12 @@
 _(
-	assign(a, 1),
-	assign(b, 1),
-	while(true, _(
-		assign(c, a),
-		assign(a, b),
-		assign(b, +(c, b)),
-		debug(b),
-	))
-#def(f,x,+(x,2))
+#	assign(a, 1),
+#	assign(b, 1),
+#	while(true, _(
+#		assign(c, a),
+##		assign(a, b),
+#		assign(b, +(c, b)),
+#		debug(b),
+#	))
+	def(nachfolger, x, +(x, 1)),
+	debug(nachfolger(nachfolger(2)))
 )

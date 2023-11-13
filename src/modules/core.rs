@@ -81,7 +81,7 @@ fn def() -> Function {
     Function {
         name: String::from("def"),
         argc: Some(3),
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|_program, storage, args| {
             if let Argument::Variable(var) = &args[0] {
                 if let Argument::Variable(arg) = &args[1] {
                     if let Argument::FunctionCall(inner) = &args[2] {
