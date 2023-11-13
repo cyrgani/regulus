@@ -1,11 +1,5 @@
 _(
-	assign(l, list(
-		+(0,1),
-		3,
-		"hello",
-		true,
-		null,
-		list(1)
-	)),
-	debug(l),
+	assign(i,input()),
+	debug(i),
+	print(i),
 )

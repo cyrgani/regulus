@@ -17,7 +17,7 @@ fn add() -> Function {
                 Some(i) => Ok(Atom::Int(i)),
                 None => Err(ProgError {
                     msg: "overflow occured during addition!".to_string(),
-                    class: crate::ErrorClass::OverflowError,
+                    class: OverflowError,
                 }),
             }
         }),
@@ -37,7 +37,7 @@ fn subtract() -> Function {
                 Some(i) => Ok(Atom::Int(i)),
                 None => Err(ProgError {
                     msg: "overflow occured during subtraction!".to_string(),
-                    class: crate::ErrorClass::OverflowError,
+                    class: OverflowError,
                 }),
             }
         }),
@@ -57,7 +57,7 @@ fn multiply() -> Function {
                 Some(i) => Ok(Atom::Int(i)),
                 None => Err(ProgError {
                     msg: "overflow occured during multiplication!".to_string(),
-                    class: crate::ErrorClass::OverflowError,
+                    class: OverflowError,
                 }),
             }
         }),

@@ -2,7 +2,7 @@ use std::{collections::HashMap, error, fmt, rc::Rc};
 
 mod stdlib {
     pub mod core;
-    pub mod debug;
+    pub mod io;
     pub mod list;
     pub mod logic;
     pub mod math;
@@ -10,13 +10,12 @@ mod stdlib {
 }
 
 mod prelude {
-	pub use super::*;
-	pub use ErrorClass::*;
-	pub use std::rc::Rc;
+    pub use super::*;
+    pub use std::rc::Rc;
+    pub use ErrorClass::*;
 }
 
 use prelude::*;
-
 
 #[derive(Debug)]
 pub enum ErrorClass {
@@ -194,6 +193,23 @@ impl Atom {
             }),
         }
     }
+
+    fn format(&self) -> String {
+        match self {
+            Atom::Bool(val) => val.to_string(),
+            Atom::Function(val) => "FunctionTODO".to_owned(),
+            Atom::Int(val) => val.to_string(),
+            Atom::List(val) => format!(
+                "[{}]",
+                val.iter()
+                    .map(|atom| atom.format())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            Atom::Null => "null".to_string(),
+            Atom::String(val) => val.clone(),
+        }
+    }
 }
 
 fn get_function(name: &str, storage: &Storage) -> ProgResult<Function> {
@@ -348,7 +364,7 @@ fn all_functions() -> Vec<Function> {
 
     for module in [
         core::functions(),
-        debug::functions(),
+        io::functions(),
         math::functions(),
         logic::functions(),
         list::functions(),
