@@ -1,6 +1,7 @@
 use std::{collections::HashMap, error, fmt, rc::Rc};
 
 mod stdlib {
+    pub mod cast;
     pub mod core;
     pub mod io;
     pub mod list;
@@ -21,12 +22,13 @@ use prelude::*;
 pub enum ErrorClass {
     TypeError,
     OverflowError,
-	NameError,
-	SyntaxError,
-	ArgumentError,
-	AssignError,
-	IndexError,
-	IoError,
+    NameError,
+    SyntaxError,
+    ArgumentError,
+    AssignError,
+    IndexError,
+    IoError,
+	ImportError,
 }
 
 #[derive(Debug)]
@@ -123,7 +125,7 @@ impl FunctionCall {
                 });
             }
         }
-
+		
         let args = self
             .arg_locations
             .iter()
@@ -160,14 +162,6 @@ impl TryFrom<&str> for Atom {
         }
     }
 }
-
-macro_rules! my {
-	() => {
-		
-	};
-}
-
-my!();
 
 impl Atom {
     fn int(&self) -> ProgResult<i32> {
@@ -206,7 +200,7 @@ impl Atom {
             }),
         }
     }
-	fn function(&self) -> ProgResult<Function> {
+    fn function(&self) -> ProgResult<Function> {
         match self {
             Self::Function(v) => Ok(v.clone()),
             _ => Err(ProgError {
@@ -385,6 +379,7 @@ fn all_functions() -> Vec<Function> {
     let mut functions = vec![];
 
     for module in [
+        cast::functions(),
         core::functions(),
         io::functions(),
         math::functions(),
@@ -408,7 +403,7 @@ fn initial_storage() -> Storage {
     storage
 }
 
-pub fn run(code: &str) -> ProgResult<Atom> {
+pub fn run(code: &str) -> ProgResult<(Atom, Storage)> {
     let without_comments = strip_comments(code);
 
     let tokens = tokenize(&without_comments)?;
@@ -417,11 +412,12 @@ pub fn run(code: &str) -> ProgResult<Atom> {
 
     let mut storage = initial_storage();
 
-    program
+    let result = program
         .first()
         .ok_or(ProgError {
             msg: "No function was found!".to_string(),
             class: SyntaxError,
         })?
-        .eval(&program, &mut storage)
+        .eval(&program, &mut storage)?;
+	Ok((result, storage))
 }

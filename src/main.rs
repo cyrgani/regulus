@@ -9,7 +9,7 @@ fn main() {
             Ok(code) => {
                 let result = run(&code);
                 match result {
-                    Ok(atom) => match atom {
+                    Ok((atom, _storage)) => match atom {
                         Atom::Null => (),
                         _ => println!("{:?}", atom),
                     },

@@ -1,0 +1,4 @@
+_(
+	import("./programs/test.prog"),
+	double_and_print(2),
+)

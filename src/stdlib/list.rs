@@ -73,12 +73,10 @@ fn for_each() -> Function {
         argc: Some(2),
         callback: Rc::new(|program, storage, args| {
             let function = args[1].eval(program, storage)?.function()?;
-            let list = args[0]
-                .eval(program, storage)?
-                .list()?;
-			for element in list {
-				(function.callback)(program, storage, vec![Argument::Atom(element.clone())])?;
-			};
+            let list = args[0].eval(program, storage)?.list()?;
+            for element in list {
+                (function.callback)(program, storage, vec![Argument::Atom(element.clone())])?;
+            }
             Ok(Atom::Null)
         }),
     }
