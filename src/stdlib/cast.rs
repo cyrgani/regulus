@@ -4,12 +4,27 @@ pub fn functions() -> Vec<Function> {
     vec![int(), string(), bool_fn(), is_null()]
 }
 
+fn cast_error(atom: &Atom, new_type: &str) -> ProgError {
+    ProgError {
+        msg: format!("Unable to cast {:?} to {}", atom, new_type),
+        class: TypeError,
+    }
+}
+
 fn int() -> Function {
     Function {
         name: String::from("int"),
         argc: Some(1),
         callback: Rc::new(|program, storage, args| {
-            Ok(Atom::Int(args[0].eval(program, storage)?.int()?))
+            let atom = args[0].eval(program, storage)?;
+            Ok(Atom::Int(match &atom {
+                Atom::Int(val) => *val,
+                Atom::Bool(val) => *val as i32,
+                Atom::String(val) => val
+                    .parse::<i32>()
+                    .map_err(|_error| cast_error(&atom, "int"))?,
+                _ => return Err(cast_error(&atom, "int")),
+            }))
         }),
     }
 }
@@ -19,16 +34,30 @@ fn string() -> Function {
         name: String::from("string"),
         argc: Some(1),
         callback: Rc::new(|program, storage, args| {
-            Ok(Atom::String(args[0].eval(program, storage)?.string()?))
+            let atom = args[0].eval(program, storage)?;
+            Ok(Atom::String(match &atom {
+                Atom::Int(val) => val.to_string(),
+                Atom::Bool(val) => val.to_string(),
+                Atom::String(val) => val.clone(),
+                Atom::Null => "null".to_string(),
+                _ => return Err(cast_error(&atom, "string")),
+            }))
         }),
     }
 }
+
 fn bool_fn() -> Function {
     Function {
         name: String::from("bool"),
         argc: Some(1),
         callback: Rc::new(|program, storage, args| {
-            Ok(Atom::Bool(args[0].eval(program, storage)?.bool()?))
+            let atom = args[0].eval(program, storage)?;
+            Ok(Atom::Bool(match &atom {
+                Atom::Int(val) => *val != 0,
+                Atom::Bool(val) => *val,
+                Atom::Null => false,
+                _ => return Err(cast_error(&atom, "bool")),
+            }))
         }),
     }
 }

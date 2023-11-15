@@ -2,7 +2,15 @@ use crate::prelude::*;
 use std::fs;
 
 pub fn functions() -> Vec<Function> {
-    vec![run_fn(), assign(), if_fn(), ifelse(), while_fn(), def(), import()]
+    vec![
+        run_fn(),
+        assign(),
+        if_fn(),
+        ifelse(),
+        while_fn(),
+        def(),
+        import(),
+    ]
 }
 
 fn run_fn() -> Function {
@@ -127,16 +135,16 @@ fn import() -> Function {
         argc: Some(1),
         callback: Rc::new(|program, storage, args| {
             let path = args[0].eval(program, storage)?.string()?;
-			let code = fs::read_to_string(path).map_err(|error| ProgError {
-				msg: format!("{}", error),
-				class: ImportError,
-			})?;
-			let (atom, imported_storage ) = run(&code)?;
+            let code = fs::read_to_string(path).map_err(|error| ProgError {
+                msg: format!("{}", error),
+                class: ImportError,
+            })?;
+            let (atom, imported_storage) = run(&code)?;
 
-			for (k, v) in imported_storage {
-				storage.insert(k, v);
-			}
-			Ok(atom)
+            for (k, v) in imported_storage {
+                storage.insert(k, v);
+            }
+            Ok(atom)
         }),
     }
 }

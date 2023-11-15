@@ -28,7 +28,7 @@ pub enum ErrorClass {
     AssignError,
     IndexError,
     IoError,
-	ImportError,
+    ImportError,
 }
 
 #[derive(Debug)]
@@ -125,7 +125,7 @@ impl FunctionCall {
                 });
             }
         }
-		
+
         let args = self
             .arg_locations
             .iter()
@@ -419,5 +419,5 @@ pub fn run(code: &str) -> ProgResult<(Atom, Storage)> {
             class: SyntaxError,
         })?
         .eval(&program, &mut storage)?;
-	Ok((result, storage))
+    Ok((result, storage))
 }
