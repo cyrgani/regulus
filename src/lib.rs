@@ -62,12 +62,32 @@ enum Token {
 
 #[derive(Debug, Clone)]
 struct FunctionCall {
-    arg_locations: Vec<usize>,
-    parent: Option<usize>,
+    args: Vec<Argument>,
     name: String,
 }
 
-type Callback = dyn Fn(&[Argument], &mut Storage, Vec<Argument>) -> ProgResult<Atom>;
+impl FunctionCall {
+    fn eval(&self, storage: &mut Storage) -> ProgResult<Atom> {
+        let function = get_function(&self.name, storage)?;
+
+        if let Some(argc) = function.argc {
+            let arg_len = self.args.len();
+            if argc != arg_len {
+                return Err(ProgError {
+                    msg: format!(
+                        "expected `{argc}` args, found `{arg_len}` args for `{:?}`",
+                        function.name
+                    ),
+                    class: ArgumentError,
+                });
+            }
+        }
+
+        (function.callback)(storage, &self.args)
+    }
+}
+
+type Callback = dyn Fn(&mut Storage, &[Argument]) -> ProgResult<Atom>;
 
 #[derive(Clone)]
 pub struct Function {
@@ -94,9 +114,9 @@ enum Argument {
 }
 
 impl Argument {
-    fn eval(&self, program: &[Argument], storage: &mut Storage) -> ProgResult<Atom> {
+    fn eval(&self, storage: &mut Storage) -> ProgResult<Atom> {
         match self {
-            Argument::FunctionCall(call) => call.eval(program, storage),
+            Argument::FunctionCall(call) => call.eval(storage),
             Argument::Atom(atom) => Ok(atom.clone()),
             Argument::Variable(var) => match storage.get(var) {
                 Some(value) => Ok(value.clone()),
@@ -107,32 +127,24 @@ impl Argument {
             },
         }
     }
-}
 
-impl FunctionCall {
-    fn eval(&self, program: &[Argument], storage: &mut Storage) -> ProgResult<Atom> {
-        let function = get_function(&self.name, storage)?;
-
-        if let Some(argc) = function.argc {
-            let arg_len = self.arg_locations.len();
-            if argc != arg_len {
-                return Err(ProgError {
-                    msg: format!(
-                        "expected `{argc}` args, found `{arg_len}` args for `{:?}`",
-                        function.name
-                    ),
-                    class: ArgumentError,
-                });
-            }
+    fn as_call(&self) -> ProgResult<&FunctionCall> {
+        match self {
+            Argument::FunctionCall(call) => Ok(call),
+            _ => Err(ProgError {
+                msg: "expected an function call which didn't exist".to_string(),
+                class: TypeError,
+            }),
         }
-
-        let args = self
-            .arg_locations
-            .iter()
-            .map(|&i| program[i].clone())
-            .collect::<Vec<_>>();
-
-        (function.callback)(program, storage, args)
+    }
+    fn as_call_mut(&mut self) -> ProgResult<&mut FunctionCall> {
+        match self {
+            Argument::FunctionCall(call) => Ok(call),
+            _ => Err(ProgError {
+                msg: "expected an function call which didn't exist".to_string(),
+                class: TypeError,
+            }),
+        }
     }
 }
 
@@ -259,7 +271,12 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
                 if in_string {
                     current.push(c);
                 } else {
-                    if !current.is_empty() {
+                    if current.is_empty() {
+                        return Err(ProgError {
+                            msg: "Found LeftParen without a function".to_string(),
+                            class: SyntaxError,
+                        });
+                    } else {
                         tokens.push(Token::Function(current.clone()));
                         current.clear();
                     }
@@ -299,34 +316,77 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
     Ok(tokens)
 }
 
-fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
-    let mut program = vec![];
+fn build_program(tokens: Vec<Token>) -> ProgResult<FunctionCall> {
+    let mut master = FunctionCall {
+        name: "_".to_string(),
+        args: vec![Argument::FunctionCall(FunctionCall {
+            name: "_".to_string(),
+            args: vec![],
+        })],
+    };
 
+    let mut current_parent = &mut master;
+    let mut current = current_parent.args.last_mut().unwrap().as_call_mut()?;
+
+    for token in tokens.into_iter() {
+        match token {
+            Token::Atom(atom) => {
+                current.args.push(Argument::Atom(atom));
+            }
+            Token::Name(name) => {
+                current.args.push(Argument::Variable(name));
+            }
+            Token::Function(name) => {
+                current
+                    .args
+                    .push(Argument::FunctionCall(FunctionCall { args: vec![], name }));
+            }
+            Token::Comma => (),
+            Token::LeftParen => match current.args.last_mut().expect("tokens should allow this") {
+                Argument::FunctionCall(call) => current = call,
+                _ => {
+                    return Err(ProgError {
+                        msg: "LeftParen following no function call".to_string(),
+                        class: SyntaxError,
+                    })
+                }
+            },
+            Token::RightParen => todo!()
+        }
+    }
+
+    Ok(master)
+}
+/*
+fn build_program(tokens: &[Token]) -> ProgResult<Argument> {
     let mut current = None;
+    let mut first = None;
+    let mut counter = 0;
 
     for token in tokens {
         match token {
             Token::Function(f) => {
-                let new_id = program.len();
-                program.push(Argument::FunctionCall(FunctionCall {
-                    arg_locations: vec![],
+                let new_id = counter;
+                let function_call = Argument::FunctionCall(FunctionCall {
+                    args: vec![],
                     parent: current,
                     name: f.clone(),
-                }));
+                });
+                counter += 1;
                 if let Some(parent) = current {
-                    if let Argument::FunctionCall(call) = &mut program[parent] {
-                        call.arg_locations.push(new_id)
-                    }
+                    parent.args.push(function_call)
+                } else {
+                    first = Some(function_call);
                 }
             }
-            Token::LeftParen => match program.len() {
+            Token::LeftParen => match counter {
                 0 => {
                     return Err(ProgError {
                         msg: "found `LeftParen` without existing function!".to_string(),
                         class: SyntaxError,
                     })
                 }
-                _ => current = Some(program.len() - 1),
+                _ => current = current,
             },
             Token::Comma => (), // TODO
             Token::RightParen => match current {
@@ -343,28 +403,38 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                 }
             },
             Token::Name(name) => {
-                let new_id = program.len();
-                program.push(Argument::Variable(name.clone()));
+                let new_id = counter;
+                let variable = Argument::Variable(name.clone());
+                counter += 1;
+
                 if let Some(parent) = current {
                     if let Argument::FunctionCall(call) = &mut program[parent] {
-                        call.arg_locations.push(new_id)
+                        call.args.push(new_id)
                     }
                 }
             }
             Token::Atom(atom) => {
-                let new_id = program.len();
-                program.push(Argument::Atom(atom.clone()));
+                let new_id = counter;
+                let atom = Argument::Atom(atom.clone());
+                counter += 1;
+
                 if let Some(parent) = current {
                     if let Argument::FunctionCall(call) = &mut program[parent] {
-                        call.arg_locations.push(new_id)
+                        call.args.push(new_id)
                     }
                 }
             }
         };
     }
 
-    Ok(program)
-}
+    match first {
+        Some(call) => Ok(call),
+        None => Err(ProgError {
+            msg: "No program start was found!".to_string(),
+            class: SyntaxError,
+        })
+    }
+}*/
 
 fn strip_comments(code: &str) -> String {
     code.split('\n')
@@ -408,16 +478,10 @@ pub fn run(code: &str) -> ProgResult<(Atom, Storage)> {
 
     let tokens = tokenize(&without_comments)?;
 
-    let program = build_program(&tokens)?;
+    let program = build_program(tokens)?;
 
     let mut storage = initial_storage();
 
-    let result = program
-        .first()
-        .ok_or(ProgError {
-            msg: "No function was found!".to_string(),
-            class: SyntaxError,
-        })?
-        .eval(&program, &mut storage)?;
+    let result = program.eval(&mut storage)?;
     Ok((result, storage))
 }

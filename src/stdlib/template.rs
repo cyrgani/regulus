@@ -8,9 +8,9 @@ fn run() -> Function {
     Function {
         name: String::from("_"),
         argc: None,
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             for arg in args {
-                arg.eval(program, storage)?;
+                arg.eval(storage)?;
             }
             Ok(Atom::Null)
         }),

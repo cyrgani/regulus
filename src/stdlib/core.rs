@@ -17,9 +17,9 @@ fn run_fn() -> Function {
     Function {
         name: String::from("_"),
         argc: None,
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             for arg in args {
-                arg.eval(program, storage)?;
+                arg.eval(storage)?;
             }
             Ok(Atom::Null)
         }),
@@ -30,9 +30,9 @@ fn assign() -> Function {
     Function {
         name: String::from("assign"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             if let Argument::Variable(var) = &args[0] {
-                let val = args[1].eval(program, storage)?;
+                let val = args[1].eval(storage)?;
                 storage.insert(var.clone(), val);
                 Ok(Atom::Null)
             } else {
@@ -49,9 +49,9 @@ fn if_fn() -> Function {
     Function {
         name: String::from("if"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            Ok(if args[0].eval(program, storage)?.bool()? {
-                args[1].eval(program, storage)?
+        callback: Rc::new(|storage, args| {
+            Ok(if args[0].eval(storage)?.bool()? {
+                args[1].eval(storage)?
             } else {
                 Atom::Null
             })
@@ -63,11 +63,11 @@ fn ifelse() -> Function {
     Function {
         name: String::from("ifelse"),
         argc: Some(3),
-        callback: Rc::new(|program, storage, args| {
-            Ok(if args[0].eval(program, storage)?.bool()? {
-                args[1].eval(program, storage)?
+        callback: Rc::new(|storage, args| {
+            Ok(if args[0].eval(storage)?.bool()? {
+                args[1].eval(storage)?
             } else {
-                args[2].eval(program, storage)?
+                args[2].eval(storage)?
             })
         }),
     }
@@ -77,9 +77,9 @@ fn while_fn() -> Function {
     Function {
         name: String::from("while"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            while args[0].eval(program, storage)?.bool()? {
-                args[1].eval(program, storage)?;
+        callback: Rc::new(|storage, args| {
+            while args[0].eval(storage)?.bool()? {
+                args[1].eval(storage)?;
             }
             Ok(Atom::Null)
         }),
@@ -90,7 +90,7 @@ fn def() -> Function {
     Function {
         name: String::from("def"),
         argc: Some(3),
-        callback: Rc::new(|_program, storage, args| {
+        callback: Rc::new(|storage, args| {
             if let Argument::Variable(var) = &args[0] {
                 if let Argument::Variable(arg) = &args[1] {
                     if let Argument::FunctionCall(inner) = &args[2] {
@@ -99,10 +99,10 @@ fn def() -> Function {
                         let function = Function {
                             name: var.clone(),
                             argc: Some(1),
-                            callback: Rc::new(move |program, storage, args| {
+                            callback: Rc::new(move |storage, args| {
                                 let mut new_storage = storage.clone();
-                                new_storage.insert(arg.clone(), args[0].eval(program, storage)?);
-                                body.eval(program, &mut new_storage)
+                                new_storage.insert(arg.clone(), args[0].eval(storage)?);
+                                body.eval(&mut new_storage)
                             }),
                         };
                         storage.insert(var.clone(), Atom::Function(function));
@@ -133,8 +133,8 @@ fn import() -> Function {
     Function {
         name: String::from("import"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let path = args[0].eval(program, storage)?.string()?;
+        callback: Rc::new(|storage, args| {
+            let path = args[0].eval(storage)?.string()?;
             let code = fs::read_to_string(path).map_err(|error| ProgError {
                 msg: format!("{}", error),
                 class: ImportError,

@@ -15,8 +15,8 @@ fn int() -> Function {
     Function {
         name: String::from("int"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let atom = args[0].eval(program, storage)?;
+        callback: Rc::new(|storage, args| {
+            let atom = args[0].eval(storage)?;
             Ok(Atom::Int(match &atom {
                 Atom::Int(val) => *val,
                 Atom::Bool(val) => *val as i32,
@@ -33,8 +33,8 @@ fn string() -> Function {
     Function {
         name: String::from("string"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let atom = args[0].eval(program, storage)?;
+        callback: Rc::new(|storage, args| {
+            let atom = args[0].eval(storage)?;
             Ok(Atom::String(match &atom {
                 Atom::Int(val) => val.to_string(),
                 Atom::Bool(val) => val.to_string(),
@@ -50,8 +50,8 @@ fn bool_fn() -> Function {
     Function {
         name: String::from("bool"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let atom = args[0].eval(program, storage)?;
+        callback: Rc::new(|storage, args| {
+            let atom = args[0].eval(storage)?;
             Ok(Atom::Bool(match &atom {
                 Atom::Int(val) => *val != 0,
                 Atom::Bool(val) => *val,
@@ -66,9 +66,9 @@ fn is_null() -> Function {
     Function {
         name: String::from("is_null"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             Ok(Atom::Bool(matches!(
-                args[0].eval(program, storage)?,
+                args[0].eval(storage)?,
                 Atom::Null
             )))
         }),

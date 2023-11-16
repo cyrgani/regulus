@@ -8,11 +8,11 @@ fn add() -> Function {
     Function {
         name: String::from("+"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             match args[0]
-                .eval(program, storage)?
+                .eval(storage)?
                 .int()?
-                .checked_add(args[1].eval(program, storage)?.int()?)
+                .checked_add(args[1].eval(storage)?.int()?)
             {
                 Some(i) => Ok(Atom::Int(i)),
                 None => Err(ProgError {
@@ -28,11 +28,11 @@ fn subtract() -> Function {
     Function {
         name: String::from("-"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             match args[0]
-                .eval(program, storage)?
+                .eval(storage)?
                 .int()?
-                .checked_sub(args[1].eval(program, storage)?.int()?)
+                .checked_sub(args[1].eval(storage)?.int()?)
             {
                 Some(i) => Ok(Atom::Int(i)),
                 None => Err(ProgError {
@@ -48,11 +48,11 @@ fn multiply() -> Function {
     Function {
         name: String::from("*"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             match args[0]
-                .eval(program, storage)?
+                .eval(storage)?
                 .int()?
-                .checked_mul(args[1].eval(program, storage)?.int()?)
+                .checked_mul(args[1].eval(storage)?.int()?)
             {
                 Some(i) => Ok(Atom::Int(i)),
                 None => Err(ProgError {
