@@ -63,7 +63,6 @@ enum Token {
 #[derive(Debug, Clone)]
 struct FunctionCall {
     arg_locations: Vec<usize>,
-    parent: Option<usize>,
     name: String,
 }
 
@@ -310,7 +309,6 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                 let new_id = program.len();
                 program.push(Argument::FunctionCall(FunctionCall {
                     arg_locations: vec![],
-                    parent: current,
                     name: f.clone(),
                 }));
                 if let Some(parent) = current {
@@ -331,8 +329,11 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
             Token::Comma => (), // TODO
             Token::RightParen => match current {
                 Some(i) => {
-                    if let Argument::FunctionCall(call) = &program[i] {
-                        current = call.parent
+                    if let Argument::FunctionCall(_) = &program[i] {
+                        current = program.iter().enumerate().find(|arg| match arg.1 {
+							Argument::FunctionCall(inner_call) => inner_call.arg_locations.contains(&i),
+							_ => false,
+						}).map(|x| x.0)
                     }
                 }
                 None => {
