@@ -253,22 +253,25 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
     let mut in_string = false;
 
     for c in code.chars() {
-        match c {
-            '(' => {
-                if in_string {
-                    current.push(c);
-                } else {
+        if in_string {
+            match c {
+                '"' => {
+                    tokens.push(Token::Atom(Atom::String(current.clone())));
+                    current.clear();
+                    in_string = !in_string;
+                }
+                _ => current.push(c),
+            }
+        } else {
+            match c {
+                '(' => {
                     if !current.is_empty() {
                         tokens.push(Token::Function(current.clone()));
                         current.clear();
                     }
                     tokens.push(Token::LeftParen);
                 }
-            }
-            ')' | ',' => {
-                if in_string {
-                    current.push(c);
-                } else {
+                ')' | ',' => {
                     if !current.is_empty() {
                         tokens.push(match Atom::try_from(current.as_str()) {
                             Ok(value) => Token::Atom(value),
@@ -282,16 +285,12 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
                         _ => unreachable!(),
                     });
                 }
-            }
-            '"' => {
-                if in_string {
-                    tokens.push(Token::Atom(Atom::String(current.clone())));
-                    current.clear();
+                '"' => {
+                    in_string = !in_string;
                 }
-                in_string = !in_string;
+                ' ' | '\n' | '\t' => (),
+                _ => current.push(c),
             }
-            ' ' | '\n' | '\t' => (),
-            _ => current.push(c),
         }
     }
 
@@ -330,10 +329,16 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
             Token::RightParen => match current {
                 Some(i) => {
                     if let Argument::FunctionCall(_) = &program[i] {
-                        current = program.iter().enumerate().find(|arg| match arg.1 {
-							Argument::FunctionCall(inner_call) => inner_call.arg_locations.contains(&i),
-							_ => false,
-						}).map(|x| x.0)
+                        current = program
+                            .iter()
+                            .enumerate()
+                            .find(|arg| match arg.1 {
+                                Argument::FunctionCall(inner_call) => {
+                                    inner_call.arg_locations.contains(&i)
+                                }
+                                _ => false,
+                            })
+                            .map(|x| x.0)
                     }
                 }
                 None => {
