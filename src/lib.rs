@@ -329,16 +329,16 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
             Token::RightParen => match current {
                 Some(i) => {
                     if let Argument::FunctionCall(_) = &program[i] {
-                        current = program
-                            .iter()
-                            .enumerate()
-                            .find(|arg| match arg.1 {
-                                Argument::FunctionCall(inner_call) => {
-                                    inner_call.arg_locations.contains(&i)
+                        current = program.iter().enumerate().find_map(|(idx, arg)| match arg {
+                            Argument::FunctionCall(inner_call) => {
+                                if inner_call.arg_locations.contains(&i) {
+                                    Some(idx)
+                                } else {
+                                    None
                                 }
-                                _ => false,
-                            })
-                            .map(|x| x.0)
+                            }
+                            _ => None,
+                        })
                     }
                 }
                 None => {
