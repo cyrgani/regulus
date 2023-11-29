@@ -66,7 +66,7 @@ struct FunctionCall {
     name: String,
 }
 
-type Callback = dyn Fn(&[Argument], &mut Storage, Vec<Argument>) -> ProgResult<Atom>;
+type Callback = dyn Fn(&[Argument], &mut Storage, &[Argument]) -> ProgResult<Atom>;
 
 #[derive(Clone)]
 pub struct Function {
@@ -131,7 +131,7 @@ impl FunctionCall {
             .map(|&i| program[i].clone())
             .collect::<Vec<_>>();
 
-        (function.callback)(program, storage, args)
+        (function.callback)(program, storage, &args)
     }
 }
 

@@ -75,7 +75,7 @@ fn for_each() -> Function {
             let function = args[1].eval(program, storage)?.function()?;
             let list = args[0].eval(program, storage)?.list()?;
             for element in list {
-                (function.callback)(program, storage, vec![Argument::Atom(element.clone())])?;
+                (function.callback)(program, storage, &[Argument::Atom(element.clone())])?;
             }
             Ok(Atom::Null)
         }),
