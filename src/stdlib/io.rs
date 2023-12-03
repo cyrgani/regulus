@@ -8,6 +8,7 @@ pub fn functions() -> Vec<Function> {
 
 fn print() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("print"),
         argc: None,
         callback: Rc::new(|program, storage, args| {
@@ -22,6 +23,7 @@ fn print() -> Function {
 
 fn input() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("input"),
         argc: Some(0),
         callback: Rc::new(|_, _, _| {
@@ -39,6 +41,7 @@ fn input() -> Function {
 
 fn debug() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("debug"),
         argc: Some(1),
         callback: Rc::new(|program, storage, args| {

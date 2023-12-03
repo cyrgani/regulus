@@ -11,8 +11,9 @@ pub fn functions() -> Vec<Function> {
     ]
 }
 
-fn _int_cmp_fn(name: &str, f: fn(i32, i32) -> bool) -> Function {
+fn int_cmp_fn_builder(name: &str, f: fn(i32, i32) -> bool) -> Function {
     Function {
+        aliases: vec![],
         name: String::from(name),
         argc: Some(2),
         callback: Rc::new(move |program, storage, args| {
@@ -24,8 +25,9 @@ fn _int_cmp_fn(name: &str, f: fn(i32, i32) -> bool) -> Function {
     }
 }
 
-fn _bool_cmp_fn(name: &str, f: fn(bool, bool) -> bool) -> Function {
+fn bool_cmp_fn_builder(name: &str, aliases: Vec<&str>, f: fn(bool, bool) -> bool) -> Function {
     Function {
+        aliases: aliases.iter().map(|alias| alias.to_string()).collect(),
         name: String::from(name),
         argc: Some(2),
         callback: Rc::new(move |program, storage, args| {
@@ -38,25 +40,25 @@ fn _bool_cmp_fn(name: &str, f: fn(bool, bool) -> bool) -> Function {
 }
 
 fn or() -> Function {
-	_bool_cmp_fn("or", |lhs, rhs| lhs || rhs)
+    bool_cmp_fn_builder("or", vec!["||"], |lhs, rhs| lhs || rhs)
 }
 
 fn and() -> Function {
-	_bool_cmp_fn("and", |lhs, rhs| lhs && rhs)
+    bool_cmp_fn_builder("and", vec!["&&"], |lhs, rhs| lhs && rhs)
 }
 
 fn less() -> Function {
-    _int_cmp_fn("<", |lhs, rhs| lhs < rhs)
+    int_cmp_fn_builder("<", |lhs, rhs| lhs < rhs)
 }
 
 fn less_equals() -> Function {
-	_int_cmp_fn("<=", |lhs, rhs| lhs <= rhs)
+    int_cmp_fn_builder("<=", |lhs, rhs| lhs <= rhs)
 }
 
 fn greater() -> Function {
-    _int_cmp_fn(">", |lhs, rhs| lhs > rhs)
+    int_cmp_fn_builder(">", |lhs, rhs| lhs > rhs)
 }
 
 fn greater_equals() -> Function {
-	_int_cmp_fn(">=", |lhs, rhs| lhs >= rhs)
+    int_cmp_fn_builder(">=", |lhs, rhs| lhs >= rhs)
 }

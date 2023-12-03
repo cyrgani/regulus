@@ -6,6 +6,7 @@ pub fn functions() -> Vec<Function> {
 
 fn list() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("list"),
         argc: None,
         callback: Rc::new(|program, storage, args| {
@@ -20,6 +21,7 @@ fn list() -> Function {
 
 fn push() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("push"),
         argc: Some(2),
         callback: Rc::new(|program, storage, args| {
@@ -34,6 +36,7 @@ fn push() -> Function {
 
 fn index() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("index"),
         argc: Some(2),
         callback: Rc::new(|program, storage, args| {
@@ -52,6 +55,7 @@ fn index() -> Function {
 
 fn pop() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("pop"),
         argc: Some(1),
         callback: Rc::new(|program, storage, args| {
@@ -69,6 +73,7 @@ fn pop() -> Function {
 
 fn for_each() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("for_each"),
         argc: Some(2),
         callback: Rc::new(|program, storage, args| {

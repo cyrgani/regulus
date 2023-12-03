@@ -6,6 +6,7 @@ pub fn functions() -> Vec<Function> {
 
 fn len() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("len"),
         argc: Some(1),
         callback: Rc::new(|program, storage, args| {

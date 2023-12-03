@@ -4,62 +4,38 @@ pub fn functions() -> Vec<Function> {
     vec![add(), subtract(), multiply()]
 }
 
-fn add() -> Function {
+fn arithmetic_fn_builder(
+    name: &str,
+    operation_name: &'static str,
+    f: fn(i32, i32) -> Option<i32>,
+) -> Function {
     Function {
-        name: String::from("+"),
+        aliases: vec![],
+        name: String::from(name),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            match args[0]
-                .eval(program, storage)?
-                .int()?
-                .checked_add(args[1].eval(program, storage)?.int()?)
-            {
+        callback: Rc::new(move |program, storage, args| {
+            match f(
+                args[0].eval(program, storage)?.int()?,
+                args[1].eval(program, storage)?.int()?,
+            ) {
                 Some(i) => Ok(Atom::Int(i)),
                 None => Err(ProgError {
-                    msg: "overflow occured during addition!".to_string(),
+                    msg: format!("overflow occured during {}!", operation_name),
                     class: OverflowError,
                 }),
             }
         }),
     }
+}
+
+fn add() -> Function {
+    arithmetic_fn_builder("+", "addition", |lhs, rhs| lhs.checked_add(rhs))
 }
 
 fn subtract() -> Function {
-    Function {
-        name: String::from("-"),
-        argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            match args[0]
-                .eval(program, storage)?
-                .int()?
-                .checked_sub(args[1].eval(program, storage)?.int()?)
-            {
-                Some(i) => Ok(Atom::Int(i)),
-                None => Err(ProgError {
-                    msg: "overflow occured during subtraction!".to_string(),
-                    class: OverflowError,
-                }),
-            }
-        }),
-    }
+    arithmetic_fn_builder("-", "subtraction", |lhs, rhs| lhs.checked_sub(rhs))
 }
 
 fn multiply() -> Function {
-    Function {
-        name: String::from("*"),
-        argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            match args[0]
-                .eval(program, storage)?
-                .int()?
-                .checked_mul(args[1].eval(program, storage)?.int()?)
-            {
-                Some(i) => Ok(Atom::Int(i)),
-                None => Err(ProgError {
-                    msg: "overflow occured during multiplication!".to_string(),
-                    class: OverflowError,
-                }),
-            }
-        }),
-    }
+    arithmetic_fn_builder("*", "multiplication", |lhs, rhs| lhs.checked_mul(rhs))
 }

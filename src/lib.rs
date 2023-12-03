@@ -72,6 +72,7 @@ type Callback = dyn Fn(&[Argument], &mut Storage, &[Argument]) -> ProgResult<Ato
 #[derive(Clone)]
 pub struct Function {
     name: String,
+    aliases: Vec<String>,
     argc: Option<usize>,
     callback: Rc<Callback>,
 }
@@ -82,6 +83,7 @@ impl fmt::Debug for Function {
         f.debug_struct("Function")
             .field("name", &self.name)
             .field("argc", &self.argc)
+            .field("aliases", &self.aliases)
             .finish()
     }
 }

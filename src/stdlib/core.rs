@@ -16,6 +16,7 @@ pub fn functions() -> Vec<Function> {
 
 fn run_fn() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("_"),
         argc: None,
         callback: Rc::new(|program, storage, args| {
@@ -29,6 +30,7 @@ fn run_fn() -> Function {
 
 fn assign() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("assign"),
         argc: Some(2),
         callback: Rc::new(|program, storage, args| {
@@ -48,6 +50,7 @@ fn assign() -> Function {
 
 fn if_fn() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("if"),
         argc: Some(2),
         callback: Rc::new(|program, storage, args| {
@@ -62,6 +65,7 @@ fn if_fn() -> Function {
 
 fn ifelse() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("ifelse"),
         argc: Some(3),
         callback: Rc::new(|program, storage, args| {
@@ -76,6 +80,7 @@ fn ifelse() -> Function {
 
 fn while_fn() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("while"),
         argc: Some(2),
         callback: Rc::new(|program, storage, args| {
@@ -89,16 +94,18 @@ fn while_fn() -> Function {
 
 fn def() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("def"),
         argc: Some(3),
         callback: Rc::new(|_program, storage, args| {
-            println!("Warning: The def-function is broken when importing and the def_str function should be used instead for now.");
+            println!("Warning: The def-function is broken when combined with importing and the def_str function should be used instead for now.");
             if let Argument::Variable(var) = &args[0] {
                 if let Argument::Variable(arg) = &args[1] {
                     if let Argument::FunctionCall(inner) = &args[2] {
                         let body = inner.clone();
                         let arg = arg.clone();
                         let function = Function {
+                            aliases: vec![],
                             name: var.clone(),
                             argc: Some(1),
                             callback: Rc::new(move |program, storage, args| {
@@ -133,6 +140,7 @@ fn def() -> Function {
 
 fn def_str() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("def_str"),
         argc: Some(3),
         callback: Rc::new(|_program, storage, args| {
@@ -142,6 +150,7 @@ fn def_str() -> Function {
                         let body = inner.clone();
                         let arg = arg.clone();
                         let function = Function {
+                            aliases: vec![],
                             name: var.clone(),
                             argc: Some(1),
                             callback: Rc::new(move |program, storage, args| {
@@ -178,6 +187,7 @@ fn def_str() -> Function {
 
 fn import() -> Function {
     Function {
+        aliases: vec![],
         name: String::from("import"),
         argc: Some(1),
         callback: Rc::new(|program, storage, args| {
