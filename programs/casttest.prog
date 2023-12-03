@@ -4,5 +4,6 @@ _(
 		true,
 		print("go od"),
 		print("ba d")
-	)
+	),
+	print(<=(4, 3))
 )

@@ -11,74 +11,52 @@ pub fn functions() -> Vec<Function> {
     ]
 }
 
-fn or() -> Function {
+fn _int_cmp_fn(name: &str, f: fn(i32, i32) -> bool) -> Function {
     Function {
-        name: String::from("or"),
+        name: String::from(name),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            Ok(Atom::Bool(
-                args[0].eval(program, storage)?.bool()?
-                    || args[1].eval(program, storage)?.bool()?,
-            ))
+        callback: Rc::new(move |program, storage, args| {
+            Ok(Atom::Bool(f(
+                args[0].eval(program, storage)?.int()?,
+                args[1].eval(program, storage)?.int()?,
+            )))
         }),
     }
+}
+
+fn _bool_cmp_fn(name: &str, f: fn(bool, bool) -> bool) -> Function {
+    Function {
+        name: String::from(name),
+        argc: Some(2),
+        callback: Rc::new(move |program, storage, args| {
+            Ok(Atom::Bool(f(
+                args[0].eval(program, storage)?.bool()?,
+                args[1].eval(program, storage)?.bool()?,
+            )))
+        }),
+    }
+}
+
+fn or() -> Function {
+	_bool_cmp_fn("or", |lhs, rhs| lhs || rhs)
 }
 
 fn and() -> Function {
-    Function {
-        name: String::from("and"),
-        argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            Ok(Atom::Bool(
-                args[0].eval(program, storage)?.bool()?
-                    && args[1].eval(program, storage)?.bool()?,
-            ))
-        }),
-    }
+	_bool_cmp_fn("and", |lhs, rhs| lhs && rhs)
 }
 
 fn less() -> Function {
-    Function {
-        name: String::from("<"),
-        argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            Ok(Atom::Bool(
-                args[0].eval(program, storage)?.int()? < args[1].eval(program, storage)?.int()?,
-            ))
-        }),
-    }
+    _int_cmp_fn("<", |lhs, rhs| lhs < rhs)
 }
+
 fn less_equals() -> Function {
-    Function {
-        name: String::from("<="),
-        argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            Ok(Atom::Bool(
-                args[0].eval(program, storage)?.int()? <= args[1].eval(program, storage)?.int()?,
-            ))
-        }),
-    }
+	_int_cmp_fn("<=", |lhs, rhs| lhs <= rhs)
 }
 
 fn greater() -> Function {
-    Function {
-        name: String::from(">"),
-        argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            Ok(Atom::Bool(
-                args[0].eval(program, storage)?.int()? > args[1].eval(program, storage)?.int()?,
-            ))
-        }),
-    }
+    _int_cmp_fn(">", |lhs, rhs| lhs > rhs)
 }
+
 fn greater_equals() -> Function {
-    Function {
-        name: String::from(">="),
-        argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            Ok(Atom::Bool(
-                args[0].eval(program, storage)?.int()? >= args[1].eval(program, storage)?.int()?,
-            ))
-        }),
-    }
+	_int_cmp_fn(">=", |lhs, rhs| lhs >= rhs)
 }
