@@ -63,6 +63,7 @@ enum Token {
 #[derive(Debug, Clone)]
 struct FunctionCall {
     arg_locations: Vec<usize>,
+    parent: Option<usize>,
     name: String,
 }
 
@@ -308,6 +309,7 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                 let new_id = program.len();
                 program.push(Argument::FunctionCall(FunctionCall {
                     arg_locations: vec![],
+                    parent: current,
                     name: f.clone(),
                 }));
                 if let Some(parent) = current {
@@ -328,17 +330,8 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
             Token::Comma => (), // TODO
             Token::RightParen => match current {
                 Some(i) => {
-                    if let Argument::FunctionCall(_) = &program[i] {
-                        current = program.iter().enumerate().find_map(|(idx, arg)| match arg {
-                            Argument::FunctionCall(inner_call) => {
-                                if inner_call.arg_locations.contains(&i) {
-                                    Some(idx)
-                                } else {
-                                    None
-                                }
-                            }
-                            _ => None,
-                        })
+                    if let Argument::FunctionCall(call) = &program[i] {
+                        current = call.parent
                     }
                 }
                 None => {
@@ -409,14 +402,14 @@ fn initial_storage() -> Storage {
     storage
 }
 
-pub fn run(code: &str) -> ProgResult<(Atom, Storage)> {
+pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Storage)> {
     let without_comments = strip_comments(code);
 
     let tokens = tokenize(&without_comments)?;
 
     let program = build_program(&tokens)?;
 
-    let mut storage = initial_storage();
+    let mut storage = start_storage.unwrap_or_else(initial_storage);
 
     let result = program
         .first()

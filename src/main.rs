@@ -7,7 +7,7 @@ fn main() {
         let file = fs::read_to_string(file_path);
         match file {
             Ok(code) => {
-                let result = run(&code);
+                let result = run(&code, None);
                 match result {
                     Ok((atom, _storage)) => match atom {
                         Atom::Null => (),

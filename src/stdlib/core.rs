@@ -10,6 +10,7 @@ pub fn functions() -> Vec<Function> {
         while_fn(),
         def(),
         import(),
+        def_str(),
     ]
 }
 
@@ -91,6 +92,7 @@ fn def() -> Function {
         name: String::from("def"),
         argc: Some(3),
         callback: Rc::new(|_program, storage, args| {
+            println!("Warning: The def-function is broken when importing and the def_str function should be used instead for now.");
             if let Argument::Variable(var) = &args[0] {
                 if let Argument::Variable(arg) = &args[1] {
                     if let Argument::FunctionCall(inner) = &args[2] {
@@ -129,6 +131,51 @@ fn def() -> Function {
     }
 }
 
+fn def_str() -> Function {
+    Function {
+        name: String::from("def_str"),
+        argc: Some(3),
+        callback: Rc::new(|_program, storage, args| {
+            if let Argument::Variable(var) = &args[0] {
+                if let Argument::Variable(arg) = &args[1] {
+                    if let Argument::Atom(Atom::String(inner)) = &args[2] {
+                        let body = inner.clone();
+                        let arg = arg.clone();
+                        let function = Function {
+                            name: var.clone(),
+                            argc: Some(1),
+                            callback: Rc::new(move |program, storage, args| {
+                                let mut new_storage = storage.clone();
+                                new_storage.insert(arg.clone(), args[0].eval(program, storage)?);
+                                run(&body, Some(new_storage)).map(|(atom, _)| atom)
+
+                                //body.eval(program, &mut new_storage)
+                            }),
+                        };
+                        storage.insert(var.clone(), Atom::Function(function));
+                        Ok(Atom::Null)
+                    } else {
+                        Err(ProgError {
+                            msg: "Error during definition: no function body was given!".to_string(),
+                            class: AssignError,
+                        })
+                    }
+                } else {
+                    Err(ProgError {
+                        msg: "Error during definition: no argument was given!".to_string(),
+                        class: AssignError,
+                    })
+                }
+            } else {
+                Err(ProgError {
+                    msg: "Error during definition: no variable was given to define to!".to_string(),
+                    class: AssignError,
+                })
+            }
+        }),
+    }
+}
+
 fn import() -> Function {
     Function {
         name: String::from("import"),
@@ -139,7 +186,7 @@ fn import() -> Function {
                 msg: format!("{}", error),
                 class: ImportError,
             })?;
-            let (atom, imported_storage) = run(&code)?;
+            let (atom, imported_storage) = run(&code, None)?;
 
             for (k, v) in imported_storage {
                 storage.insert(k, v);
