@@ -11,6 +11,7 @@ pub fn functions() -> Vec<Function> {
         def(),
         import(),
         def_str(),
+		error(),
     ]
 }
 
@@ -202,6 +203,20 @@ fn import() -> Function {
                 storage.insert(k, v);
             }
             Ok(atom)
+        }),
+    }
+}
+
+fn error() -> Function {
+    Function {
+        aliases: vec![],
+        name: String::from("error"),
+        argc: Some(1),
+        callback: Rc::new(|program, storage, args| {
+            Err(ProgError {
+                msg: args[0].eval(program, storage)?.string()?,
+                class: UserRaisedError,
+            })
         }),
     }
 }

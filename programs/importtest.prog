@@ -1,4 +1,9 @@
 _(
 	import("./programs/test.prog"),
 	double_and_print(2),
+	assign(x, <(-(1, 2), 0))
+	ifelse (x, 
+		print("good and under zero"),
+		print("above zero???"),
+	)
 )

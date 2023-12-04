@@ -29,6 +29,7 @@ pub enum ErrorClass {
     IndexError,
     IoError,
     ImportError,
+    UserRaisedError,
 }
 
 #[derive(Debug)]
@@ -306,19 +307,23 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
     let mut current = None;
 
     for token in tokens {
+		let mut new = |arg| {
+			let new_id = program.len();
+			program.push(arg);
+			if let Some(parent) = current {
+				if let Argument::FunctionCall(call) = &mut program[parent] {
+					call.arg_locations.push(new_id)
+				}
+			}
+		};
+
         match token {
             Token::Function(f) => {
-                let new_id = program.len();
-                program.push(Argument::FunctionCall(FunctionCall {
+				new(Argument::FunctionCall(FunctionCall {
                     arg_locations: vec![],
                     parent: current,
                     name: f.clone(),
-                }));
-                if let Some(parent) = current {
-                    if let Argument::FunctionCall(call) = &mut program[parent] {
-                        call.arg_locations.push(new_id)
-                    }
-                }
+                }))
             }
             Token::LeftParen => match program.len() {
                 0 => {
@@ -344,22 +349,10 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                 }
             },
             Token::Name(name) => {
-                let new_id = program.len();
-                program.push(Argument::Variable(name.clone()));
-                if let Some(parent) = current {
-                    if let Argument::FunctionCall(call) = &mut program[parent] {
-                        call.arg_locations.push(new_id)
-                    }
-                }
+				new(Argument::Variable(name.clone()))
             }
             Token::Atom(atom) => {
-                let new_id = program.len();
-                program.push(Argument::Atom(atom.clone()));
-                if let Some(parent) = current {
-                    if let Argument::FunctionCall(call) = &mut program[parent] {
-                        call.arg_locations.push(new_id)
-                    }
-                }
+                new(Argument::Atom(atom.clone()))
             }
         };
     }

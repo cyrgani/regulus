@@ -4,7 +4,7 @@ pub fn functions() -> Vec<Function> {
     vec![int(), string(), bool_fn(), is_null()]
 }
 
-fn _cast_error(atom: &Atom, new_type: &str) -> ProgError {
+fn cast_error_builder(atom: &Atom, new_type: &str) -> ProgError {
     ProgError {
         msg: format!("Unable to cast {:?} to {}", atom, new_type),
         class: TypeError,
@@ -23,8 +23,8 @@ fn int() -> Function {
                 Atom::Bool(val) => *val as i32,
                 Atom::String(val) => val
                     .parse::<i32>()
-                    .map_err(|_error| _cast_error(&atom, "int"))?,
-                _ => return Err(_cast_error(&atom, "int")),
+                    .map_err(|_error| cast_error_builder(&atom, "int"))?,
+                _ => return Err(cast_error_builder(&atom, "int")),
             }))
         }),
     }
@@ -42,7 +42,7 @@ fn string() -> Function {
                 Atom::Bool(val) => val.to_string(),
                 Atom::String(val) => val.clone(),
                 Atom::Null => "null".to_string(),
-                _ => return Err(_cast_error(&atom, "string")),
+                _ => return Err(cast_error_builder(&atom, "string")),
             }))
         }),
     }
@@ -59,7 +59,7 @@ fn bool_fn() -> Function {
                 Atom::Int(val) => *val != 0,
                 Atom::Bool(val) => *val,
                 Atom::Null => false,
-                _ => return Err(_cast_error(&atom, "bool")),
+                _ => return Err(cast_error_builder(&atom, "bool")),
             }))
         }),
     }

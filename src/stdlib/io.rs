@@ -1,6 +1,5 @@
-use std::io;
-
 use crate::prelude::*;
+use std::io;
 
 pub fn functions() -> Vec<Function> {
     vec![print(), input(), debug()]
