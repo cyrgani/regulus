@@ -1,5 +1,5 @@
 _(
-	import("./programs/test.prog"),
+	import("./programs/double_print_file.prog"),
 	double_and_print(2),
 	assign(x, <(-(1, 2), 0))
 	ifelse (x, 

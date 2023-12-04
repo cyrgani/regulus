@@ -17,7 +17,7 @@ pub fn functions() -> Vec<Function> {
 
 fn run_fn() -> Function {
     Function {
-        aliases: vec![],
+        aliases: vec!["run".to_string()],
         name: String::from("_"),
         argc: None,
         callback: Rc::new(|program, storage, args| {
@@ -31,7 +31,7 @@ fn run_fn() -> Function {
 
 fn assign() -> Function {
     Function {
-        aliases: vec![],
+        aliases: vec!["=".to_string()],
         name: String::from("assign"),
         argc: Some(2),
         callback: Rc::new(|program, storage, args| {
@@ -158,8 +158,6 @@ fn def_str() -> Function {
                                 let mut new_storage = storage.clone();
                                 new_storage.insert(arg.clone(), args[0].eval(program, storage)?);
                                 run(&body, Some(new_storage)).map(|(atom, _)| atom)
-
-                                //body.eval(program, &mut new_storage)
                             }),
                         };
                         storage.insert(var.clone(), Atom::Function(function));
