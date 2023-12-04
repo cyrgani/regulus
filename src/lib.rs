@@ -1,4 +1,4 @@
-use std::{collections::HashMap, error, fmt, rc::Rc};
+use std::{collections::HashMap, error, fmt};
 
 mod stdlib {
     pub mod cast;
@@ -307,24 +307,22 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
     let mut current = None;
 
     for token in tokens {
-		let mut new = |arg| {
-			let new_id = program.len();
-			program.push(arg);
-			if let Some(parent) = current {
-				if let Argument::FunctionCall(call) = &mut program[parent] {
-					call.arg_locations.push(new_id)
-				}
-			}
-		};
+        let mut new = |arg| {
+            let new_id = program.len();
+            program.push(arg);
+            if let Some(parent) = current {
+                if let Argument::FunctionCall(call) = &mut program[parent] {
+                    call.arg_locations.push(new_id)
+                }
+            }
+        };
 
         match token {
-            Token::Function(f) => {
-				new(Argument::FunctionCall(FunctionCall {
-                    arg_locations: vec![],
-                    parent: current,
-                    name: f.clone(),
-                }))
-            }
+            Token::Function(f) => new(Argument::FunctionCall(FunctionCall {
+                arg_locations: vec![],
+                parent: current,
+                name: f.clone(),
+            })),
             Token::LeftParen => match program.len() {
                 0 => {
                     return Err(ProgError {
@@ -334,7 +332,7 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                 }
                 _ => current = Some(program.len() - 1),
             },
-            Token::Comma => (), // TODO
+            Token::Comma => (), // TODO?
             Token::RightParen => match current {
                 Some(i) => {
                     if let Argument::FunctionCall(call) = &program[i] {
@@ -348,12 +346,8 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                     })
                 }
             },
-            Token::Name(name) => {
-				new(Argument::Variable(name.clone()))
-            }
-            Token::Atom(atom) => {
-                new(Argument::Atom(atom.clone()))
-            }
+            Token::Name(name) => new(Argument::Variable(name.clone())),
+            Token::Atom(atom) => new(Argument::Atom(atom.clone())),
         };
     }
 
@@ -381,7 +375,14 @@ fn all_functions() -> Vec<Function> {
         list::functions(),
         string::functions(),
     ] {
-        functions.extend(module)
+        for function in module {
+            functions.push(function.clone());
+            for alias in &function.aliases {
+                let mut new = function.clone();
+                new.name = alias.to_string();
+                functions.push(new);
+            }
+        }
     }
 
     functions
