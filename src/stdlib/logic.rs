@@ -8,6 +8,7 @@ pub fn functions() -> Vec<Function> {
         less_equals(),
         greater(),
         greater_equals(),
+		not(),
     ]
 }
 
@@ -45,6 +46,17 @@ fn or() -> Function {
 
 fn and() -> Function {
     bool_cmp_fn_builder("and", vec!["&&"], |lhs, rhs| lhs && rhs)
+}
+
+fn not() -> Function {
+    Function {
+        aliases: vec!["!".to_string()],
+        name: String::from("not"),
+        argc: Some(1),
+        callback: Rc::new(|program, storage, args| {
+            Ok(Atom::Bool(!args[0].eval(program, storage)?.bool()?))
+        }),
+    }
 }
 
 fn less() -> Function {

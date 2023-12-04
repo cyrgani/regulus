@@ -1,9 +1,12 @@
 _(
 	import("./programs/double_print_file.prog"),
 	double_and_print(2),
-	assign(x, <(-(1, 2), 0))
-	ifelse (x, 
-		print("good and under zero"),
-		print("above zero???"),
-	)
+	assert(<(-(1, 2), 0))
+	assert(and(true, true)),
+	assert(&&(true, true)),
+	assert(==(null, null)),
+	assert(==(+(2, 2), *(2, 2))),
+	assert(==(print, print)),
+	assert(!(==(print, null))),
+	assert(!(==(string(+(2, 2)), *(2, 2)))),
 )

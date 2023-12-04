@@ -30,6 +30,7 @@ pub enum ErrorClass {
     IoError,
     ImportError,
     UserRaisedError,
+	AssertionError
 }
 
 #[derive(Debug)]
@@ -89,6 +90,12 @@ impl fmt::Debug for Function {
     }
 }
 
+impl PartialEq for Function {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+
 #[derive(Debug, Clone)]
 enum Argument {
     FunctionCall(FunctionCall),
@@ -139,7 +146,7 @@ impl FunctionCall {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
     Int(i32),
     Bool(bool),

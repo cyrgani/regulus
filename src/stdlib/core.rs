@@ -11,7 +11,9 @@ pub fn functions() -> Vec<Function> {
         def(),
         import(),
         def_str(),
-		error(),
+        error(),
+        equals(),
+		assert(),
     ]
 }
 
@@ -215,6 +217,37 @@ fn error() -> Function {
                 msg: args[0].eval(program, storage)?.string()?,
                 class: UserRaisedError,
             })
+        }),
+    }
+}
+
+fn equals() -> Function {
+    Function {
+        aliases: vec!["equals".to_string()],
+        name: String::from("=="),
+        argc: Some(2),
+        callback: Rc::new(|program, storage, args| {
+            Ok(Atom::Bool(
+                args[0].eval(program, storage)? == args[1].eval(program, storage)?,
+            ))
+        }),
+    }
+}
+
+fn assert() -> Function {
+    Function {
+        aliases: vec![],
+        name: String::from("assert"),
+        argc: Some(1),
+        callback: Rc::new(|program, storage, args| {
+            if args[0].eval(program, storage)?.bool()? {
+                Ok(Atom::Null)
+            } else {
+                Err(ProgError {
+                    msg: "Assertion failed!".to_string(),
+                    class: AssertionError,
+                })
+            }
         }),
     }
 }
