@@ -30,7 +30,7 @@ pub enum ErrorClass {
     IoError,
     ImportError,
     UserRaisedError,
-	AssertionError
+    AssertionError,
 }
 
 #[derive(Debug)]
@@ -396,13 +396,10 @@ fn all_functions() -> Vec<Function> {
 }
 
 fn initial_storage() -> Storage {
-    let functions = all_functions();
-
-    let mut storage = HashMap::new();
-    for function in functions {
-        storage.insert(function.name.clone(), Atom::Function(function));
-    }
-    storage
+    all_functions()
+        .into_iter()
+        .map(|f| (f.name.clone(), Atom::Function(f)))
+        .collect()
 }
 
 pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Storage)> {

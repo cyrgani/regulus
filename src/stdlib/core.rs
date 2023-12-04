@@ -13,7 +13,7 @@ pub fn functions() -> Vec<Function> {
         def_str(),
         error(),
         equals(),
-		assert(),
+        assert(),
     ]
 }
 

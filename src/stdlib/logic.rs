@@ -8,7 +8,7 @@ pub fn functions() -> Vec<Function> {
         less_equals(),
         greater(),
         greater_equals(),
-		not(),
+        not(),
     ]
 }
 

@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 pub fn functions() -> Vec<Function> {
-    vec![int(), string(), bool_fn(), is_null()]
+    vec![int(), string(), bool_fn()]
 }
 
 fn cast_error_builder(atom: &Atom, new_type: &str) -> ProgError {
@@ -61,20 +61,6 @@ fn bool_fn() -> Function {
                 Atom::Null => false,
                 _ => return Err(cast_error_builder(&atom, "bool")),
             }))
-        }),
-    }
-}
-
-fn is_null() -> Function {
-    Function {
-        aliases: vec![],
-        name: String::from("is_null"),
-        argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            Ok(Atom::Bool(matches!(
-                args[0].eval(program, storage)?,
-                Atom::Null
-            )))
         }),
     }
 }
