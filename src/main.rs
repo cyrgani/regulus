@@ -1,4 +1,4 @@
-use newlang::{run, Atom};
+use newlang::prelude::*;
 use std::{env, fs};
 
 fn main() {

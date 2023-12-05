@@ -9,4 +9,5 @@ _(
 	assert(==(print, print)),
 	assert(!(==(print, null))),
 	assert(!(==(string(+(2, 2)), *(2, 2)))),
+	print("all tests passed!")
 )

@@ -1,4 +1,8 @@
-use std::{collections::HashMap, error, fmt};
+mod argument;
+mod atom;
+mod function;
+mod progerror;
+mod storage;
 
 mod stdlib {
     pub mod cast;
@@ -10,47 +14,17 @@ mod stdlib {
     pub mod string;
 }
 
-mod prelude {
-    pub use super::*;
+pub mod prelude {
+    pub use crate::argument::Argument;
+    pub use crate::atom::Atom;
+    pub use crate::function::{Function, FunctionCall};
+    pub use crate::progerror::{ErrorClass::*, ProgError, ProgResult};
     pub use std::rc::Rc;
-    pub use ErrorClass::*;
+    pub use crate::storage::Storage;
+	pub use crate::run;
 }
 
 use prelude::*;
-
-#[derive(Debug)]
-pub enum ErrorClass {
-    TypeError,
-    OverflowError,
-    NameError,
-    SyntaxError,
-    ArgumentError,
-    AssignError,
-    IndexError,
-    IoError,
-    ImportError,
-    UserRaisedError,
-    AssertionError,
-}
-
-#[derive(Debug)]
-pub struct ProgError {
-    pub msg: String,
-    pub class: ErrorClass,
-}
-
-impl fmt::Display for ProgError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}: {}", self.class, self.msg)
-    }
-}
-
-impl error::Error for ProgError {}
-
-/// A shorthand alias for `Result<T, ProgError>`.
-pub type ProgResult<T> = Result<T, ProgError>;
-
-type Storage = HashMap<String, Atom>;
 
 #[derive(Debug, Clone)]
 enum Token {
@@ -60,202 +34,6 @@ enum Token {
     RightParen,
     Atom(Atom),
     Name(String),
-}
-
-#[derive(Debug, Clone)]
-struct FunctionCall {
-    arg_locations: Vec<usize>,
-    parent: Option<usize>,
-    name: String,
-}
-
-type Callback = dyn Fn(&[Argument], &mut Storage, &[Argument]) -> ProgResult<Atom>;
-
-#[derive(Clone)]
-pub struct Function {
-    name: String,
-    aliases: Vec<String>,
-    argc: Option<usize>,
-    callback: Rc<Callback>,
-}
-
-// the callback cannot be debugged
-impl fmt::Debug for Function {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Function")
-            .field("name", &self.name)
-            .field("argc", &self.argc)
-            .field("aliases", &self.aliases)
-            .finish()
-    }
-}
-
-impl PartialEq for Function {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name
-    }
-}
-
-#[derive(Debug, Clone)]
-enum Argument {
-    FunctionCall(FunctionCall),
-    Atom(Atom),
-    Variable(String),
-}
-
-impl Argument {
-    fn eval(&self, program: &[Argument], storage: &mut Storage) -> ProgResult<Atom> {
-        match self {
-            Argument::FunctionCall(call) => call.eval(program, storage),
-            Argument::Atom(atom) => Ok(atom.clone()),
-            Argument::Variable(var) => match storage.get(var) {
-                Some(value) => Ok(value.clone()),
-                None => Err(ProgError {
-                    msg: format!("No variable named `{var}` found!"),
-                    class: NameError,
-                }),
-            },
-        }
-    }
-}
-
-impl FunctionCall {
-    fn eval(&self, program: &[Argument], storage: &mut Storage) -> ProgResult<Atom> {
-        let function = get_function(&self.name, storage)?;
-
-        if let Some(argc) = function.argc {
-            let arg_len = self.arg_locations.len();
-            if argc != arg_len {
-                return Err(ProgError {
-                    msg: format!(
-                        "expected `{argc}` args, found `{arg_len}` args for `{:?}`",
-                        function.name
-                    ),
-                    class: ArgumentError,
-                });
-            }
-        }
-
-        let args = self
-            .arg_locations
-            .iter()
-            .map(|&i| program[i].clone())
-            .collect::<Vec<_>>();
-
-        (function.callback)(program, storage, &args)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Atom {
-    Int(i32),
-    Bool(bool),
-    Null,
-    List(Vec<Atom>),
-    String(String),
-    Function(Function),
-}
-
-impl TryFrom<&str> for Atom {
-    type Error = ();
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        if let Ok(int) = value.parse::<i32>() {
-            Ok(Atom::Int(int))
-        } else {
-            Ok(match value {
-                "true" => Atom::Bool(true),
-                "false" => Atom::Bool(false),
-                "null" => Atom::Null,
-                _ => return Err(()),
-            })
-        }
-    }
-}
-
-impl Atom {
-    fn int(&self) -> ProgResult<i32> {
-        match self {
-            Self::Int(v) => Ok(*v),
-            _ => Err(ProgError {
-                msg: format!("{:?} is not a Int!", self),
-                class: TypeError,
-            }),
-        }
-    }
-    fn bool(&self) -> ProgResult<bool> {
-        match self {
-            Self::Bool(v) => Ok(*v),
-            _ => Err(ProgError {
-                msg: format!("{:?} is not a Bool!", self),
-                class: TypeError,
-            }),
-        }
-    }
-    fn list(&self) -> ProgResult<Vec<Atom>> {
-        match self {
-            Self::List(v) => Ok(v.clone()),
-            _ => Err(ProgError {
-                msg: format!("{:?} is not a List!", self),
-                class: TypeError,
-            }),
-        }
-    }
-    fn string(&self) -> ProgResult<String> {
-        match self {
-            Self::String(v) => Ok(v.clone()),
-            _ => Err(ProgError {
-                msg: format!("{:?} is not a String!", self),
-                class: TypeError,
-            }),
-        }
-    }
-    fn function(&self) -> ProgResult<Function> {
-        match self {
-            Self::Function(v) => Ok(v.clone()),
-            _ => Err(ProgError {
-                msg: format!("{:?} is not a Function!", self),
-                class: TypeError,
-            }),
-        }
-    }
-
-    fn format(&self) -> String {
-        match self {
-            Atom::Bool(val) => val.to_string(),
-            Atom::Function(val) => format!("{}()", val.name),
-            Atom::Int(val) => val.to_string(),
-            Atom::List(val) => format!(
-                "[{}]",
-                val.iter()
-                    .map(|atom| atom.format())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
-            Atom::Null => "null".to_string(),
-            Atom::String(val) => val.clone(),
-        }
-    }
-}
-
-fn get_function(name: &str, storage: &Storage) -> ProgResult<Function> {
-    storage
-        .values()
-        .find_map(|atom| {
-            if let Atom::Function(function) = atom {
-                if function.name == name {
-                    Some(function.clone())
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        })
-        .ok_or(ProgError {
-            msg: format!("No function `{name}` found!"),
-            class: NameError,
-        })
 }
 
 fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
@@ -368,40 +146,6 @@ fn strip_comments(code: &str) -> String {
         .join("\n")
 }
 
-fn all_functions() -> Vec<Function> {
-    use stdlib::*;
-
-    let mut functions = vec![];
-
-    for module in [
-        cast::functions(),
-        core::functions(),
-        io::functions(),
-        math::functions(),
-        logic::functions(),
-        list::functions(),
-        string::functions(),
-    ] {
-        for function in module {
-            functions.push(function.clone());
-            for alias in &function.aliases {
-                let mut new = function.clone();
-                new.name = alias.to_string();
-                functions.push(new);
-            }
-        }
-    }
-
-    functions
-}
-
-fn initial_storage() -> Storage {
-    all_functions()
-        .into_iter()
-        .map(|f| (f.name.clone(), Atom::Function(f)))
-        .collect()
-}
-
 pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Storage)> {
     let without_comments = strip_comments(code);
 
@@ -409,7 +153,7 @@ pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Stor
 
     let program = build_program(&tokens)?;
 
-    let mut storage = start_storage.unwrap_or_else(initial_storage);
+    let mut storage = start_storage.unwrap_or_else(storage::initial_storage);
 
     let result = program
         .first()
