@@ -14,6 +14,7 @@ pub fn functions() -> Vec<Function> {
         error(),
         equals(),
         assert(),
+        catch(),
     ]
 }
 
@@ -217,6 +218,19 @@ fn error() -> Function {
                 msg: args[0].eval(program, storage)?.string()?,
                 error: Error::UserRaised,
             })
+        }),
+    }
+}
+
+fn catch() -> Function {
+    Function {
+        aliases: vec![],
+        name: String::from("catch"),
+        argc: Some(1),
+        callback: Rc::new(|program, storage, args| {
+            Ok(args[0]
+                .eval(program, storage)
+                .unwrap_or_else(|exc| Atom::String(exc.to_string())))
         }),
     }
 }
