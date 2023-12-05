@@ -4,10 +4,10 @@ pub fn functions() -> Vec<Function> {
     vec![int(), string(), bool_fn()]
 }
 
-fn cast_error_builder(atom: &Atom, new_type: &str) -> ProgError {
-    ProgError {
+fn cast_error_builder(atom: &Atom, new_type: &str) -> Exception {
+    Exception {
         msg: format!("Unable to cast {:?} to {}", atom, new_type),
-        class: TypeError,
+        error: Error::Type,
     }
 }
 

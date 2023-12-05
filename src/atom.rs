@@ -31,45 +31,45 @@ impl Atom {
     pub fn int(&self) -> ProgResult<i32> {
         match self {
             Self::Int(v) => Ok(*v),
-            _ => Err(ProgError {
+            _ => Err(Exception {
                 msg: format!("{:?} is not a Int!", self),
-                class: TypeError,
+                error: Error::Type,
             }),
         }
     }
     pub fn bool(&self) -> ProgResult<bool> {
         match self {
             Self::Bool(v) => Ok(*v),
-            _ => Err(ProgError {
+            _ => Err(Exception {
                 msg: format!("{:?} is not a Bool!", self),
-                class: TypeError,
+                error: Error::Type,
             }),
         }
     }
     pub fn list(&self) -> ProgResult<Vec<Atom>> {
         match self {
             Self::List(v) => Ok(v.clone()),
-            _ => Err(ProgError {
+            _ => Err(Exception {
                 msg: format!("{:?} is not a List!", self),
-                class: TypeError,
+                error: Error::Type,
             }),
         }
     }
     pub fn string(&self) -> ProgResult<String> {
         match self {
             Self::String(v) => Ok(v.clone()),
-            _ => Err(ProgError {
+            _ => Err(Exception {
                 msg: format!("{:?} is not a String!", self),
-                class: TypeError,
+                error: Error::Type,
             }),
         }
     }
     pub fn function(&self) -> ProgResult<Function> {
         match self {
             Self::Function(v) => Ok(v.clone()),
-            _ => Err(ProgError {
+            _ => Err(Exception {
                 msg: format!("{:?} is not a Function!", self),
-                class: TypeError,
+                error: Error::Type,
             }),
         }
     }

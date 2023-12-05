@@ -15,12 +15,12 @@ impl FunctionCall {
         if let Some(argc) = function.argc {
             let arg_len = self.arg_locations.len();
             if argc != arg_len {
-                return Err(ProgError {
+                return Err(Exception {
                     msg: format!(
                         "expected `{argc}` args, found `{arg_len}` args for `{:?}`",
                         function.name
                     ),
-                    class: ArgumentError,
+                    error: Error::Argument,
                 });
             }
         }

@@ -29,9 +29,9 @@ fn input() -> Function {
             let mut input = String::new();
             match io::stdin().read_line(&mut input) {
                 Ok(_) => Ok(Atom::String(input)),
-                Err(error) => Err(ProgError {
+                Err(error) => Err(Exception {
                     msg: format!("Error while reading input: {}", error),
-                    class: IoError,
+                    error: Error::Io,
                 }),
             }
         }),

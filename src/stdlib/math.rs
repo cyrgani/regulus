@@ -19,9 +19,9 @@ fn arithmetic_fn_builder(
                 args[1].eval(program, storage)?.int()?,
             ) {
                 Some(i) => Ok(Atom::Int(i)),
-                None => Err(ProgError {
+                None => Err(Exception {
                     msg: format!("overflow occured during {}!", operation_name),
-                    class: OverflowError,
+                    error: Error::Overflow,
                 }),
             }
         }),

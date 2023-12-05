@@ -1,7 +1,7 @@
 mod argument;
 mod atom;
+mod exception;
 mod function;
-mod progerror;
 mod storage;
 
 mod stdlib {
@@ -15,13 +15,15 @@ mod stdlib {
 }
 
 pub mod prelude {
-    pub use crate::argument::Argument;
-    pub use crate::atom::Atom;
-    pub use crate::function::{Function, FunctionCall};
-    pub use crate::progerror::{ErrorClass::*, ProgError, ProgResult};
+    pub use crate::{
+        argument::Argument,
+        atom::Atom,
+        exception::{Error, Exception, ProgResult},
+        function::{Function, FunctionCall},
+        run,
+        storage::Storage,
+    };
     pub use std::rc::Rc;
-    pub use crate::storage::Storage;
-	pub use crate::run;
 }
 
 use prelude::*;
@@ -110,9 +112,9 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
             })),
             Token::LeftParen => match program.len() {
                 0 => {
-                    return Err(ProgError {
+                    return Err(Exception {
                         msg: "found `LeftParen` without existing function!".to_string(),
-                        class: SyntaxError,
+                        error: Error::Syntax,
                     })
                 }
                 _ => current = Some(program.len() - 1),
@@ -125,9 +127,9 @@ fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
                     }
                 }
                 None => {
-                    return Err(ProgError {
+                    return Err(Exception {
                         msg: "found `RightParen` without existing function!".to_string(),
-                        class: SyntaxError,
+                        error: Error::Syntax,
                     })
                 }
             },
@@ -157,9 +159,9 @@ pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Stor
 
     let result = program
         .first()
-        .ok_or(ProgError {
+        .ok_or(Exception {
             msg: "No function was found!".to_string(),
-            class: SyntaxError,
+            error: Error::Syntax,
         })?
         .eval(&program, &mut storage)?;
     Ok((result, storage))

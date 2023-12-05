@@ -14,9 +14,9 @@ impl Argument {
             Argument::Atom(atom) => Ok(atom.clone()),
             Argument::Variable(var) => match storage.get(var) {
                 Some(value) => Ok(value.clone()),
-                None => Err(ProgError {
+                None => Err(Exception {
                     msg: format!("No variable named `{var}` found!"),
-                    class: NameError,
+                    error: Error::Name,
                 }),
             },
         }

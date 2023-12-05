@@ -42,9 +42,9 @@ fn assign() -> Function {
                 storage.insert(var.clone(), val);
                 Ok(Atom::Null)
             } else {
-                Err(ProgError {
+                Err(Exception {
                     msg: "Error during assignment: no variable was given to assign to!".to_string(),
-                    class: AssignError,
+                    error: Error::Assign,
                 })
             }
         }),
@@ -120,21 +120,21 @@ fn def() -> Function {
                         storage.insert(var.clone(), Atom::Function(function));
                         Ok(Atom::Null)
                     } else {
-                        Err(ProgError {
+                        Err(Exception {
                             msg: "Error during definition: no function body was given!".to_string(),
-                            class: AssignError,
+                            error: Error::Assign,
                         })
                     }
                 } else {
-                    Err(ProgError {
+                    Err(Exception {
                         msg: "Error during definition: no argument was given!".to_string(),
-                        class: AssignError,
+                        error: Error::Assign,
                     })
                 }
             } else {
-                Err(ProgError {
+                Err(Exception {
                     msg: "Error during definition: no variable was given to define to!".to_string(),
-                    class: AssignError,
+                    error: Error::Assign,
                 })
             }
         }),
@@ -165,21 +165,21 @@ fn def_str() -> Function {
                         storage.insert(var.clone(), Atom::Function(function));
                         Ok(Atom::Null)
                     } else {
-                        Err(ProgError {
+                        Err(Exception {
                             msg: "Error during definition: no function body was given!".to_string(),
-                            class: AssignError,
+                            error: Error::Assign,
                         })
                     }
                 } else {
-                    Err(ProgError {
+                    Err(Exception {
                         msg: "Error during definition: no argument was given!".to_string(),
-                        class: AssignError,
+                        error: Error::Assign,
                     })
                 }
             } else {
-                Err(ProgError {
+                Err(Exception {
                     msg: "Error during definition: no variable was given to define to!".to_string(),
-                    class: AssignError,
+                    error: Error::Assign,
                 })
             }
         }),
@@ -193,9 +193,9 @@ fn import() -> Function {
         argc: Some(1),
         callback: Rc::new(|program, storage, args| {
             let path = args[0].eval(program, storage)?.string()?;
-            let code = fs::read_to_string(path).map_err(|error| ProgError {
+            let code = fs::read_to_string(path).map_err(|error| Exception {
                 msg: format!("{}", error),
-                class: ImportError,
+                error: Error::Import,
             })?;
             let (atom, imported_storage) = run(&code, None)?;
 
@@ -213,9 +213,9 @@ fn error() -> Function {
         name: String::from("error"),
         argc: Some(1),
         callback: Rc::new(|program, storage, args| {
-            Err(ProgError {
+            Err(Exception {
                 msg: args[0].eval(program, storage)?.string()?,
-                class: UserRaisedError,
+                error: Error::UserRaised,
             })
         }),
     }
@@ -243,9 +243,9 @@ fn assert() -> Function {
             if args[0].eval(program, storage)?.bool()? {
                 Ok(Atom::Null)
             } else {
-                Err(ProgError {
+                Err(Exception {
                     msg: "Assertion failed!".to_string(),
-                    class: AssertionError,
+                    error: Error::Assertion,
                 })
             }
         }),

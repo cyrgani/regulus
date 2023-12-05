@@ -44,9 +44,9 @@ fn index() -> Function {
                 .eval(program, storage)?
                 .list()?
                 .get(args[1].eval(program, storage)?.int()? as usize)
-                .ok_or(ProgError {
+                .ok_or(Exception {
                     msg: "Unable to index list!".to_string(),
-                    class: IndexError,
+                    error: Error::Index,
                 })
                 .cloned()
         }),
@@ -63,9 +63,9 @@ fn pop() -> Function {
                 .eval(program, storage)?
                 .list()?
                 .pop()
-                .ok_or(ProgError {
+                .ok_or(Exception {
                     msg: "Unable to pop from list!".to_string(),
-                    class: IndexError,
+                    error: Error::Index,
                 })
         }),
     }

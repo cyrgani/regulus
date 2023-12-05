@@ -24,8 +24,8 @@ pub fn get_function(name: &str, storage: &Storage) -> ProgResult<Function> {
                 None
             }
         })
-        .ok_or(ProgError {
+        .ok_or(Exception {
             msg: format!("No function `{name}` found!"),
-            class: NameError,
+            error: Error::Name,
         })
 }
