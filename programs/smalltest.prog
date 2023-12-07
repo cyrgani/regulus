@@ -1,0 +1,4 @@
+run(
+assign(x, -(4, 2)),
+print(+(2, x))
+)
