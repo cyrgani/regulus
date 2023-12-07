@@ -52,6 +52,7 @@ impl fmt::Debug for Function {
             .field("name", &self.name)
             .field("argc", &self.argc)
             .field("aliases", &self.aliases)
+            .field("callback", &Rc::new(()))
             .finish()
     }
 }
@@ -59,6 +60,18 @@ impl fmt::Debug for Function {
 impl PartialEq for Function {
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name
+    }
+}
+
+impl Function {
+	// todo
+    pub fn new(names: Vec<&str>, argc: Option<usize>, callback: Rc<Callback>) -> Self {
+        Self {
+            name: names[0].to_string(),
+            aliases: names[1..].iter().map(|s| s.to_string()).collect(),
+            argc,
+            callback,
+        }
     }
 }
 

@@ -29,5 +29,5 @@ impl fmt::Display for Exception {
 
 impl error::Error for Exception {}
 
-/// A shorthand alias for `Result<T, ProgError>`.
+/// A shorthand alias for `Result<T, Exception>`.
 pub type ProgResult<T> = Result<T, Exception>;

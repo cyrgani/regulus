@@ -37,6 +37,7 @@ impl Atom {
             }),
         }
     }
+
     pub fn bool(&self) -> ProgResult<bool> {
         match self {
             Self::Bool(v) => Ok(*v),
@@ -46,6 +47,7 @@ impl Atom {
             }),
         }
     }
+
     pub fn list(&self) -> ProgResult<Vec<Atom>> {
         match self {
             Self::List(v) => Ok(v.clone()),
@@ -55,6 +57,7 @@ impl Atom {
             }),
         }
     }
+
     pub fn string(&self) -> ProgResult<String> {
         match self {
             Self::String(v) => Ok(v.clone()),
@@ -64,6 +67,7 @@ impl Atom {
             }),
         }
     }
+	
     pub fn function(&self) -> ProgResult<Function> {
         match self {
             Self::Function(v) => Ok(v.clone()),
