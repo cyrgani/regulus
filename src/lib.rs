@@ -1,4 +1,8 @@
-use std::{collections::HashMap, error, fmt, rc::Rc};
+mod argument;
+mod atom;
+mod exception;
+mod function;
+mod storage;
 
 mod stdlib {
     pub mod cast;
@@ -10,48 +14,28 @@ mod stdlib {
     pub mod string;
 }
 
-mod prelude {
-    pub use super::*;
+pub mod prelude {
+    pub use crate::{
+        argument::Argument,
+        atom::Atom,
+        exception::{Error, Exception, ProgResult},
+        function::{Function, FunctionCall},
+        run,
+        storage::Storage,
+    };
     pub use std::rc::Rc;
-    pub use ErrorClass::*;
 }
 
 use prelude::*;
 
-#[derive(Debug)]
-pub enum ErrorClass {
-    TypeError,
-    OverflowError,
-    NameError,
-    SyntaxError,
-    ArgumentError,
-    AssignError,
-    IndexError,
-    IoError,
-    ImportError,
-    UserRaisedError,
+fn strip_comments(code: &str) -> String {
+    code.split('\n')
+        .map(|line| line.split('#').next().unwrap())
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
-#[derive(Debug)]
-pub struct ProgError {
-    pub msg: String,
-    pub class: ErrorClass,
-}
-
-impl fmt::Display for ProgError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}: {}", self.class, self.msg)
-    }
-}
-
-impl error::Error for ProgError {}
-
-/// A shorthand alias for `Result<T, ProgError>`.
-pub type ProgResult<T> = Result<T, ProgError>;
-
-type Storage = HashMap<String, Atom>;
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 enum Token {
     Function(String),
     LeftParen,
@@ -59,196 +43,6 @@ enum Token {
     RightParen,
     Atom(Atom),
     Name(String),
-}
-
-#[derive(Debug, Clone)]
-struct FunctionCall {
-    arg_locations: Vec<usize>,
-    parent: Option<usize>,
-    name: String,
-}
-
-type Callback = dyn Fn(&[Argument], &mut Storage, &[Argument]) -> ProgResult<Atom>;
-
-#[derive(Clone)]
-pub struct Function {
-    name: String,
-    aliases: Vec<String>,
-    argc: Option<usize>,
-    callback: Rc<Callback>,
-}
-
-// the callback cannot be debugged
-impl fmt::Debug for Function {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Function")
-            .field("name", &self.name)
-            .field("argc", &self.argc)
-            .field("aliases", &self.aliases)
-            .finish()
-    }
-}
-
-#[derive(Debug, Clone)]
-enum Argument {
-    FunctionCall(FunctionCall),
-    Atom(Atom),
-    Variable(String),
-}
-
-impl Argument {
-    fn eval(&self, program: &[Argument], storage: &mut Storage) -> ProgResult<Atom> {
-        match self {
-            Argument::FunctionCall(call) => call.eval(program, storage),
-            Argument::Atom(atom) => Ok(atom.clone()),
-            Argument::Variable(var) => match storage.get(var) {
-                Some(value) => Ok(value.clone()),
-                None => Err(ProgError {
-                    msg: format!("No variable named `{var}` found!"),
-                    class: NameError,
-                }),
-            },
-        }
-    }
-}
-
-impl FunctionCall {
-    fn eval(&self, program: &[Argument], storage: &mut Storage) -> ProgResult<Atom> {
-        let function = get_function(&self.name, storage)?;
-
-        if let Some(argc) = function.argc {
-            let arg_len = self.arg_locations.len();
-            if argc != arg_len {
-                return Err(ProgError {
-                    msg: format!(
-                        "expected `{argc}` args, found `{arg_len}` args for `{:?}`",
-                        function.name
-                    ),
-                    class: ArgumentError,
-                });
-            }
-        }
-
-        let args = self
-            .arg_locations
-            .iter()
-            .map(|&i| program[i].clone())
-            .collect::<Vec<_>>();
-
-        (function.callback)(program, storage, &args)
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum Atom {
-    Int(i32),
-    Bool(bool),
-    Null,
-    List(Vec<Atom>),
-    String(String),
-    Function(Function),
-}
-
-impl TryFrom<&str> for Atom {
-    type Error = ();
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        if let Ok(int) = value.parse::<i32>() {
-            Ok(Atom::Int(int))
-        } else {
-            Ok(match value {
-                "true" => Atom::Bool(true),
-                "false" => Atom::Bool(false),
-                "null" => Atom::Null,
-                _ => return Err(()),
-            })
-        }
-    }
-}
-
-impl Atom {
-    fn int(&self) -> ProgResult<i32> {
-        match self {
-            Self::Int(v) => Ok(*v),
-            _ => Err(ProgError {
-                msg: format!("{:?} is not a Int!", self),
-                class: TypeError,
-            }),
-        }
-    }
-    fn bool(&self) -> ProgResult<bool> {
-        match self {
-            Self::Bool(v) => Ok(*v),
-            _ => Err(ProgError {
-                msg: format!("{:?} is not a Bool!", self),
-                class: TypeError,
-            }),
-        }
-    }
-    fn list(&self) -> ProgResult<Vec<Atom>> {
-        match self {
-            Self::List(v) => Ok(v.clone()),
-            _ => Err(ProgError {
-                msg: format!("{:?} is not a List!", self),
-                class: TypeError,
-            }),
-        }
-    }
-    fn string(&self) -> ProgResult<String> {
-        match self {
-            Self::String(v) => Ok(v.clone()),
-            _ => Err(ProgError {
-                msg: format!("{:?} is not a String!", self),
-                class: TypeError,
-            }),
-        }
-    }
-    fn function(&self) -> ProgResult<Function> {
-        match self {
-            Self::Function(v) => Ok(v.clone()),
-            _ => Err(ProgError {
-                msg: format!("{:?} is not a Function!", self),
-                class: TypeError,
-            }),
-        }
-    }
-
-    fn format(&self) -> String {
-        match self {
-            Atom::Bool(val) => val.to_string(),
-            Atom::Function(val) => format!("{}()", val.name),
-            Atom::Int(val) => val.to_string(),
-            Atom::List(val) => format!(
-                "[{}]",
-                val.iter()
-                    .map(|atom| atom.format())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
-            Atom::Null => "null".to_string(),
-            Atom::String(val) => val.clone(),
-        }
-    }
-}
-
-fn get_function(name: &str, storage: &Storage) -> ProgResult<Function> {
-    storage
-        .values()
-        .find_map(|atom| {
-            if let Atom::Function(function) = atom {
-                if function.name == name {
-                    Some(function.clone())
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        })
-        .ok_or(ProgError {
-            msg: format!("No function `{name}` found!"),
-            class: NameError,
-        })
 }
 
 fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
@@ -301,100 +95,62 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
     Ok(tokens)
 }
 
-fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
-    let mut program = vec![];
+fn validate_tokens(tokens: &[Token]) -> ProgResult<()> {
+    let occurences = |val: Token| tokens.iter().filter(|token| token == &&val).count();
+    let left_parens = occurences(Token::LeftParen);
+    let right_parens = occurences(Token::RightParen);
+    if left_parens != right_parens {
+        return Err(Exception {
+            msg: format!("Nonequal amount of '(' and ')': {left_parens} vs. {right_parens}"),
+            error: Error::Syntax,
+        });
+    }
 
-    let mut current = None;
+    Ok(())
+}
 
-    for token in tokens {
-		let mut new = |arg| {
-			let new_id = program.len();
-			program.push(arg);
-			if let Some(parent) = current {
-				if let Argument::FunctionCall(call) = &mut program[parent] {
-					call.arg_locations.push(new_id)
-				}
-			}
-		};
+fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCall> {
+    let mut call = FunctionCall {
+        args: vec![],
+        name: function_name.to_string(),
+    };
 
-        match token {
-            Token::Function(f) => {
-				new(Argument::FunctionCall(FunctionCall {
-                    arg_locations: vec![],
-                    parent: current,
-                    name: f.clone(),
-                }))
-            }
-            Token::LeftParen => match program.len() {
-                0 => {
-                    return Err(ProgError {
-                        msg: "found `LeftParen` without existing function!".to_string(),
-                        class: SyntaxError,
-                    })
-                }
-                _ => current = Some(program.len() - 1),
-            },
-            Token::Comma => (), // TODO
-            Token::RightParen => match current {
-                Some(i) => {
-                    if let Argument::FunctionCall(call) = &program[i] {
-                        current = call.parent
+	let mut iter = tokens.iter().enumerate();
+
+    while let Some((idx, token)) = iter.next() {
+		match token {
+            Token::Atom(atom) => call.args.push(Argument::Atom(atom.clone())),
+            Token::Comma => (),
+            Token::Function(function) => {
+                let mut required_right_parens = 1;
+                for (i, t) in tokens[idx + 2..].iter().enumerate() {
+                    match t {
+                        Token::LeftParen => required_right_parens += 1,
+                        Token::RightParen => required_right_parens -= 1,
+                        _ => (),
                     }
+                    if required_right_parens == 0 {
+                        call.args.push(Argument::FunctionCall(build_program(
+                            &tokens[idx + 2..idx + 3 + i],
+                            &function,
+                        )?));
+						iter.nth((idx + 2..idx + 3 + i).len());
+                        break;
+                    }
+					
                 }
-                None => {
-                    return Err(ProgError {
-                        msg: "found `RightParen` without existing function!".to_string(),
-                        class: SyntaxError,
-                    })
-                }
-            },
-            Token::Name(name) => {
-				new(Argument::Variable(name.clone()))
+                assert_eq!(
+                    required_right_parens, 0,
+                    "token validation should cover this (hopefully)"
+                )
             }
-            Token::Atom(atom) => {
-                new(Argument::Atom(atom.clone()))
-            }
-        };
+            Token::LeftParen => (),
+            Token::Name(name) => call.args.push(Argument::Variable(name.clone())),
+            Token::RightParen => return Ok(call),
+        }
     }
 
-    Ok(program)
-}
-
-fn strip_comments(code: &str) -> String {
-    code.split('\n')
-        .map(|line| line.split('#').next().unwrap())
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-
-fn all_functions() -> Vec<Function> {
-    use stdlib::*;
-
-    let mut functions = vec![];
-
-    for module in [
-        cast::functions(),
-        core::functions(),
-        io::functions(),
-        math::functions(),
-        logic::functions(),
-        list::functions(),
-        string::functions(),
-    ] {
-        functions.extend(module)
-    }
-
-    functions
-}
-
-fn initial_storage() -> Storage {
-    let functions = all_functions();
-
-    let mut storage = HashMap::new();
-    for function in functions {
-        storage.insert(function.name.clone(), Atom::Function(function));
-    }
-    storage
+    Ok(call)
 }
 
 pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Storage)> {
@@ -402,16 +158,12 @@ pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Stor
 
     let tokens = tokenize(&without_comments)?;
 
-    let program = build_program(&tokens)?;
+    validate_tokens(&tokens)?;
 
-    let mut storage = start_storage.unwrap_or_else(initial_storage);
+    let program = build_program(&tokens, "_")?;
 
-    let result = program
-        .first()
-        .ok_or(ProgError {
-            msg: "No function was found!".to_string(),
-            class: SyntaxError,
-        })?
-        .eval(&program, &mut storage)?;
+    let mut storage = start_storage.unwrap_or_else(storage::initial_storage);
+
+    let result = program.eval(&mut storage)?;
     Ok((result, storage))
 }

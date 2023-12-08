@@ -8,21 +8,8 @@ pub fn functions() -> Vec<Function> {
         less_equals(),
         greater(),
         greater_equals(),
+        not(),
     ]
-}
-
-fn int_cmp_fn_builder(name: &str, f: fn(i32, i32) -> bool) -> Function {
-    Function {
-        aliases: vec![],
-        name: String::from(name),
-        argc: Some(2),
-        callback: Rc::new(move |program, storage, args| {
-            Ok(Atom::Bool(f(
-                args[0].eval(program, storage)?.int()?,
-                args[1].eval(program, storage)?.int()?,
-            )))
-        }),
-    }
 }
 
 fn bool_cmp_fn_builder(name: &str, aliases: Vec<&str>, f: fn(bool, bool) -> bool) -> Function {
@@ -30,10 +17,10 @@ fn bool_cmp_fn_builder(name: &str, aliases: Vec<&str>, f: fn(bool, bool) -> bool
         aliases: aliases.iter().map(|alias| alias.to_string()).collect(),
         name: String::from(name),
         argc: Some(2),
-        callback: Rc::new(move |program, storage, args| {
+        callback: Rc::new(move |storage, args| {
             Ok(Atom::Bool(f(
-                args[0].eval(program, storage)?.bool()?,
-                args[1].eval(program, storage)?.bool()?,
+                args[0].eval(storage)?.bool()?,
+                args[1].eval(storage)?.bool()?,
             )))
         }),
     }
@@ -46,6 +33,32 @@ fn or() -> Function {
 fn and() -> Function {
     bool_cmp_fn_builder("and", vec!["&&"], |lhs, rhs| lhs && rhs)
 }
+
+fn not() -> Function {
+    Function {
+        aliases: vec!["!".to_string()],
+        name: String::from("not"),
+        argc: Some(1),
+        callback: Rc::new(|storage, args| {
+            Ok(Atom::Bool(!args[0].eval(storage)?.bool()?))
+        }),
+    }
+}
+
+fn int_cmp_fn_builder(name: &str, f: fn(i32, i32) -> bool) -> Function {
+    Function {
+        aliases: vec![],
+        name: String::from(name),
+        argc: Some(2),
+        callback: Rc::new(move |storage, args| {
+            Ok(Atom::Bool(f(
+                args[0].eval(storage)?.int()?,
+                args[1].eval(storage)?.int()?,
+            )))
+        }),
+    }
+}
+
 
 fn less() -> Function {
     int_cmp_fn_builder("<", |lhs, rhs| lhs < rhs)

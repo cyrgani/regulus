@@ -13,15 +13,15 @@ fn arithmetic_fn_builder(
         aliases: vec![],
         name: String::from(name),
         argc: Some(2),
-        callback: Rc::new(move |program, storage, args| {
+        callback: Rc::new(move |storage, args| {
             match f(
-                args[0].eval(program, storage)?.int()?,
-                args[1].eval(program, storage)?.int()?,
+                args[0].eval(storage)?.int()?,
+                args[1].eval(storage)?.int()?,
             ) {
                 Some(i) => Ok(Atom::Int(i)),
-                None => Err(ProgError {
+                None => Err(Exception {
                     msg: format!("overflow occured during {}!", operation_name),
-                    class: OverflowError,
+                    error: Error::Overflow,
                 }),
             }
         }),

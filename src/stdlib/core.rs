@@ -10,8 +10,10 @@ pub fn functions() -> Vec<Function> {
         while_fn(),
         def(),
         import(),
-        def_str(),
-		error(),
+        error(),
+        equals(),
+        assert(),
+        catch(),
     ]
 }
 
@@ -20,9 +22,9 @@ fn run_fn() -> Function {
         aliases: vec!["run".to_string()],
         name: String::from("_"),
         argc: None,
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             for arg in args {
-                arg.eval(program, storage)?;
+                arg.eval(storage)?;
             }
             Ok(Atom::Null)
         }),
@@ -34,15 +36,15 @@ fn assign() -> Function {
         aliases: vec!["=".to_string()],
         name: String::from("assign"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             if let Argument::Variable(var) = &args[0] {
-                let val = args[1].eval(program, storage)?;
+                let val = args[1].eval(storage)?;
                 storage.insert(var.clone(), val);
                 Ok(Atom::Null)
             } else {
-                Err(ProgError {
+                Err(Exception {
                     msg: "Error during assignment: no variable was given to assign to!".to_string(),
-                    class: AssignError,
+                    error: Error::Assign,
                 })
             }
         }),
@@ -54,9 +56,9 @@ fn if_fn() -> Function {
         aliases: vec![],
         name: String::from("if"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            Ok(if args[0].eval(program, storage)?.bool()? {
-                args[1].eval(program, storage)?
+        callback: Rc::new(|storage, args| {
+            Ok(if args[0].eval(storage)?.bool()? {
+                args[1].eval(storage)?
             } else {
                 Atom::Null
             })
@@ -69,11 +71,11 @@ fn ifelse() -> Function {
         aliases: vec![],
         name: String::from("ifelse"),
         argc: Some(3),
-        callback: Rc::new(|program, storage, args| {
-            Ok(if args[0].eval(program, storage)?.bool()? {
-                args[1].eval(program, storage)?
+        callback: Rc::new(|storage, args| {
+            Ok(if args[0].eval(storage)?.bool()? {
+                args[1].eval(storage)?
             } else {
-                args[2].eval(program, storage)?
+                args[2].eval(storage)?
             })
         }),
     }
@@ -84,9 +86,9 @@ fn while_fn() -> Function {
         aliases: vec![],
         name: String::from("while"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            while args[0].eval(program, storage)?.bool()? {
-                args[1].eval(program, storage)?;
+        callback: Rc::new(|storage, args| {
+            while args[0].eval(storage)?.bool()? {
+                args[1].eval(storage)?;
             }
             Ok(Atom::Null)
         }),
@@ -98,8 +100,7 @@ fn def() -> Function {
         aliases: vec![],
         name: String::from("def"),
         argc: Some(3),
-        callback: Rc::new(|_program, storage, args| {
-            println!("Warning: The def-function is broken when combined with importing and the def_str function should be used instead for now.");
+        callback: Rc::new(|storage, args| {
             if let Argument::Variable(var) = &args[0] {
                 if let Argument::Variable(arg) = &args[1] {
                     if let Argument::FunctionCall(inner) = &args[2] {
@@ -109,75 +110,30 @@ fn def() -> Function {
                             aliases: vec![],
                             name: var.clone(),
                             argc: Some(1),
-                            callback: Rc::new(move |program, storage, args| {
+                            callback: Rc::new(move |storage, args| {
                                 let mut new_storage = storage.clone();
-                                new_storage.insert(arg.clone(), args[0].eval(program, storage)?);
-                                body.eval(program, &mut new_storage)
+                                new_storage.insert(arg.clone(), args[0].eval(storage)?);
+                                body.eval(&mut new_storage)
                             }),
                         };
                         storage.insert(var.clone(), Atom::Function(function));
                         Ok(Atom::Null)
                     } else {
-                        Err(ProgError {
+                        Err(Exception {
                             msg: "Error during definition: no function body was given!".to_string(),
-                            class: AssignError,
+                            error: Error::Assign,
                         })
                     }
                 } else {
-                    Err(ProgError {
+                    Err(Exception {
                         msg: "Error during definition: no argument was given!".to_string(),
-                        class: AssignError,
+                        error: Error::Assign,
                     })
                 }
             } else {
-                Err(ProgError {
+                Err(Exception {
                     msg: "Error during definition: no variable was given to define to!".to_string(),
-                    class: AssignError,
-                })
-            }
-        }),
-    }
-}
-
-fn def_str() -> Function {
-    Function {
-        aliases: vec![],
-        name: String::from("def_str"),
-        argc: Some(3),
-        callback: Rc::new(|_program, storage, args| {
-            if let Argument::Variable(var) = &args[0] {
-                if let Argument::Variable(arg) = &args[1] {
-                    if let Argument::Atom(Atom::String(inner)) = &args[2] {
-                        let body = inner.clone();
-                        let arg = arg.clone();
-                        let function = Function {
-                            aliases: vec![],
-                            name: var.clone(),
-                            argc: Some(1),
-                            callback: Rc::new(move |program, storage, args| {
-                                let mut new_storage = storage.clone();
-                                new_storage.insert(arg.clone(), args[0].eval(program, storage)?);
-                                run(&body, Some(new_storage)).map(|(atom, _)| atom)
-                            }),
-                        };
-                        storage.insert(var.clone(), Atom::Function(function));
-                        Ok(Atom::Null)
-                    } else {
-                        Err(ProgError {
-                            msg: "Error during definition: no function body was given!".to_string(),
-                            class: AssignError,
-                        })
-                    }
-                } else {
-                    Err(ProgError {
-                        msg: "Error during definition: no argument was given!".to_string(),
-                        class: AssignError,
-                    })
-                }
-            } else {
-                Err(ProgError {
-                    msg: "Error during definition: no variable was given to define to!".to_string(),
-                    class: AssignError,
+                    error: Error::Assign,
                 })
             }
         }),
@@ -189,11 +145,11 @@ fn import() -> Function {
         aliases: vec![],
         name: String::from("import"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let path = args[0].eval(program, storage)?.string()?;
-            let code = fs::read_to_string(path).map_err(|error| ProgError {
+        callback: Rc::new(|storage, args| {
+            let path = args[0].eval(storage)?.string()?;
+            let code = fs::read_to_string(path).map_err(|error| Exception {
                 msg: format!("{}", error),
-                class: ImportError,
+                error: Error::Import,
             })?;
             let (atom, imported_storage) = run(&code, None)?;
 
@@ -210,11 +166,55 @@ fn error() -> Function {
         aliases: vec![],
         name: String::from("error"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            Err(ProgError {
-                msg: args[0].eval(program, storage)?.string()?,
-                class: UserRaisedError,
+        callback: Rc::new(|storage, args| {
+            Err(Exception {
+                msg: args[0].eval(storage)?.string()?,
+                error: Error::UserRaised,
             })
+        }),
+    }
+}
+
+fn catch() -> Function {
+    Function {
+        aliases: vec![],
+        name: String::from("catch"),
+        argc: Some(1),
+        callback: Rc::new(|storage, args| {
+            Ok(args[0]
+                .eval(storage)
+                .unwrap_or_else(|exc| Atom::String(exc.to_string())))
+        }),
+    }
+}
+
+fn equals() -> Function {
+    Function {
+        aliases: vec!["equals".to_string()],
+        name: String::from("=="),
+        argc: Some(2),
+        callback: Rc::new(|storage, args| {
+            Ok(Atom::Bool(
+                args[0].eval(storage)? == args[1].eval(storage)?,
+            ))
+        }),
+    }
+}
+
+fn assert() -> Function {
+    Function {
+        aliases: vec![],
+        name: String::from("assert"),
+        argc: Some(1),
+        callback: Rc::new(|storage, args| {
+            if args[0].eval(storage)?.bool()? {
+                Ok(Atom::Null)
+            } else {
+                Err(Exception {
+                    msg: "Assertion failed!".to_string(),
+                    error: Error::Assertion,
+                })
+            }
         }),
     }
 }

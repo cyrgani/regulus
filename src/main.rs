@@ -1,4 +1,5 @@
-use newlang::{run, Atom};
+use colored::Colorize;
+use newlang::prelude::*;
 use std::{env, fs};
 
 fn main() {
@@ -13,12 +14,12 @@ fn main() {
                         Atom::Null => (),
                         _ => println!("{:?}", atom),
                     },
-                    Err(error) => eprintln!("Error: {}", error),
+                    Err(error) => eprintln!("{}", format!("The program caused an error: {}", error).red()),
                 }
             }
-            Err(error) => eprintln!("Error: {}", error),
+            Err(error) => eprintln!("{}", format!("Reading the file caused an error: {}", error).red()),
         }
     } else {
-        eprintln!("Error: No source file was given!");
+        eprintln!("{}", "Error: No source file was given!".red());
     }
 }

@@ -1,13 +1,13 @@
 use crate::prelude::*;
 
 pub fn functions() -> Vec<Function> {
-    vec![int(), string(), bool_fn(), is_null()]
+    vec![int(), string(), bool_fn()]
 }
 
-fn cast_error_builder(atom: &Atom, new_type: &str) -> ProgError {
-    ProgError {
+fn cast_error_builder(atom: &Atom, new_type: &str) -> Exception {
+    Exception {
         msg: format!("Unable to cast {:?} to {}", atom, new_type),
-        class: TypeError,
+        error: Error::Type,
     }
 }
 
@@ -16,8 +16,8 @@ fn int() -> Function {
         aliases: vec![],
         name: String::from("int"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let atom = args[0].eval(program, storage)?;
+        callback: Rc::new(|storage, args| {
+            let atom = args[0].eval(storage)?;
             Ok(Atom::Int(match &atom {
                 Atom::Int(val) => *val,
                 Atom::Bool(val) => *val as i32,
@@ -35,8 +35,8 @@ fn string() -> Function {
         aliases: vec![],
         name: String::from("string"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let atom = args[0].eval(program, storage)?;
+        callback: Rc::new(|storage, args| {
+            let atom = args[0].eval(storage)?;
             Ok(Atom::String(match &atom {
                 Atom::Int(val) => val.to_string(),
                 Atom::Bool(val) => val.to_string(),
@@ -53,28 +53,14 @@ fn bool_fn() -> Function {
         aliases: vec![],
         name: String::from("bool"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let atom = args[0].eval(program, storage)?;
+        callback: Rc::new(|storage, args| {
+            let atom = args[0].eval(storage)?;
             Ok(Atom::Bool(match &atom {
                 Atom::Int(val) => *val != 0,
                 Atom::Bool(val) => *val,
                 Atom::Null => false,
                 _ => return Err(cast_error_builder(&atom, "bool")),
             }))
-        }),
-    }
-}
-
-fn is_null() -> Function {
-    Function {
-        aliases: vec![],
-        name: String::from("is_null"),
-        argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            Ok(Atom::Bool(matches!(
-                args[0].eval(program, storage)?,
-                Atom::Null
-            )))
         }),
     }
 }
