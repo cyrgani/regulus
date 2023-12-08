@@ -9,10 +9,10 @@ fn list() -> Function {
         aliases: vec![],
         name: String::from("list"),
         argc: None,
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             let mut list = vec![];
             for arg in args {
-                list.push(arg.eval(program, storage)?);
+                list.push(arg.eval(storage)?);
             }
             Ok(Atom::List(list))
         }),
@@ -24,11 +24,11 @@ fn push() -> Function {
         aliases: vec![],
         name: String::from("push"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             args[0]
-                .eval(program, storage)?
+                .eval(storage)?
                 .list()?
-                .push(args[1].eval(program, storage)?);
+                .push(args[1].eval(storage)?);
             Ok(Atom::Null)
         }),
     }
@@ -39,11 +39,11 @@ fn index() -> Function {
         aliases: vec![],
         name: String::from("index"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             args[0]
-                .eval(program, storage)?
+                .eval(storage)?
                 .list()?
-                .get(args[1].eval(program, storage)?.int()? as usize)
+                .get(args[1].eval(storage)?.int()? as usize)
                 .ok_or(Exception {
                     msg: "Unable to index list!".to_string(),
                     error: Error::Index,
@@ -58,9 +58,9 @@ fn pop() -> Function {
         aliases: vec![],
         name: String::from("pop"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             args[0]
-                .eval(program, storage)?
+                .eval(storage)?
                 .list()?
                 .pop()
                 .ok_or(Exception {
@@ -76,11 +76,11 @@ fn for_each() -> Function {
         aliases: vec![],
         name: String::from("for_each"),
         argc: Some(2),
-        callback: Rc::new(|program, storage, args| {
-            let function = args[1].eval(program, storage)?.function()?;
-            let list = args[0].eval(program, storage)?.list()?;
+        callback: Rc::new(|storage, args| {
+            let function = args[1].eval(storage)?.function()?;
+            let list = args[0].eval(storage)?.list()?;
             for element in list {
-                (function.callback)(program, storage, &[Argument::Atom(element.clone())])?;
+                (function.callback)(storage, &[Argument::Atom(element.clone())])?;
             }
             Ok(Atom::Null)
         }),

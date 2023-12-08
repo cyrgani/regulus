@@ -9,8 +9,8 @@ fn len() -> Function {
         aliases: vec![],
         name: String::from("len"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let len = args[0].eval(program, storage)?.string()?.len();
+        callback: Rc::new(|storage, args| {
+            let len = args[0].eval(storage)?.string()?.len();
             Ok(Atom::Int(len as i32))
         }),
     }

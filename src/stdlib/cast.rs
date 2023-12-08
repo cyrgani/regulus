@@ -16,8 +16,8 @@ fn int() -> Function {
         aliases: vec![],
         name: String::from("int"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let atom = args[0].eval(program, storage)?;
+        callback: Rc::new(|storage, args| {
+            let atom = args[0].eval(storage)?;
             Ok(Atom::Int(match &atom {
                 Atom::Int(val) => *val,
                 Atom::Bool(val) => *val as i32,
@@ -35,8 +35,8 @@ fn string() -> Function {
         aliases: vec![],
         name: String::from("string"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let atom = args[0].eval(program, storage)?;
+        callback: Rc::new(|storage, args| {
+            let atom = args[0].eval(storage)?;
             Ok(Atom::String(match &atom {
                 Atom::Int(val) => val.to_string(),
                 Atom::Bool(val) => val.to_string(),
@@ -53,8 +53,8 @@ fn bool_fn() -> Function {
         aliases: vec![],
         name: String::from("bool"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            let atom = args[0].eval(program, storage)?;
+        callback: Rc::new(|storage, args| {
+            let atom = args[0].eval(storage)?;
             Ok(Atom::Bool(match &atom {
                 Atom::Int(val) => *val != 0,
                 Atom::Bool(val) => *val,

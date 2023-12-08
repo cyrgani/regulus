@@ -28,7 +28,14 @@ pub mod prelude {
 
 use prelude::*;
 
-#[derive(Debug, Clone)]
+fn strip_comments(code: &str) -> String {
+    code.split('\n')
+        .map(|line| line.split('#').next().unwrap())
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+#[derive(Debug, Clone, PartialEq)]
 enum Token {
     Function(String),
     LeftParen,
@@ -88,64 +95,62 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
     Ok(tokens)
 }
 
-fn build_program(tokens: &[Token]) -> ProgResult<Vec<Argument>> {
-    let mut program = vec![];
-
-    let mut current = None;
-
-    for token in tokens {
-        let mut new = |arg| {
-            let new_id = program.len();
-            program.push(arg);
-            if let Some(parent) = current {
-                if let Argument::FunctionCall(call) = &mut program[parent] {
-                    call.arg_locations.push(new_id)
-                }
-            }
-        };
-
-        match token {
-            Token::Function(f) => new(Argument::FunctionCall(FunctionCall {
-                arg_locations: vec![],
-                parent: current,
-                name: f.clone(),
-            })),
-            Token::LeftParen => match program.len() {
-                0 => {
-                    return Err(Exception {
-                        msg: "found `LeftParen` without existing function!".to_string(),
-                        error: Error::Syntax,
-                    })
-                }
-                _ => current = Some(program.len() - 1),
-            },
-            Token::Comma => (), // TODO?
-            Token::RightParen => match current {
-                Some(i) => {
-                    if let Argument::FunctionCall(call) = &program[i] {
-                        current = call.parent
-                    }
-                }
-                None => {
-                    return Err(Exception {
-                        msg: "found `RightParen` without existing function!".to_string(),
-                        error: Error::Syntax,
-                    })
-                }
-            },
-            Token::Name(name) => new(Argument::Variable(name.clone())),
-            Token::Atom(atom) => new(Argument::Atom(atom.clone())),
-        };
+fn validate_tokens(tokens: &[Token]) -> ProgResult<()> {
+    let occurences = |val: Token| tokens.iter().filter(|token| token == &&val).count();
+    let left_parens = occurences(Token::LeftParen);
+    let right_parens = occurences(Token::RightParen);
+    if left_parens != right_parens {
+        return Err(Exception {
+            msg: format!("Nonequal amount of '(' and ')': {left_parens} vs. {right_parens}"),
+            error: Error::Syntax,
+        });
     }
 
-    Ok(program)
+    Ok(())
 }
 
-fn strip_comments(code: &str) -> String {
-    code.split('\n')
-        .map(|line| line.split('#').next().unwrap())
-        .collect::<Vec<_>>()
-        .join("\n")
+fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCall> {
+    let mut call = FunctionCall {
+        args: vec![],
+        name: function_name.to_string(),
+    };
+
+	let mut iter = tokens.iter().enumerate();
+
+    while let Some((idx, token)) = iter.next() {
+		match token {
+            Token::Atom(atom) => call.args.push(Argument::Atom(atom.clone())),
+            Token::Comma => (),
+            Token::Function(function) => {
+                let mut required_right_parens = 1;
+                for (i, t) in tokens[idx + 2..].iter().enumerate() {
+                    match t {
+                        Token::LeftParen => required_right_parens += 1,
+                        Token::RightParen => required_right_parens -= 1,
+                        _ => (),
+                    }
+                    if required_right_parens == 0 {
+                        call.args.push(Argument::FunctionCall(build_program(
+                            &tokens[idx + 2..idx + 3 + i],
+                            &function,
+                        )?));
+						iter.nth((idx + 2..idx + 3 + i).len());
+                        break;
+                    }
+					
+                }
+                assert_eq!(
+                    required_right_parens, 0,
+                    "token validation should cover this (hopefully)"
+                )
+            }
+            Token::LeftParen => (),
+            Token::Name(name) => call.args.push(Argument::Variable(name.clone())),
+            Token::RightParen => return Ok(call),
+        }
+    }
+
+    Ok(call)
 }
 
 pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Storage)> {
@@ -153,16 +158,12 @@ pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Stor
 
     let tokens = tokenize(&without_comments)?;
 
-    let program = build_program(&tokens)?;
+    validate_tokens(&tokens)?;
+
+    let program = build_program(&tokens, "_")?;
 
     let mut storage = start_storage.unwrap_or_else(storage::initial_storage);
 
-    let result = program
-        .first()
-        .ok_or(Exception {
-            msg: "No function was found!".to_string(),
-            error: Error::Syntax,
-        })?
-        .eval(&program, &mut storage)?;
+    let result = program.eval(&mut storage)?;
     Ok((result, storage))
 }

@@ -10,9 +10,9 @@ fn print() -> Function {
         aliases: vec![],
         name: String::from("print"),
         argc: None,
-        callback: Rc::new(|program, storage, args| {
+        callback: Rc::new(|storage, args| {
             for arg in args {
-                print!("{} ", arg.eval(program, storage)?.format())
+                print!("{} ", arg.eval(storage)?.to_string())
             }
             println!();
             Ok(Atom::Null)
@@ -25,7 +25,7 @@ fn input() -> Function {
         aliases: vec![],
         name: String::from("input"),
         argc: Some(0),
-        callback: Rc::new(|_, _, _| {
+        callback: Rc::new(|_, _| {
             let mut input = String::new();
             match io::stdin().read_line(&mut input) {
                 Ok(_) => Ok(Atom::String(input)),
@@ -43,8 +43,8 @@ fn debug() -> Function {
         aliases: vec![],
         name: String::from("debug"),
         argc: Some(1),
-        callback: Rc::new(|program, storage, args| {
-            println!("Debug: {:?}", args[0].eval(program, storage)?);
+        callback: Rc::new(|storage, args| {
+            println!("Debug: {:?}", args[0].eval(storage)?);
             Ok(Atom::Null)
         }),
     }

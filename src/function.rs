@@ -3,17 +3,31 @@ use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct FunctionCall {
-    pub arg_locations: Vec<usize>,
-    pub parent: Option<usize>,
+    pub args: Vec<Argument>,
     pub name: String,
 }
 
+impl fmt::Display for FunctionCall {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}({})",
+            self.name,
+            self.args
+                .iter()
+                .map(|arg| arg.to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    }
+}
+
 impl FunctionCall {
-    pub fn eval(&self, program: &[Argument], storage: &mut Storage) -> ProgResult<Atom> {
+    pub fn eval(&self, storage: &mut Storage) -> ProgResult<Atom> {
         let function = crate::storage::get_function(&self.name, storage)?;
 
         if let Some(argc) = function.argc {
-            let arg_len = self.arg_locations.len();
+            let arg_len = self.args.len();
             if argc != arg_len {
                 return Err(Exception {
                     msg: format!(
@@ -25,17 +39,11 @@ impl FunctionCall {
             }
         }
 
-        let args = self
-            .arg_locations
-            .iter()
-            .map(|&i| program[i].clone())
-            .collect::<Vec<_>>();
-
-        (function.callback)(program, storage, &args)
+        (function.callback)(storage, &self.args)
     }
 }
 
-type Callback = dyn Fn(&[Argument], &mut Storage, &[Argument]) -> ProgResult<Atom>;
+type Callback = dyn Fn(&mut Storage, &[Argument]) -> ProgResult<Atom>;
 
 #[derive(Clone)]
 pub struct Function {
@@ -64,7 +72,7 @@ impl PartialEq for Function {
 }
 
 impl Function {
-	// todo
+    // todo
     pub fn new(names: Vec<&str>, argc: Option<usize>, callback: Rc<Callback>) -> Self {
         Self {
             name: names[0].to_string(),

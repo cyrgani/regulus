@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -78,20 +80,24 @@ impl Atom {
         }
     }
 
-    pub fn format(&self) -> String {
-        match self {
+    
+}
+
+impl fmt::Display for Atom {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", match self {
             Atom::Bool(val) => val.to_string(),
             Atom::Function(val) => format!("{}()", val.name),
             Atom::Int(val) => val.to_string(),
             Atom::List(val) => format!(
                 "[{}]",
                 val.iter()
-                    .map(|atom| atom.format())
+                    .map(|atom| atom.to_string())
                     .collect::<Vec<_>>()
                     .join(", ")
             ),
             Atom::Null => "null".to_string(),
             Atom::String(val) => val.clone(),
-        }
-    }
+        })
+	}
 }
