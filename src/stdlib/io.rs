@@ -12,7 +12,7 @@ fn print() -> Function {
         argc: None,
         callback: Rc::new(|storage, args| {
             for arg in args {
-                print!("{} ", arg.eval(storage)?.to_string())
+                print!("{} ", arg.eval(storage)?)
             }
             println!();
             Ok(Atom::Null)

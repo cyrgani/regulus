@@ -39,9 +39,7 @@ fn not() -> Function {
         aliases: vec!["!".to_string()],
         name: String::from("not"),
         argc: Some(1),
-        callback: Rc::new(|storage, args| {
-            Ok(Atom::Bool(!args[0].eval(storage)?.bool()?))
-        }),
+        callback: Rc::new(|storage, args| Ok(Atom::Bool(!args[0].eval(storage)?.bool()?))),
     }
 }
 
@@ -58,7 +56,6 @@ fn int_cmp_fn_builder(name: &str, f: fn(i32, i32) -> bool) -> Function {
         }),
     }
 }
-
 
 fn less() -> Function {
     int_cmp_fn_builder("<", |lhs, rhs| lhs < rhs)

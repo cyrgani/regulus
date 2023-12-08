@@ -115,10 +115,10 @@ fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCa
         name: function_name.to_string(),
     };
 
-	let mut iter = tokens.iter().enumerate();
+    let mut iter = tokens.iter().enumerate();
 
     while let Some((idx, token)) = iter.next() {
-		match token {
+        match token {
             Token::Atom(atom) => call.args.push(Argument::Atom(atom.clone())),
             Token::Comma => (),
             Token::Function(function) => {
@@ -132,12 +132,11 @@ fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCa
                     if required_right_parens == 0 {
                         call.args.push(Argument::FunctionCall(build_program(
                             &tokens[idx + 2..idx + 3 + i],
-                            &function,
+                            function,
                         )?));
-						iter.nth((idx + 2..idx + 3 + i).len());
+                        iter.nth((idx + 2..idx + 3 + i).len());
                         break;
                     }
-					
                 }
                 assert_eq!(
                     required_right_parens, 0,

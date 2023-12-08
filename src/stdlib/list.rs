@@ -25,10 +25,7 @@ fn push() -> Function {
         name: String::from("push"),
         argc: Some(2),
         callback: Rc::new(|storage, args| {
-            args[0]
-                .eval(storage)?
-                .list()?
-                .push(args[1].eval(storage)?);
+            args[0].eval(storage)?.list()?.push(args[1].eval(storage)?);
             Ok(Atom::Null)
         }),
     }
@@ -59,14 +56,10 @@ fn pop() -> Function {
         name: String::from("pop"),
         argc: Some(1),
         callback: Rc::new(|storage, args| {
-            args[0]
-                .eval(storage)?
-                .list()?
-                .pop()
-                .ok_or(Exception {
-                    msg: "Unable to pop from list!".to_string(),
-                    error: Error::Index,
-                })
+            args[0].eval(storage)?.list()?.pop().ok_or(Exception {
+                msg: "Unable to pop from list!".to_string(),
+                error: Error::Index,
+            })
         }),
     }
 }

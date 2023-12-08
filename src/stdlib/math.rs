@@ -14,10 +14,7 @@ fn arithmetic_fn_builder(
         name: String::from(name),
         argc: Some(2),
         callback: Rc::new(move |storage, args| {
-            match f(
-                args[0].eval(storage)?.int()?,
-                args[1].eval(storage)?.int()?,
-            ) {
+            match f(args[0].eval(storage)?.int()?, args[1].eval(storage)?.int()?) {
                 Some(i) => Ok(Atom::Int(i)),
                 None => Err(Exception {
                     msg: format!("overflow occured during {}!", operation_name),

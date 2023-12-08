@@ -194,9 +194,7 @@ fn equals() -> Function {
         name: String::from("=="),
         argc: Some(2),
         callback: Rc::new(|storage, args| {
-            Ok(Atom::Bool(
-                args[0].eval(storage)? == args[1].eval(storage)?,
-            ))
+            Ok(Atom::Bool(args[0].eval(storage)? == args[1].eval(storage)?))
         }),
     }
 }

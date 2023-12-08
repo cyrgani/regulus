@@ -25,11 +25,15 @@ impl Argument {
 }
 
 impl fmt::Display for Argument {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "{}", match self {
-			Self::Atom(atom) => atom.to_string(),
-			Self::FunctionCall(call) => call.to_string(),
-			Self::Variable(name) => name.to_string(),
-		})
-	}
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Atom(atom) => atom.to_string(),
+                Self::FunctionCall(call) => call.to_string(),
+                Self::Variable(name) => name.to_string(),
+            }
+        )
+    }
 }
