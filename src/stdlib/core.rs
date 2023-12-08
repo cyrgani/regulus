@@ -148,7 +148,7 @@ fn import() -> Function {
         callback: Rc::new(|storage, args| {
             let path = args[0].eval(storage)?.string()?;
             let code = fs::read_to_string(path).map_err(|error| Exception {
-                msg: format!("{}", error),
+                msg: error.to_string(),
                 error: Error::Import,
             })?;
             let (atom, imported_storage) = run(&code, None)?;

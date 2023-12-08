@@ -12,9 +12,9 @@ pub fn functions() -> Vec<Function> {
     ]
 }
 
-fn bool_cmp_fn_builder(name: &str, aliases: Vec<&str>, f: fn(bool, bool) -> bool) -> Function {
+fn bool_cmp_fn_builder(name: &str, aliases: &[&str], f: fn(bool, bool) -> bool) -> Function {
     Function {
-        aliases: aliases.iter().map(|alias| alias.to_string()).collect(),
+        aliases: aliases.iter().map(ToString::to_string).collect(),
         name: String::from(name),
         argc: Some(2),
         callback: Rc::new(move |storage, args| {
@@ -27,11 +27,11 @@ fn bool_cmp_fn_builder(name: &str, aliases: Vec<&str>, f: fn(bool, bool) -> bool
 }
 
 fn or() -> Function {
-    bool_cmp_fn_builder("or", vec!["||"], |lhs, rhs| lhs || rhs)
+    bool_cmp_fn_builder("or", &["||"], |lhs, rhs| lhs || rhs)
 }
 
 fn and() -> Function {
-    bool_cmp_fn_builder("and", vec!["&&"], |lhs, rhs| lhs && rhs)
+    bool_cmp_fn_builder("and", &["&&"], |lhs, rhs| lhs && rhs)
 }
 
 fn not() -> Function {

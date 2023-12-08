@@ -17,7 +17,7 @@ fn arithmetic_fn_builder(
             match f(args[0].eval(storage)?.int()?, args[1].eval(storage)?.int()?) {
                 Some(i) => Ok(Atom::Int(i)),
                 None => Err(Exception {
-                    msg: format!("overflow occured during {}!", operation_name),
+                    msg: format!("overflow occured during {operation_name}!"),
                     error: Error::Overflow,
                 }),
             }
@@ -26,13 +26,13 @@ fn arithmetic_fn_builder(
 }
 
 fn add() -> Function {
-    arithmetic_fn_builder("+", "addition", |lhs, rhs| lhs.checked_add(rhs))
+    arithmetic_fn_builder("+", "addition", i32::checked_add)
 }
 
 fn subtract() -> Function {
-    arithmetic_fn_builder("-", "subtraction", |lhs, rhs| lhs.checked_sub(rhs))
+    arithmetic_fn_builder("-", "subtraction", i32::checked_sub)
 }
 
 fn multiply() -> Function {
-    arithmetic_fn_builder("*", "multiplication", |lhs, rhs| lhs.checked_mul(rhs))
+    arithmetic_fn_builder("*", "multiplication", i32::checked_mul)
 }

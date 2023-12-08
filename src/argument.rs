@@ -11,9 +11,9 @@ pub enum Argument {
 impl Argument {
     pub fn eval(&self, storage: &mut Storage) -> ProgResult<Atom> {
         match self {
-            Argument::FunctionCall(call) => call.eval(storage),
-            Argument::Atom(atom) => Ok(atom.clone()),
-            Argument::Variable(var) => match storage.get(var) {
+            Self::FunctionCall(call) => call.eval(storage),
+            Self::Atom(atom) => Ok(atom.clone()),
+            Self::Variable(var) => match storage.get(var) {
                 Some(value) => Ok(value.clone()),
                 None => Err(Exception {
                     msg: format!("No variable named `{var}` found!"),

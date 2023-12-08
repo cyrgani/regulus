@@ -15,7 +15,7 @@ impl fmt::Display for FunctionCall {
             self.name,
             self.args
                 .iter()
-                .map(|arg| arg.to_string())
+                .map(ToString::to_string)
                 .collect::<Vec<_>>()
                 .join(", ")
         )
@@ -73,10 +73,10 @@ impl PartialEq for Function {
 
 impl Function {
     // todo
-    pub fn new(names: Vec<&str>, argc: Option<usize>, callback: Rc<Callback>) -> Self {
+    pub fn new(names: &[&str], argc: Option<usize>, callback: Rc<Callback>) -> Self {
         Self {
             name: names[0].to_string(),
-            aliases: names[1..].iter().map(|s| s.to_string()).collect(),
+            aliases: names[1..].iter().map(ToString::to_string).collect(),
             argc,
             callback,
         }

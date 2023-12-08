@@ -17,12 +17,12 @@ impl TryFrom<&str> for Atom {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         if let Ok(int) = value.parse::<i32>() {
-            Ok(Atom::Int(int))
+            Ok(Self::Int(int))
         } else {
             Ok(match value {
-                "true" => Atom::Bool(true),
-                "false" => Atom::Bool(false),
-                "null" => Atom::Null,
+                "true" => Self::Bool(true),
+                "false" => Self::Bool(false),
+                "null" => Self::Null,
                 _ => return Err(()),
             })
         }
@@ -34,7 +34,7 @@ impl Atom {
         match self {
             Self::Int(v) => Ok(*v),
             _ => Err(Exception {
-                msg: format!("{:?} is not a Int!", self),
+                msg: format!("{self:?} is not a Int!"),
                 error: Error::Type,
             }),
         }
@@ -44,17 +44,17 @@ impl Atom {
         match self {
             Self::Bool(v) => Ok(*v),
             _ => Err(Exception {
-                msg: format!("{:?} is not a Bool!", self),
+                msg: format!("{self:?} is not a Bool!"),
                 error: Error::Type,
             }),
         }
     }
 
-    pub fn list(&self) -> ProgResult<Vec<Atom>> {
+    pub fn list(&self) -> ProgResult<Vec<Self>> {
         match self {
             Self::List(v) => Ok(v.clone()),
             _ => Err(Exception {
-                msg: format!("{:?} is not a List!", self),
+                msg: format!("{self:?} is not a List!"),
                 error: Error::Type,
             }),
         }
@@ -64,7 +64,7 @@ impl Atom {
         match self {
             Self::String(v) => Ok(v.clone()),
             _ => Err(Exception {
-                msg: format!("{:?} is not a String!", self),
+                msg: format!("{self:?} is not a String!"),
                 error: Error::Type,
             }),
         }
@@ -74,7 +74,7 @@ impl Atom {
         match self {
             Self::Function(v) => Ok(v.clone()),
             _ => Err(Exception {
-                msg: format!("{:?} is not a Function!", self),
+                msg: format!("{self:?} is not a Function!"),
                 error: Error::Type,
             }),
         }
@@ -87,18 +87,18 @@ impl fmt::Display for Atom {
             f,
             "{}",
             match self {
-                Atom::Bool(val) => val.to_string(),
-                Atom::Function(val) => format!("{}()", val.name),
-                Atom::Int(val) => val.to_string(),
-                Atom::List(val) => format!(
+                Self::Bool(val) => val.to_string(),
+                Self::Function(val) => format!("{}()", val.name),
+                Self::Int(val) => val.to_string(),
+                Self::List(val) => format!(
                     "[{}]",
                     val.iter()
-                        .map(|atom| atom.to_string())
+                        .map(ToString::to_string)
                         .collect::<Vec<_>>()
                         .join(", ")
                 ),
-                Atom::Null => "null".to_string(),
-                Atom::String(val) => val.clone(),
+                Self::Null => "null".to_string(),
+                Self::String(val) => val.clone(),
             }
         )
     }

@@ -45,7 +45,7 @@ enum Token {
     Name(String),
 }
 
-fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
+fn tokenize(code: &str) -> Vec<Token> {
     let mut tokens = vec![];
     let mut current = String::new();
     let mut in_string = false;
@@ -92,7 +92,7 @@ fn tokenize(code: &str) -> ProgResult<Vec<Token>> {
         }
     }
 
-    Ok(tokens)
+    tokens
 }
 
 fn validate_tokens(tokens: &[Token]) -> ProgResult<()> {
@@ -120,7 +120,7 @@ fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCa
     while let Some((idx, token)) = iter.next() {
         match token {
             Token::Atom(atom) => call.args.push(Argument::Atom(atom.clone())),
-            Token::Comma => (),
+            Token::Comma |  Token::LeftParen => (),
             Token::Function(function) => {
                 let mut required_right_parens = 1;
                 for (i, t) in tokens[idx + 2..].iter().enumerate() {
@@ -141,9 +141,8 @@ fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCa
                 assert_eq!(
                     required_right_parens, 0,
                     "token validation should cover this (hopefully)"
-                )
+                );
             }
-            Token::LeftParen => (),
             Token::Name(name) => call.args.push(Argument::Variable(name.clone())),
             Token::RightParen => return Ok(call),
         }
@@ -155,7 +154,7 @@ fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCa
 pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Storage)> {
     let without_comments = strip_comments(code);
 
-    let tokens = tokenize(&without_comments)?;
+    let tokens = tokenize(&without_comments);
 
     validate_tokens(&tokens)?;
 

@@ -6,7 +6,7 @@ pub fn functions() -> Vec<Function> {
 
 fn cast_error_builder(atom: &Atom, new_type: &str) -> Exception {
     Exception {
-        msg: format!("Unable to cast {:?} to {}", atom, new_type),
+        msg: format!("Unable to cast {atom:?} to {new_type}"),
         error: Error::Type,
     }
 }

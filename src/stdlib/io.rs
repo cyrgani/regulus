@@ -12,7 +12,7 @@ fn print() -> Function {
         argc: None,
         callback: Rc::new(|storage, args| {
             for arg in args {
-                print!("{} ", arg.eval(storage)?)
+                print!("{} ", arg.eval(storage)?);
             }
             println!();
             Ok(Atom::Null)
@@ -30,7 +30,7 @@ fn input() -> Function {
             match io::stdin().read_line(&mut input) {
                 Ok(_) => Ok(Atom::String(input)),
                 Err(error) => Err(Exception {
-                    msg: format!("Error while reading input: {}", error),
+                    msg: format!("Error while reading input: {error}"),
                     error: Error::Io,
                 }),
             }
