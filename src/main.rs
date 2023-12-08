@@ -12,17 +12,16 @@ fn main() {
                 match result {
                     Ok((atom, _storage)) => match atom {
                         Atom::Null => (),
-                        _ => println!("{:?}", atom),
+                        _ => println!("{atom:?}"),
                     },
-                    Err(error) => eprintln!(
-                        "{}",
-                        format!("The program caused an error: {}", error).red()
-                    ),
+                    Err(error) => {
+                        eprintln!("{}", format!("The program caused an error: {error}").red())
+                    }
                 }
             }
             Err(error) => eprintln!(
                 "{}",
-                format!("Reading the file caused an error: {}", error).red()
+                format!("Reading the file caused an error: {error}").red()
             ),
         }
     } else {

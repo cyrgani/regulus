@@ -120,7 +120,7 @@ fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCa
     while let Some((idx, token)) = iter.next() {
         match token {
             Token::Atom(atom) => call.args.push(Argument::Atom(atom.clone())),
-            Token::Comma |  Token::LeftParen => (),
+            Token::Comma | Token::LeftParen => (),
             Token::Function(function) => {
                 let mut required_right_parens = 1;
                 for (i, t) in tokens[idx + 2..].iter().enumerate() {
