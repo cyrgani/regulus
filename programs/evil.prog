@@ -4,5 +4,7 @@ _(
 		@(x, y, z),
 		print("x:", x, "y:", y, "z:", z)
 	),
-	my_fn(2, true, null)
+	my_fn(2, true, null),
+	def(lambda, args(), print(null)),
+	lambda()
 )

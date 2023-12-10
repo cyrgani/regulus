@@ -15,7 +15,7 @@ fn main() {
                         _ => println!("{atom:?}"),
                     },
                     Err(error) => {
-                        eprintln!("{}", format!("The program caused an error: {error}").red())
+                        eprintln!("{}", format!("The program caused an error: {error}").red());
                     }
                 }
             }

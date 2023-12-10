@@ -138,7 +138,8 @@ fn def() -> Function {
                         Ok(Atom::Null)
                     } else {
                         Err(Exception {
-                            msg: "Error during definition: no valid function body was given!".to_string(),
+                            msg: "Error during definition: no valid function body was given!"
+                                .to_string(),
                             error: Error::Assign,
                         })
                     }
@@ -150,7 +151,8 @@ fn def() -> Function {
                 }
             } else {
                 Err(Exception {
-                    msg: "Error during definition: no valid variable was given to define to!".to_string(),
+                    msg: "Error during definition: no valid variable was given to define to!"
+                        .to_string(),
                     error: Error::Assign,
                 })
             }
