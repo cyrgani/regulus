@@ -9,6 +9,7 @@ pub fn functions() -> Vec<Function> {
         ifelse(),
         while_fn(),
         def(),
+        def_args(),
         import(),
         error(),
         equals(),
@@ -102,42 +103,69 @@ fn def() -> Function {
         argc: Some(3),
         callback: Rc::new(|storage, args| {
             if let Argument::Variable(var) = &args[0] {
-                if let Argument::Variable(arg) = &args[1] {
+                if let Argument::FunctionCall(arg_call) = &args[1] {
                     if let Argument::FunctionCall(inner) = &args[2] {
                         let body = inner.clone();
-                        let arg = arg.clone();
+                        let function_arg_names = arg_call
+                            .args
+                            .iter()
+                            .cloned()
+                            .map(|fn_arg| match fn_arg {
+                                Argument::Variable(fn_arg) => Ok(fn_arg),
+                                _ => Err(Exception {
+                                    msg: "Error during definition: invalid args were given!"
+                                        .to_string(),
+                                    error: Error::Assign,
+                                }),
+                            })
+                            .collect::<Result<Vec<String>, Exception>>()?;
+
                         let function = Function {
                             aliases: vec![],
                             name: var.clone(),
-                            argc: Some(1),
+                            argc: Some(function_arg_names.len()),
                             callback: Rc::new(move |storage, args| {
                                 let mut new_storage = storage.clone();
-                                new_storage.insert(arg.clone(), args[0].eval(storage)?);
+                                for (idx, arg) in function_arg_names.iter().enumerate() {
+                                    new_storage.insert(arg.clone(), args[idx].eval(storage)?);
+                                }
+
                                 body.eval(&mut new_storage)
                             }),
                         };
+
                         storage.insert(var.clone(), Atom::Function(function));
                         Ok(Atom::Null)
                     } else {
                         Err(Exception {
-                            msg: "Error during definition: no function body was given!".to_string(),
+                            msg: "Error during definition: no valid function body was given!".to_string(),
                             error: Error::Assign,
                         })
                     }
                 } else {
                     Err(Exception {
-                        msg: "Error during definition: no argument was given!".to_string(),
+                        msg: "Error during definition: no valid argument was given!".to_string(),
                         error: Error::Assign,
                     })
                 }
             } else {
                 Err(Exception {
-                    msg: "Error during definition: no variable was given to define to!".to_string(),
+                    msg: "Error during definition: no valid variable was given to define to!".to_string(),
                     error: Error::Assign,
                 })
             }
         }),
     }
+}
+
+fn def_args() -> Function {
+    Function::new(
+        &["@", "args"],
+        None,
+        Rc::new(|_storage, _args| {
+            unreachable!("this function should never get evaluated, but only be used without evaluation by 'def'!")
+        }),
+    )
 }
 
 fn import() -> Function {
