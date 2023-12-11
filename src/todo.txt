@@ -1,1 +1,2 @@
 - tests
+- fix comment signs in strings

@@ -31,7 +31,7 @@ impl FunctionCall {
             if argc != arg_len {
                 return Err(Exception {
                     msg: format!(
-                        "expected `{argc}` args, found `{arg_len}` args for `{:?}`",
+                        "expected `{argc}` args, found `{arg_len}` args for `{}`",
                         function.name
                     ),
                     error: Error::Argument,
@@ -72,7 +72,6 @@ impl PartialEq for Function {
 }
 
 impl Function {
-    // todo
     pub fn new(names: &[&str], argc: Option<usize>, callback: Rc<Callback>) -> Self {
         Self {
             name: names[0].to_string(),

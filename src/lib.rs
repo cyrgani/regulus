@@ -96,9 +96,23 @@ fn tokenize(code: &str) -> Vec<Token> {
 }
 
 fn validate_tokens(tokens: &[Token]) -> ProgResult<()> {
-    let occurences = |val: Token| tokens.iter().filter(|token| token == &&val).count();
-    let left_parens = occurences(Token::LeftParen);
-    let right_parens = occurences(Token::RightParen);
+    let mut left_parens = 0;
+    let mut right_parens = 0;
+
+    for token in tokens {
+        match token {
+            Token::LeftParen => left_parens += 1,
+            Token::RightParen => right_parens += 1,
+            _ => (),
+        }
+        if right_parens > left_parens {
+            return Err(Exception {
+                msg: format!("More ')' ({right_parens}) than '(' ({left_parens}) at some time!"),
+                error: Error::Syntax,
+            });
+        }
+    }
+
     if left_parens != right_parens {
         return Err(Exception {
             msg: format!("Nonequal amount of '(' and ')': {left_parens} vs. {right_parens}"),
@@ -134,13 +148,13 @@ fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCa
                             &tokens[idx + 2..idx + 3 + i],
                             function,
                         )?));
-                        iter.nth((idx + 2..idx + 3 + i).len());
+                        iter.nth(1 + i);
                         break;
                     }
                 }
                 assert_eq!(
                     required_right_parens, 0,
-                    "token validation should cover this (hopefully)"
+                    "token validation should cover this"
                 );
             }
             Token::Name(name) => call.args.push(Argument::Variable(name.clone())),
