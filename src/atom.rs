@@ -34,7 +34,7 @@ impl Atom {
         match self {
             Self::Int(v) => Ok(*v),
             _ => Err(Exception {
-                msg: format!("{self:?} is not a Int!"),
+                msg: format!("{self} is not a Int!"),
                 error: Error::Type,
             }),
         }
@@ -44,7 +44,7 @@ impl Atom {
         match self {
             Self::Bool(v) => Ok(*v),
             _ => Err(Exception {
-                msg: format!("{self:?} is not a Bool!"),
+                msg: format!("{self} is not a Bool!"),
                 error: Error::Type,
             }),
         }
@@ -54,7 +54,7 @@ impl Atom {
         match self {
             Self::List(v) => Ok(v.clone()),
             _ => Err(Exception {
-                msg: format!("{self:?} is not a List!"),
+                msg: format!("{self} is not a List!"),
                 error: Error::Type,
             }),
         }
@@ -64,7 +64,7 @@ impl Atom {
         match self {
             Self::String(v) => Ok(v.clone()),
             _ => Err(Exception {
-                msg: format!("{self:?} is not a String!"),
+                msg: format!("{self} is not a String!"),
                 error: Error::Type,
             }),
         }
@@ -74,7 +74,7 @@ impl Atom {
         match self {
             Self::Function(v) => Ok(v.clone()),
             _ => Err(Exception {
-                msg: format!("{self:?} is not a Function!"),
+                msg: format!("{self} is not a Function!"),
                 error: Error::Type,
             }),
         }
@@ -88,7 +88,7 @@ impl fmt::Display for Atom {
             "{}",
             match self {
                 Self::Bool(val) => val.to_string(),
-                Self::Function(val) => format!("{}()", val.name),
+                Self::Function(val) => format!("{}(..)", val.name),
                 Self::Int(val) => val.to_string(),
                 Self::List(val) => format!(
                     "[{}]",
