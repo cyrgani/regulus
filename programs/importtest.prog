@@ -10,5 +10,5 @@ _(
 	assert(!(==(print, null))),
 	assert(!(==(string(+(2, 2)), *(2, 2)))),
 	print("all tests passed!"),
-	debug(catch(error("mistake")))
+	debug(catch(error("mistake"))),
 )

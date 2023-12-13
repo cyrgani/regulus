@@ -10,6 +10,8 @@ pub enum Atom {
     List(Vec<Atom>),
     String(String),
     Function(Function),
+	//Class(Class),
+	//Object(Object),
 }
 
 impl TryFrom<&str> for Atom {
@@ -29,56 +31,26 @@ impl TryFrom<&str> for Atom {
     }
 }
 
+macro_rules! unwrap_type {
+    ($ty:ty, $variant:ident, $method_name:ident) => {
+        pub fn $method_name(&self) -> ProgResult<$ty> {
+            match self {
+                Self::$variant(v) => Ok(v.clone()),
+                _ => Err(Exception {
+                    msg: format!("{self} is not a {}!", stringify!($variant)),
+                    error: Error::Type,
+                }),
+            }
+        }
+    };
+}
+
 impl Atom {
-    pub fn int(&self) -> ProgResult<i32> {
-        match self {
-            Self::Int(v) => Ok(*v),
-            _ => Err(Exception {
-                msg: format!("{self} is not a Int!"),
-                error: Error::Type,
-            }),
-        }
-    }
-
-    pub fn bool(&self) -> ProgResult<bool> {
-        match self {
-            Self::Bool(v) => Ok(*v),
-            _ => Err(Exception {
-                msg: format!("{self} is not a Bool!"),
-                error: Error::Type,
-            }),
-        }
-    }
-
-    pub fn list(&self) -> ProgResult<Vec<Self>> {
-        match self {
-            Self::List(v) => Ok(v.clone()),
-            _ => Err(Exception {
-                msg: format!("{self} is not a List!"),
-                error: Error::Type,
-            }),
-        }
-    }
-
-    pub fn string(&self) -> ProgResult<String> {
-        match self {
-            Self::String(v) => Ok(v.clone()),
-            _ => Err(Exception {
-                msg: format!("{self} is not a String!"),
-                error: Error::Type,
-            }),
-        }
-    }
-
-    pub fn function(&self) -> ProgResult<Function> {
-        match self {
-            Self::Function(v) => Ok(v.clone()),
-            _ => Err(Exception {
-                msg: format!("{self} is not a Function!"),
-                error: Error::Type,
-            }),
-        }
-    }
+	unwrap_type!{i32, Int, int}
+	unwrap_type!{bool, Bool, bool}
+	unwrap_type!{Vec<Self>, List, list}
+	unwrap_type!{String, String, string}
+	unwrap_type!{Function, Function, function}
 }
 
 impl fmt::Display for Atom {
