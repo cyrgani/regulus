@@ -6,12 +6,13 @@ use crate::prelude::*;
 pub enum Atom {
     Int(i32),
     Bool(bool),
+    #[deprecated(since = "TBD", note = "null will be replaced by an `Option`-like type")] // TODO
     Null,
     List(Vec<Atom>),
     String(String),
     Function(Function),
-	//Class(Class),
-	//Object(Object),
+    //Class(Class),
+    //Object(Object),
 }
 
 impl TryFrom<&str> for Atom {
@@ -36,21 +37,21 @@ macro_rules! unwrap_type {
         pub fn $method_name(&self) -> ProgResult<$ty> {
             match self {
                 Self::$variant(v) => Ok(v.clone()),
-                _ => Err(Exception {
-                    msg: format!("{self} is not a {}!", stringify!($variant)),
-                    error: Error::Type,
-                }),
+                _ => Exception::new_err(
+                    format!("{self} is not a {}!", stringify!($variant)),
+                    Error::Type,
+                ),
             }
         }
     };
 }
 
 impl Atom {
-	unwrap_type!{i32, Int, int}
-	unwrap_type!{bool, Bool, bool}
-	unwrap_type!{Vec<Self>, List, list}
-	unwrap_type!{String, String, string}
-	unwrap_type!{Function, Function, function}
+    unwrap_type! {i32, Int, int}
+    unwrap_type! {bool, Bool, bool}
+    unwrap_type! {Vec<Self>, List, list}
+    unwrap_type! {String, String, string}
+    unwrap_type! {Function, Function, function}
 }
 
 impl fmt::Display for Atom {

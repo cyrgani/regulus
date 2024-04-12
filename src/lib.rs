@@ -1,3 +1,12 @@
+#![warn(clippy::nursery, clippy::pedantic)]
+#![allow(
+    clippy::missing_errors_doc,
+    clippy::option_if_let_else,
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss
+)]
+
 mod argument;
 mod atom;
 //mod class;
@@ -20,10 +29,10 @@ pub mod prelude {
     pub use crate::{
         argument::Argument,
         atom::Atom,
-		//class::Class,
+        //class::Class,
         exception::{Error, Exception, ProgResult},
         function::{Function, FunctionCall},
-		//object::Object,
+        //object::Object,
         run,
         storage::Storage,
     };
@@ -77,7 +86,7 @@ fn tokenize(code: &str) -> Vec<Token> {
                     if !current.is_empty() {
                         tokens.push(match Atom::try_from(current.as_str()) {
                             Ok(value) => Token::Atom(value),
-                            Err(_) => Token::Name(current.clone()),
+                            Err(()) => Token::Name(current.clone()),
                         });
                         current.clear();
                     }
@@ -110,18 +119,18 @@ fn validate_tokens(tokens: &[Token]) -> ProgResult<()> {
             _ => (),
         }
         if right_parens > left_parens {
-            return Err(Exception {
-                msg: format!("More ')' ({right_parens}) than '(' ({left_parens}) at some time!"),
-                error: Error::Syntax,
-            });
+            return Exception::new_err(
+                format!("More ')' ({right_parens}) than '(' ({left_parens}) at some time!"),
+                Error::Syntax,
+            );
         }
     }
 
     if left_parens != right_parens {
-        return Err(Exception {
-            msg: format!("Nonequal amount of '(' and ')': {left_parens} vs. {right_parens}"),
-            error: Error::Syntax,
-        });
+        return Exception::new_err(
+            format!("Nonequal amount of '(' and ')': {left_parens} vs. {right_parens}"),
+            Error::Syntax,
+        );
     }
 
     Ok(())
@@ -178,7 +187,7 @@ pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Stor
 
     let program = build_program(&tokens, "_")?;
 
-    let mut storage = start_storage.unwrap_or_else(storage::initial_storage);
+    let mut storage = start_storage.unwrap_or_else(storage::initial);
 
     let result = program.eval(&mut storage)?;
     Ok((result, storage))

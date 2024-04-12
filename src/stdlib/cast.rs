@@ -5,10 +5,7 @@ pub fn functions() -> Vec<Function> {
 }
 
 fn cast_error_builder(atom: &Atom, new_type: &str) -> Exception {
-    Exception {
-        msg: format!("Unable to cast {atom} to {new_type}"),
-        error: Error::Type,
-    }
+    Exception::new(format!("Unable to cast {atom} to {new_type}"), Error::Type)
 }
 
 fn int() -> Function {
@@ -20,7 +17,7 @@ fn int() -> Function {
             let atom = args[0].eval(storage)?;
             Ok(Atom::Int(match &atom {
                 Atom::Int(val) => *val,
-                Atom::Bool(val) => *val as i32,
+                Atom::Bool(val) => i32::from(*val),
                 Atom::String(val) => val
                     .parse::<i32>()
                     .map_err(|_error| cast_error_builder(&atom, "int"))?,

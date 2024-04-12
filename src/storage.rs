@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 pub type Storage = HashMap<String, Atom>;
 
-pub fn initial_storage() -> Storage {
+pub fn initial() -> Storage {
     crate::function::all_functions()
         .into_iter()
         .map(|f| (f.name.clone(), Atom::Function(f)))
@@ -24,8 +24,8 @@ pub fn get_function(name: &str, storage: &Storage) -> ProgResult<Function> {
                 None
             }
         })
-        .ok_or(Exception {
-            msg: format!("No function `{name}` found!"),
-            error: Error::Name,
-        })
+        .ok_or_else(|| Exception::new(
+            format!("No function `{name}` found!"),
+            Error::Name,
+        ))
 }

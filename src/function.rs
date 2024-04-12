@@ -29,13 +29,13 @@ impl FunctionCall {
         if let Some(argc) = function.argc {
             let arg_len = self.args.len();
             if argc != arg_len {
-                return Err(Exception {
-                    msg: format!(
+                return Exception::new_err(
+                    format!(
                         "expected `{argc}` args, found `{arg_len}` args for `{}`",
                         function.name
                     ),
-                    error: Error::Argument,
-                });
+                    Error::Argument,
+                );
             }
         }
 
