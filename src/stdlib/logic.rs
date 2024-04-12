@@ -38,7 +38,7 @@ fn not() -> Function {
         &["!", "not"],
         Some(1),
         Rc::new(|storage, args| Ok(Atom::Bool(!args[0].eval(storage)?.bool()?))),
-	)
+    )
 }
 
 fn int_cmp_fn_builder(name: &str, f: fn(&i32, &i32) -> bool) -> Function {
@@ -51,7 +51,7 @@ fn int_cmp_fn_builder(name: &str, f: fn(&i32, &i32) -> bool) -> Function {
                 &args[1].eval(storage)?.int()?,
             )))
         }),
-	)
+    )
 }
 
 fn less() -> Function {

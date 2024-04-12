@@ -11,16 +11,15 @@ struct Args {
     path: String,
 
     /// TODO: activate debug mode
-    #[arg(short, long, default_value_t = false)]
-    debug: bool,
+    //#[arg(short, long, default_value_t = false)]
+    //debug: bool,
 
-    /// TODO: Show the final storage
+    /// Show the final storage
     #[arg(short = 'S', long, default_value_t = false)]
     dump_storage: bool,
-
-    /// TODO: Show colored output
-    #[arg(short, long, default_value_t = true)]
-    colored: bool,
+    // /// TODO: Show colored output
+    //#[arg(short, long, default_value_t = true)]
+    //colored: bool,
 }
 
 fn main() {

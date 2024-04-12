@@ -43,10 +43,10 @@ fn assign() -> Function {
                 storage.insert(var.clone(), val);
                 Ok(Atom::Null)
             } else {
-                Err(Exception {
-                    msg: "Error during assignment: no variable was given to assign to!".to_string(),
-                    error: Error::Assign,
-                })
+                Exception::new_err(
+                    "Error during assignment: no variable was given to assign to!",
+                    Error::Assign,
+                )
             }
         }),
     }
@@ -112,11 +112,10 @@ fn def() -> Function {
                             .cloned()
                             .map(|fn_arg| match fn_arg {
                                 Argument::Variable(fn_arg) => Ok(fn_arg),
-                                _ => Err(Exception {
-                                    msg: "Error during definition: invalid args were given!"
-                                        .to_string(),
-                                    error: Error::Assign,
-                                }),
+                                _ => Exception::new_err(
+                                    "Error during definition: invalid args were given!",
+                                    Error::Assign,
+                                ),
                             })
                             .collect::<Result<Vec<String>, Exception>>()?;
 
@@ -137,24 +136,22 @@ fn def() -> Function {
                         storage.insert(var.clone(), Atom::Function(function));
                         Ok(Atom::Null)
                     } else {
-                        Err(Exception {
-                            msg: "Error during definition: no valid function body was given!"
-                                .to_string(),
-                            error: Error::Assign,
-                        })
+                        Exception::new_err(
+                            "Error during definition: no valid function body was given!",
+                            Error::Assign,
+                        )
                     }
                 } else {
-                    Err(Exception {
-                        msg: "Error during definition: no valid argument was given!".to_string(),
-                        error: Error::Assign,
-                    })
+                    Exception::new_err(
+                        "Error during definition: no valid argument was given!",
+                        Error::Assign,
+                    )
                 }
             } else {
-                Err(Exception {
-                    msg: "Error during definition: no valid variable was given to define to!"
-                        .to_string(),
-                    error: Error::Assign,
-                })
+                Exception::new_err(
+                    "Error during definition: no valid variable was given to define to!",
+                    Error::Assign,
+                )
             }
         }),
     }
@@ -165,7 +162,7 @@ fn def_args() -> Function {
         &["@", "args"],
         None,
         Rc::new(|_storage, _args| {
-            unreachable!("this function should never get evaluated, but only be used without evaluation by 'def'!")
+            unreachable!("this function should never get evaluated and only be used without evaluation by `def`s internals!")
         }),
     )
 }
@@ -177,10 +174,8 @@ fn import() -> Function {
         argc: Some(1),
         callback: Rc::new(|storage, args| {
             let path = args[0].eval(storage)?.string()?;
-            let code = fs::read_to_string(path).map_err(|error| Exception {
-                msg: error.to_string(),
-                error: Error::Import,
-            })?;
+            let code =
+                fs::read_to_string(path).map_err(|error| Exception::new(error, Error::Import))?;
             let (atom, imported_storage) = run(&code, None)?;
 
             for (k, v) in imported_storage {
@@ -197,10 +192,7 @@ fn error() -> Function {
         name: String::from("error"),
         argc: Some(1),
         callback: Rc::new(|storage, args| {
-            Err(Exception {
-                msg: args[0].eval(storage)?.string()?,
-                error: Error::UserRaised,
-            })
+            Exception::new_err(args[0].eval(storage)?.string()?, Error::UserRaised)
         }),
     }
 }
@@ -238,10 +230,7 @@ fn assert() -> Function {
             if args[0].eval(storage)?.bool()? {
                 Ok(Atom::Null)
             } else {
-                Err(Exception {
-                    msg: "Assertion failed!".to_string(),
-                    error: Error::Assertion,
-                })
+                Exception::new_err("Assertion failed!", Error::Assertion)
             }
         }),
     }

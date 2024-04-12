@@ -41,10 +41,7 @@ fn index() -> Function {
                 .eval(storage)?
                 .list()?
                 .get(args[1].eval(storage)?.int()? as usize)
-                .ok_or(Exception {
-                    msg: "Unable to index list!".to_string(),
-                    error: Error::Index,
-                })
+                .ok_or_else(|| Exception::new("Unable to index list!", Error::Index))
                 .cloned()
         }),
     }
@@ -56,10 +53,11 @@ fn pop() -> Function {
         name: String::from("pop"),
         argc: Some(1),
         callback: Rc::new(|storage, args| {
-            args[0].eval(storage)?.list()?.pop().ok_or(Exception {
-                msg: "Unable to pop from list!".to_string(),
-                error: Error::Index,
-            })
+            args[0]
+                .eval(storage)?
+                .list()?
+                .pop()
+                .ok_or_else(|| Exception::new("Unable to pop from list!", Error::Index))
         }),
     }
 }
