@@ -9,10 +9,8 @@
 
 mod argument;
 mod atom;
-//mod class;
 mod exception;
 mod function;
-//mod object;
 mod storage;
 
 mod stdlib {
@@ -29,10 +27,8 @@ pub mod prelude {
     pub use crate::{
         argument::Argument,
         atom::Atom,
-        //class::Class,
         exception::{Error, Exception, ProgResult},
         function::{Function, FunctionCall},
-        //object::Object,
         run,
         storage::Storage,
     };
