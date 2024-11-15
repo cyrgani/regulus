@@ -23,6 +23,8 @@ struct Args {
 }
 
 fn main() {
+    set_regular_stdio();
+    
     let args = Args::parse();
 
     let file = fs::read_to_string(args.path);

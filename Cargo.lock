@@ -124,6 +124,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "colored",
+ "tests_generator_macro",
 ]
 
 [[package]]
@@ -160,6 +161,10 @@ dependencies = [
  "quote",
  "unicode-ident",
 ]
+
+[[package]]
+name = "tests_generator_macro"
+version = "0.1.0"
 
 [[package]]
 name = "unicode-ident"

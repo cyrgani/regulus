@@ -1,4 +1,4 @@
-#![warn(clippy::nursery, clippy::pedantic)]
+#![warn(clippy::nursery, clippy::pedantic, clippy::print_stdout, clippy::print_stderr)]
 #![allow(
     clippy::missing_errors_doc,
     clippy::option_if_let_else,
@@ -11,6 +11,7 @@ mod argument;
 mod atom;
 mod exception;
 mod function;
+pub mod stdio;
 mod storage;
 
 mod stdlib {
@@ -29,13 +30,13 @@ pub mod prelude {
         atom::Atom,
         exception::{Error, Exception, ProgResult},
         function::{Function, FunctionCall},
-        run,
+        run, stdio::set_regular as set_regular_stdio,
         storage::Storage,
     };
     pub use std::rc::Rc;
 }
 
-use prelude::*;
+use crate::prelude::*;
 
 fn strip_comments(code: &str) -> String {
     code.split('\n')
