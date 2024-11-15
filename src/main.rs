@@ -1,6 +1,7 @@
 use clap::Parser;
 use colored::Colorize;
 use newlang::prelude::*;
+use newlang::stdio;
 use std::fs;
 
 /// An interpreter for the language NAMEHERE
@@ -23,8 +24,8 @@ struct Args {
 }
 
 fn main() {
-    set_regular_stdio();
-    
+    stdio::set_regular();
+
     let args = Args::parse();
 
     let file = fs::read_to_string(args.path);

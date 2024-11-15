@@ -1,4 +1,9 @@
-#![warn(clippy::nursery, clippy::pedantic, clippy::print_stdout, clippy::print_stderr)]
+#![warn(
+    clippy::nursery,
+    clippy::pedantic,
+    clippy::print_stdout,
+    clippy::print_stderr
+)]
 #![allow(
     clippy::missing_errors_doc,
     clippy::option_if_let_else,
@@ -30,7 +35,7 @@ pub mod prelude {
         atom::Atom,
         exception::{Error, Exception, ProgResult},
         function::{Function, FunctionCall},
-        run, stdio::set_regular as set_regular_stdio,
+        run,
         storage::Storage,
     };
     pub use std::rc::Rc;

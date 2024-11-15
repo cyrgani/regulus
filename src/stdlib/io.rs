@@ -1,9 +1,9 @@
 use crate::prelude::*;
-use crate::stdio::{self, STDIN, STDOUT};
-use std::io::Write;
+use crate::stdio::{STDIN, STDOUT};
+use std::ops::DerefMut;
 
 fn write_to_stdout(msg: &str) {
-    stdio::get_mut(&STDOUT).write_all(msg.as_bytes()).unwrap();
+    STDOUT.get_mut().write_all(msg.as_bytes());
 }
 
 pub fn functions() -> Vec<Function> {
@@ -32,7 +32,11 @@ fn input() -> Function {
         argc: Some(0),
         callback: Rc::new(|_, _| {
             let mut input = String::new();
-            match stdio::get_mut(&STDIN).read_line(&mut input) {
+            #[expect(
+                clippy::significant_drop_in_scrutinee,
+                reason = "short match statement"
+            )]
+            match STDIN.get_mut().deref_mut().read_line(&mut input) {
                 Ok(_) => Ok(Atom::String(input)),
                 Err(error) => {
                     Exception::new_err(format!("Error while reading input: {error}"), Error::Io)

@@ -1,14 +1,76 @@
+use crate::OVERWRITE_STREAM_FILES;
+use newlang::run;
+use newlang::stdio::{WriteHandle, STDERR, STDIN, STDOUT};
+use serde::{Deserialize, Serialize};
 use std::fs;
-use std::io::BufReader;
-use std::path::Path;
-use newlang::{run, stdio};
-use newlang::stdio::STDIN;
+use std::io::{self, BufReader, Read};
+use std::str;
 
-pub fn set_testing_stdio_handlers() {
-    stdio::set(&STDIN, Box::new(BufReader::new(&[1u8, 2u8, 3u8, 4u8][..])));
+#[derive(Deserialize, Serialize, Default)]
+struct TestStreamData {
+    stdin: String,
+    stdout: String,
+    stderr: String,
 }
 
 /// Run a test program, making sure it produces the expected stdout and stderr.
-pub fn run_test(path: impl AsRef<Path>) {
-    run(&fs::read_to_string(path).unwrap(), None);
+pub fn run_test(name: &str) {
+    let mut overwrite_stream_files = false;
+    if let Some(var) = OVERWRITE_STREAM_FILES {
+        if ["y", "yes", "true"].contains(&var) {
+            overwrite_stream_files = true;
+        }
+    }
+
+    let source = fs::read_to_string(format!("programs/{name}.prog")).expect("fatal error: program file not found");
+    let data_path = format!("programs/{name}_streams.json");
+
+    let data = match fs::read_to_string(&data_path) {
+        Ok(streams_text) => serde_json::from_str::<TestStreamData>(&streams_text)
+            .expect("fatal error: failed to parse stream file"),
+        Err(err) => {
+            if overwrite_stream_files {
+                TestStreamData::default()
+            } else {
+                panic!("fatal error: stream file not found: {err}")
+            }
+        }
+    };
+
+    STDIN.set(Box::new(BufReader::new(VecReader(
+        data.stdin.as_bytes().to_vec(),
+    ))));
+    STDOUT.set(WriteHandle::Buffer(vec![]));
+    STDERR.set(WriteHandle::Buffer(vec![]));
+
+    // TODO: consider if this should be unwrapped or not
+    run(&source, None).unwrap();
+
+    let stdout = STDOUT.get();
+    let stdout = stdout.get_buffer();
+    let stderr = STDERR.get();
+    let stderr = stderr.get_buffer();
+
+    if overwrite_stream_files {
+        let new_data = TestStreamData {
+            stdin: String::new(),
+            stdout: stdout.to_string(),
+            stderr: stderr.to_string(),
+        };
+        fs::write(
+            data_path,
+            serde_json::to_vec(&new_data).expect("fatal error: failed to serialize stream data"),
+        )
+        .expect("fatal error: failed to overwrite stream file");
+    } else {
+        assert_eq!(stdout, data.stdout);
+        assert_eq!(stderr, data.stderr);
+    }
+}
+
+struct VecReader(Vec<u8>);
+impl Read for VecReader {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        self.0.as_slice().read(buf)
+    }
 }

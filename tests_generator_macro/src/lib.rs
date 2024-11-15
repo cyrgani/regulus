@@ -9,21 +9,21 @@ pub fn make_tests(_: TokenStream) -> TokenStream {
         let file = file.unwrap();
         if file.file_type().unwrap().is_file() {
             let name = file.file_name().into_string().unwrap();
-            let name = name.strip_suffix(".prog").unwrap();
-            output.extend(
-                TokenStream::from_str(&format!(
-                    r##"
+            if let Some(name) = name.strip_suffix(".prog") {
+                output.extend(
+                    TokenStream::from_str(&format!(
+                        r##"
 #[test]
 fn {name}() {{
-    utils::run_test("programs/{name}.prog");
+    utils::run_test("{name}");
 }}
 "##,
-                    
-                ))
-                .unwrap(),
-            );
+                    ))
+                    .unwrap(),
+                );
+            }
         }
     }
-    
+
     output
 }
