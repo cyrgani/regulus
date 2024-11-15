@@ -16,8 +16,7 @@ mod argument;
 mod atom;
 mod exception;
 mod function;
-pub mod stdio;
-mod storage;
+mod state;
 
 mod stdlib {
     pub mod cast;
@@ -36,12 +35,13 @@ pub mod prelude {
         exception::{Error, Exception, ProgResult},
         function::{Function, FunctionCall},
         run,
-        storage::Storage,
+        state::{initial_storage, State, WriteHandle},
     };
     pub use std::rc::Rc;
 }
 
 use crate::prelude::*;
+use crate::state::State;
 
 fn strip_comments(code: &str) -> String {
     code.split('\n')
@@ -180,7 +180,7 @@ fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCa
     Ok(call)
 }
 
-pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Storage)> {
+pub fn run(code: &str, start_state: Option<State>) -> ProgResult<(Atom, State)> {
     let without_comments = strip_comments(code);
 
     let tokens = tokenize(&without_comments);
@@ -189,8 +189,8 @@ pub fn run(code: &str, start_storage: Option<Storage>) -> ProgResult<(Atom, Stor
 
     let program = build_program(&tokens, "_")?;
 
-    let mut storage = start_storage.unwrap_or_else(storage::initial);
+    let mut state = start_state.unwrap_or_else(state::State::initial);
 
-    let result = program.eval(&mut storage)?;
-    Ok((result, storage))
+    let result = program.eval(&mut state)?;
+    Ok((result, state))
 }

@@ -1,6 +1,7 @@
+use newlang::prelude::WriteHandle;
 use crate::OVERWRITE_STREAM_FILES;
+use newlang::prelude::{initial_storage, State};
 use newlang::run;
-use newlang::stdio::{WriteHandle, STDERR, STDIN, STDOUT};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::{self, BufReader, Read};
@@ -22,7 +23,8 @@ pub fn run_test(name: &str) {
         }
     }
 
-    let source = fs::read_to_string(format!("programs/{name}.prog")).expect("fatal error: program file not found");
+    let source = fs::read_to_string(format!("programs/{name}.prog"))
+        .expect("fatal error: program file not found");
     let data_path = format!("programs/{name}_streams.json");
 
     let data = match fs::read_to_string(&data_path) {
@@ -37,19 +39,19 @@ pub fn run_test(name: &str) {
         }
     };
 
-    STDIN.set(Box::new(BufReader::new(VecReader(
-        data.stdin.as_bytes().to_vec(),
-    ))));
-    STDOUT.set(WriteHandle::Buffer(vec![]));
-    STDERR.set(WriteHandle::Buffer(vec![]));
+    let (_, final_state) = run(
+        &source,
+        Some(State {
+            storage: initial_storage(),
+            stdin: Box::new(BufReader::new(VecReader(data.stdin.as_bytes().to_vec()))),
+            stdout: WriteHandle::Buffer(vec![]),
+            stderr: WriteHandle::Buffer(vec![]),
+        }),
+    )
+    .unwrap();
 
-    // TODO: consider if this should be unwrapped or not
-    run(&source, None).unwrap();
-
-    let stdout = STDOUT.get();
-    let stdout = stdout.get_buffer();
-    let stderr = STDERR.get();
-    let stderr = stderr.get_buffer();
+    let stdout = final_state.stdout.get_buffer();
+    let stderr = final_state.stderr.get_buffer();
 
     if overwrite_stream_files {
         let new_data = TestStreamData {

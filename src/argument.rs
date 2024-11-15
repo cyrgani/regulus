@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use std::fmt;
+use crate::state::State;
 
 #[derive(Debug, Clone)]
 pub enum Argument {
@@ -9,11 +10,11 @@ pub enum Argument {
 }
 
 impl Argument {
-    pub fn eval(&self, storage: &mut Storage) -> ProgResult<Atom> {
+    pub fn eval(&self, state: &mut State) -> ProgResult<Atom> {
         match self {
-            Self::FunctionCall(call) => call.eval(storage),
+            Self::FunctionCall(call) => call.eval(state),
             Self::Atom(atom) => Ok(atom.clone()),
-            Self::Variable(var) => match storage.get(var) {
+            Self::Variable(var) => match state.storage.get(var) {
                 Some(value) => Ok(value.clone()),
                 None => {
                     Exception::new_err(format!("No variable named `{var}` found!"), Error::Name)

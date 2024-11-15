@@ -1,7 +1,6 @@
 use clap::Parser;
 use colored::Colorize;
 use newlang::prelude::*;
-use newlang::stdio;
 use std::fs;
 
 /// An interpreter for the language NAMEHERE
@@ -11,7 +10,7 @@ struct Args {
     /// The path of the program
     path: String,
 
-    /// TODO: activate debug mode
+    // /// TODO: activate debug mode
     //#[arg(short, long, default_value_t = false)]
     //debug: bool,
 
@@ -24,8 +23,6 @@ struct Args {
 }
 
 fn main() {
-    stdio::set_regular();
-
     let args = Args::parse();
 
     let file = fs::read_to_string(args.path);
@@ -33,13 +30,13 @@ fn main() {
         Ok(code) => {
             let result = run(&code, None);
             match result {
-                Ok((atom, storage)) => {
+                Ok((atom, state)) => {
                     match atom {
                         Atom::Null => (),
                         _ => println!("{atom:?}"),
                     };
                     if args.dump_storage {
-                        println!("{storage:?}")
+                        println!("{:?}", state.storage)
                     }
                 }
                 Err(error) => {

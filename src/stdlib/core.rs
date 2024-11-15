@@ -37,10 +37,10 @@ fn assign() -> Function {
         aliases: vec!["=".to_string()],
         name: String::from("assign"),
         argc: Some(2),
-        callback: Rc::new(|storage, args| {
+        callback: Rc::new(|state, args| {
             if let Argument::Variable(var) = &args[0] {
-                let val = args[1].eval(storage)?;
-                storage.insert(var.clone(), val);
+                let val = args[1].eval(state)?;
+                state.storage.insert(var.clone(), val);
                 Ok(Atom::Null)
             } else {
                 Exception::new_err(
@@ -101,7 +101,7 @@ fn def() -> Function {
         aliases: vec![],
         name: String::from("def"),
         argc: Some(3),
-        callback: Rc::new(|storage, args| {
+        callback: Rc::new(|state, args| {
             if let Argument::Variable(var) = &args[0] {
                 if let Argument::FunctionCall(arg_call) = &args[1] {
                     if let Argument::FunctionCall(inner) = &args[2] {
@@ -123,17 +123,22 @@ fn def() -> Function {
                             aliases: vec![],
                             name: var.clone(),
                             argc: Some(function_arg_names.len()),
-                            callback: Rc::new(move |storage, args| {
-                                let mut new_storage = storage.clone();
+                            callback: Rc::new(move |state, args| {
+                                // a function call should have its own scope and not leak variables
+                                let old_storage = state.storage.clone();
+                                
                                 for (idx, arg) in function_arg_names.iter().enumerate() {
-                                    new_storage.insert(arg.clone(), args[idx].eval(storage)?);
+                                    let arg_result = args[idx].eval(state)?;
+                                    state.storage.insert(arg.clone(), arg_result);
                                 }
 
-                                body.eval(&mut new_storage)
+                                let function_result = body.eval(state);
+                                state.storage = old_storage;
+                                function_result
                             }),
                         };
 
-                        storage.insert(var.clone(), Atom::Function(function));
+                        state.storage.insert(var.clone(), Atom::Function(function));
                         Ok(Atom::Null)
                     } else {
                         Exception::new_err(
@@ -172,14 +177,14 @@ fn import() -> Function {
         aliases: vec![],
         name: String::from("import"),
         argc: Some(1),
-        callback: Rc::new(|storage, args| {
-            let path = args[0].eval(storage)?.string()?;
+        callback: Rc::new(|state, args| {
+            let path = args[0].eval(state)?.string()?;
             let code =
                 fs::read_to_string(path).map_err(|error| Exception::new(error, Error::Import))?;
             let (atom, imported_storage) = run(&code, None)?;
 
-            for (k, v) in imported_storage {
-                storage.insert(k, v);
+            for (k, v) in imported_storage.storage {
+                state.storage.insert(k, v);
             }
             Ok(atom)
         }),

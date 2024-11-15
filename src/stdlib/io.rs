@@ -1,9 +1,8 @@
 use crate::prelude::*;
-use crate::stdio::{STDIN, STDOUT};
-use std::ops::DerefMut;
+use crate::state::State;
 
-fn write_to_stdout(msg: &str) {
-    STDOUT.get_mut().write_all(msg.as_bytes());
+fn write_to_stdout(state: &mut State, msg: &str) {
+    state.stdout.write_all(msg.as_bytes());
 }
 
 pub fn functions() -> Vec<Function> {
@@ -15,11 +14,12 @@ fn print() -> Function {
         aliases: vec![],
         name: String::from("print"),
         argc: None,
-        callback: Rc::new(|storage, args| {
+        callback: Rc::new(|state, args| {
             for arg in args {
-                write_to_stdout(&format!("{} ", arg.eval(storage)?));
+                let arg_val = arg.eval(state)?;
+                write_to_stdout(state, &format!("{arg_val} "));
             }
-            write_to_stdout("\n");
+            write_to_stdout(state, "\n");
             Ok(Atom::Null)
         }),
     }
@@ -30,13 +30,9 @@ fn input() -> Function {
         aliases: vec![],
         name: String::from("input"),
         argc: Some(0),
-        callback: Rc::new(|_, _| {
+        callback: Rc::new(|state, _| {
             let mut input = String::new();
-            #[expect(
-                clippy::significant_drop_in_scrutinee,
-                reason = "short match statement"
-            )]
-            match STDIN.get_mut().deref_mut().read_line(&mut input) {
+            match state.stdin.read_line(&mut input) {
                 Ok(_) => Ok(Atom::String(input)),
                 Err(error) => {
                     Exception::new_err(format!("Error while reading input: {error}"), Error::Io)
@@ -51,8 +47,9 @@ fn debug() -> Function {
         aliases: vec![],
         name: String::from("debug"),
         argc: Some(1),
-        callback: Rc::new(|storage, args| {
-            write_to_stdout(&format!("Debug: {:?}\n", args[0].eval(storage)?));
+        callback: Rc::new(|state, args| {
+            let arg_val = args[0].eval(state)?;
+            write_to_stdout(state, &format!("Debug: {arg_val:?}\n"));
             Ok(Atom::Null)
         }),
     }

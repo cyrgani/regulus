@@ -1,6 +1,0 @@
-class(
-	Fraction,
-	@(z, n),
-	def(/, @(a, b), Fraction(a, b)),
-
-)

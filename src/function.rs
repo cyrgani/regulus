@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use std::fmt;
+use crate::state::State;
 
 #[derive(Debug, Clone)]
 pub struct FunctionCall {
@@ -23,8 +24,8 @@ impl fmt::Display for FunctionCall {
 }
 
 impl FunctionCall {
-    pub fn eval(&self, storage: &mut Storage) -> ProgResult<Atom> {
-        let function = crate::storage::get_function(&self.name, storage)?;
+    pub fn eval(&self, state: &mut State) -> ProgResult<Atom> {
+        let function = state.get_function(&self.name)?;
 
         if let Some(argc) = function.argc {
             let arg_len = self.args.len();
@@ -39,11 +40,11 @@ impl FunctionCall {
             }
         }
 
-        (function.callback)(storage, &self.args)
+        (function.callback)(state, &self.args)
     }
 }
 
-type Callback = dyn Fn(&mut Storage, &[Argument]) -> ProgResult<Atom>;
+type Callback = dyn Fn(&mut State, &[Argument]) -> ProgResult<Atom>;
 
 #[derive(Clone)]
 pub struct Function {
