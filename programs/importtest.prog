@@ -1,7 +1,7 @@
 _(
 	import("./programs/transitivity_test.prog"),
 	double_and_print_copy(2),
-	assert(<(-(1, 2), 0))
+	assert(<(-(1, 2), 0)),
 	assert(and(true, true)),
 	assert(&&(true, true)),
 	assert(==(null, null)),

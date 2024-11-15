@@ -15,7 +15,7 @@ pub fn make_tests(_: TokenStream) -> TokenStream {
                         r##"
 #[test]
 fn {name}() {{
-    utils::run_test("{name}");
+    run_test("{name}");
 }}
 "##,
                     ))

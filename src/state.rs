@@ -19,7 +19,7 @@ impl State {
             stderr: WriteHandle::Regular(stderr()),
         }
     }
-    
+
     pub fn get_function(&self, name: &str) -> ProgResult<Function> {
         self.storage
             .values()

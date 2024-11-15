@@ -16,10 +16,10 @@ fn bool_cmp_fn_builder(names: &[&str], f: fn(bool, bool) -> bool) -> Function {
     Function::new(
         names,
         Some(2),
-        Rc::new(move |storage, args| {
+        Rc::new(move |state, args| {
             Ok(Atom::Bool(f(
-                args[0].eval(storage)?.bool()?,
-                args[1].eval(storage)?.bool()?,
+                args[0].eval(state)?.bool()?,
+                args[1].eval(state)?.bool()?,
             )))
         }),
     )
@@ -37,7 +37,7 @@ fn not() -> Function {
     Function::new(
         &["!", "not"],
         Some(1),
-        Rc::new(|storage, args| Ok(Atom::Bool(!args[0].eval(storage)?.bool()?))),
+        Rc::new(|state, args| Ok(Atom::Bool(!args[0].eval(state)?.bool()?))),
     )
 }
 
@@ -45,10 +45,10 @@ fn int_cmp_fn_builder(name: &str, f: fn(&i32, &i32) -> bool) -> Function {
     Function::new(
         &[name],
         Some(2),
-        Rc::new(move |storage, args| {
+        Rc::new(move |state, args| {
             Ok(Atom::Bool(f(
-                &args[0].eval(storage)?.int()?,
-                &args[1].eval(storage)?.int()?,
+                &args[0].eval(state)?.int()?,
+                &args[1].eval(state)?.int()?,
             )))
         }),
     )

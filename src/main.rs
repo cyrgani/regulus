@@ -13,7 +13,6 @@ struct Args {
     // /// TODO: activate debug mode
     //#[arg(short, long, default_value_t = false)]
     //debug: bool,
-
     /// Show the final storage
     #[arg(short = 'S', long, default_value_t = false)]
     dump_storage: bool,

@@ -23,9 +23,9 @@ fn run_fn() -> Function {
         aliases: vec!["run".to_string()],
         name: String::from("_"),
         argc: None,
-        callback: Rc::new(|storage, args| {
+        callback: Rc::new(|state, args| {
             for arg in args {
-                arg.eval(storage)?;
+                arg.eval(state)?;
             }
             Ok(Atom::Null)
         }),
@@ -57,9 +57,9 @@ fn if_fn() -> Function {
         aliases: vec![],
         name: String::from("if"),
         argc: Some(2),
-        callback: Rc::new(|storage, args| {
-            Ok(if args[0].eval(storage)?.bool()? {
-                args[1].eval(storage)?
+        callback: Rc::new(|state, args| {
+            Ok(if args[0].eval(state)?.bool()? {
+                args[1].eval(state)?
             } else {
                 Atom::Null
             })
@@ -72,11 +72,11 @@ fn ifelse() -> Function {
         aliases: vec![],
         name: String::from("ifelse"),
         argc: Some(3),
-        callback: Rc::new(|storage, args| {
-            Ok(if args[0].eval(storage)?.bool()? {
-                args[1].eval(storage)?
+        callback: Rc::new(|state, args| {
+            Ok(if args[0].eval(state)?.bool()? {
+                args[1].eval(state)?
             } else {
-                args[2].eval(storage)?
+                args[2].eval(state)?
             })
         }),
     }
@@ -87,9 +87,9 @@ fn while_fn() -> Function {
         aliases: vec![],
         name: String::from("while"),
         argc: Some(2),
-        callback: Rc::new(|storage, args| {
-            while args[0].eval(storage)?.bool()? {
-                args[1].eval(storage)?;
+        callback: Rc::new(|state, args| {
+            while args[0].eval(state)?.bool()? {
+                args[1].eval(state)?;
             }
             Ok(Atom::Null)
         }),
@@ -126,7 +126,7 @@ fn def() -> Function {
                             callback: Rc::new(move |state, args| {
                                 // a function call should have its own scope and not leak variables
                                 let old_storage = state.storage.clone();
-                                
+
                                 for (idx, arg) in function_arg_names.iter().enumerate() {
                                     let arg_result = args[idx].eval(state)?;
                                     state.storage.insert(arg.clone(), arg_result);
@@ -166,7 +166,7 @@ fn def_args() -> Function {
     Function::new(
         &["@", "args"],
         None,
-        Rc::new(|_storage, _args| {
+        Rc::new(|_state, _args| {
             unreachable!("this function should never get evaluated and only be used without evaluation by `def`s internals!")
         }),
     )
@@ -181,9 +181,9 @@ fn import() -> Function {
             let path = args[0].eval(state)?.string()?;
             let code =
                 fs::read_to_string(path).map_err(|error| Exception::new(error, Error::Import))?;
-            let (atom, imported_storage) = run(&code, None)?;
+            let (atom, imported_state) = run(&code, None)?;
 
-            for (k, v) in imported_storage.storage {
+            for (k, v) in imported_state.storage {
                 state.storage.insert(k, v);
             }
             Ok(atom)
@@ -196,8 +196,8 @@ fn error() -> Function {
         aliases: vec![],
         name: String::from("error"),
         argc: Some(1),
-        callback: Rc::new(|storage, args| {
-            Exception::new_err(args[0].eval(storage)?.string()?, Error::UserRaised)
+        callback: Rc::new(|state, args| {
+            Exception::new_err(args[0].eval(state)?.string()?, Error::UserRaised)
         }),
     }
 }
@@ -207,9 +207,9 @@ fn catch() -> Function {
         aliases: vec![],
         name: String::from("catch"),
         argc: Some(1),
-        callback: Rc::new(|storage, args| {
+        callback: Rc::new(|state, args| {
             Ok(args[0]
-                .eval(storage)
+                .eval(state)
                 .unwrap_or_else(|exc| Atom::String(exc.to_string())))
         }),
     }
@@ -220,8 +220,8 @@ fn equals() -> Function {
         aliases: vec!["equals".to_string()],
         name: String::from("=="),
         argc: Some(2),
-        callback: Rc::new(|storage, args| {
-            Ok(Atom::Bool(args[0].eval(storage)? == args[1].eval(storage)?))
+        callback: Rc::new(|state, args| {
+            Ok(Atom::Bool(args[0].eval(state)? == args[1].eval(state)?))
         }),
     }
 }
@@ -231,8 +231,8 @@ fn assert() -> Function {
         aliases: vec![],
         name: String::from("assert"),
         argc: Some(1),
-        callback: Rc::new(|storage, args| {
-            if args[0].eval(storage)?.bool()? {
+        callback: Rc::new(|state, args| {
+            if args[0].eval(state)?.bool()? {
                 Ok(Atom::Null)
             } else {
                 Exception::new_err("Assertion failed!", Error::Assertion)
