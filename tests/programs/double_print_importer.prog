@@ -1,0 +1,4 @@
+_(
+	import("./tests/programs/double_print_twice_definition.prog"),
+	double_and_print_twice(2),
+)

@@ -1,4 +1,0 @@
-_(
-    import("./programs/double_print_file.prog"),
-    def(double_and_print_copy, @(x), double_and_print(x)),
-)

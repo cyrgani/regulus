@@ -1,9 +1,0 @@
-_(
-	debug(string(int(bool(int("2"))))),
-	ifelse(
-		true,
-		print("go od"),
-		print("ba d")
-	),
-	print(+(4, 3))
-)

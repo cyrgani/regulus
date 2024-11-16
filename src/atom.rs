@@ -6,13 +6,10 @@ use crate::prelude::*;
 pub enum Atom {
     Int(i32),
     Bool(bool),
-    #[deprecated(since = "TBD", note = "null may be replaced by an `Option`-like type")] // TODO
     Null,
     List(Vec<Atom>),
     String(String),
     Function(Function),
-    //Class(Class),
-    //Object(Object),
 }
 
 impl TryFrom<&str> for Atom {

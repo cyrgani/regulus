@@ -1,0 +1,9 @@
+_(
+    # allowed
+    assert(==("2", string(2))),
+    assert(==("2", string("2"))),
+    assert(==(2, int("2"))),
+    assert(==(2, int(string(2)))),
+    assert(==(true, bool(1))),
+    assert(==(string(int(bool(int("2")))), "1")),
+)
