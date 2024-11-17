@@ -4,7 +4,10 @@ use newlang::prelude::{initial_storage, run, State, WriteHandle};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::{self, BufReader, Read};
+use std::path::PathBuf;
 use std::str;
+
+const TEST_DIR: &str = "./tests/programs";
 
 #[derive(Deserialize, Serialize, Default)]
 struct TestStreamData {
@@ -22,9 +25,9 @@ pub fn run_test(name: &str) {
         }
     }
 
-    let source = fs::read_to_string(format!("./tests/programs/{name}.prog"))
+    let source = fs::read_to_string(format!("{TEST_DIR}/{name}.prog"))
         .expect("fatal error: program file not found");
-    let data_path = format!("./tests/programs/{name}_streams.json");
+    let data_path = format!("{TEST_DIR}/{name}_streams.json");
 
     let data = match fs::read_to_string(&data_path) {
         Ok(streams_text) => serde_json::from_str::<TestStreamData>(&streams_text)
@@ -40,11 +43,13 @@ pub fn run_test(name: &str) {
 
     let (_, final_state) = run(
         &source,
+        TEST_DIR,
         Some(State {
             storage: initial_storage(),
             stdin: Box::new(BufReader::new(VecReader(data.stdin.as_bytes().to_vec()))),
             stdout: WriteHandle::Buffer(vec![]),
             stderr: WriteHandle::Buffer(vec![]),
+            file_directory: PathBuf::from(TEST_DIR),
         }),
     )
     .unwrap();

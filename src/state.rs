@@ -1,6 +1,7 @@
 use crate::prelude::*;
 use std::collections::HashMap;
 use std::io::{stderr, stdin, stdout, BufRead, BufReader, Stderr, Stdout, Write};
+use std::path::{Path, PathBuf};
 use std::str;
 
 pub struct State {
@@ -8,15 +9,17 @@ pub struct State {
     pub stdin: Box<dyn Send + Sync + BufRead>,
     pub stdout: WriteHandle<Stdout>,
     pub stderr: WriteHandle<Stderr>,
+    pub file_directory: PathBuf,
 }
 
 impl State {
-    pub fn initial() -> Self {
+    pub fn initial(dir: impl AsRef<Path>) -> Self {
         Self {
             storage: initial_storage(),
             stdin: Box::new(BufReader::new(stdin())),
             stdout: WriteHandle::Regular(stdout()),
             stderr: WriteHandle::Regular(stderr()),
+            file_directory: PathBuf::from(dir.as_ref()),
         }
     }
 

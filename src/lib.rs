@@ -2,21 +2,27 @@
     clippy::nursery,
     clippy::pedantic,
     clippy::print_stdout,
-    clippy::print_stderr
+    clippy::print_stderr,
+    clippy::dbg_macro
 )]
 #![allow(
     clippy::missing_errors_doc,
     clippy::option_if_let_else,
     clippy::cast_possible_truncation,
     clippy::cast_possible_wrap,
-    clippy::cast_sign_loss
+    clippy::cast_sign_loss,
+    clippy::must_use_candidate
 )]
+
+pub const STL_PATH: &str = "./src/stdlib/library/library.prog";
+pub const STL_DIRECTORY: &str = "./src/stdlib/library";
 
 mod argument;
 mod atom;
 mod exception;
 mod function;
 mod state;
+mod utils;
 
 mod stdlib {
     pub mod cast;
@@ -42,6 +48,7 @@ pub mod prelude {
 
 use crate::prelude::*;
 use crate::state::State;
+use std::path::Path;
 
 fn strip_comments(code: &str) -> String {
     code.split('\n')
@@ -180,7 +187,11 @@ fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCa
     Ok(call)
 }
 
-pub fn run(code: &str, start_state: Option<State>) -> ProgResult<(Atom, State)> {
+pub fn run(
+    code: &str,
+    dir: impl AsRef<Path>,
+    start_state: Option<State>,
+) -> ProgResult<(Atom, State)> {
     let without_comments = strip_comments(code);
 
     let tokens = tokenize(&without_comments);
@@ -189,7 +200,7 @@ pub fn run(code: &str, start_state: Option<State>) -> ProgResult<(Atom, State)> 
 
     let program = build_program(&tokens, "_")?;
 
-    let mut state = start_state.unwrap_or_else(state::State::initial);
+    let mut state = start_state.unwrap_or_else(|| state::State::initial(dir));
 
     let result = program.eval(&mut state)?;
     Ok((result, state))

@@ -1,5 +1,7 @@
 use crate::prelude::*;
-use std::fs;
+use crate::STL_DIRECTORY;
+use std::fs::{self, DirEntry};
+use std::path::Path;
 
 pub fn functions() -> Vec<Function> {
     vec![
@@ -172,16 +174,53 @@ fn def_args() -> Function {
     )
 }
 
+fn read_dir_files(path: impl AsRef<Path>) -> impl Iterator<Item = DirEntry> {
+    fs::read_dir(&path)
+        .unwrap_or_else(|err| {
+            panic!(
+                "error when reading directory `{}`: {err}",
+                path.as_ref().display()
+            )
+        })
+        .flatten()
+}
+
 fn import() -> Function {
     Function {
         aliases: vec![],
         name: String::from("import"),
         argc: Some(1),
         callback: Rc::new(|state, args| {
-            let path = args[0].eval(state)?.string()?;
-            let code =
-                fs::read_to_string(path).map_err(|error| Exception::new(error, Error::Import))?;
-            let (atom, imported_state) = run(&code, None)?;
+            let name = args[0].eval(state)?.string()?;
+            if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+                return Exception::new_err(
+                    format!("invalid characters in import name `{name}`"),
+                    Error::Import,
+                );
+            }
+
+            // lookup order:
+            // 1. look inside the programs current directory
+            // 2. look in the global stl directory
+            let mut source = None;
+
+            for item in read_dir_files(&state.file_directory).chain(read_dir_files(&STL_DIRECTORY))
+            {
+                if *item.file_name() == *format!("{name}.prog") {
+                    if let Ok(file_content) = fs::read_to_string(item.path()) {
+                        source = Some(file_content);
+                        break;
+                    }
+                }
+            }
+            let Some(code) = source else {
+                return Exception::new_err(
+                    format!("failed to find file for importing `{name}`"),
+                    Error::Import,
+                );
+            };
+
+            let (atom, imported_state) = run(&code, &state.file_directory, None)?;
 
             for (k, v) in imported_state.storage {
                 state.storage.insert(k, v);

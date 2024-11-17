@@ -2,6 +2,7 @@ use clap::Parser;
 use colored::Colorize;
 use newlang::prelude::*;
 use std::fs;
+use std::path::PathBuf;
 
 /// An interpreter for the language NAMEHERE
 #[derive(Parser, Debug)]
@@ -24,10 +25,12 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let file = fs::read_to_string(args.path);
+    let file = fs::read_to_string(&args.path);
     match file {
         Ok(code) => {
-            let result = run(&code, None);
+            let mut dir = PathBuf::from(&args.path);
+            dir.pop();
+            let result = run(&code, dir, None);
             match result {
                 Ok((atom, state)) => {
                     match atom {
