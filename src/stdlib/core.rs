@@ -27,10 +27,14 @@ fn run_fn() -> Function {
         aliases: vec!["run".to_string()],
         argc: None,
         callback: Rc::new(|state, args| {
-            for arg in args {
-                arg.eval(state)?;
+            if args.is_empty() {
+                Ok(Atom::Null)
+            } else {
+                for arg in &args[0..args.len() - 1] {
+                    arg.eval(state)?;
+                }
+                args[args.len() - 1].eval(state)
             }
-            Ok(Atom::Null)
         }),
     }
 }
@@ -191,7 +195,7 @@ function! {
 
         for item in read_dir_files(&state.file_directory).chain(read_dir_files(&STL_DIRECTORY))
         {
-            if *item.file_name() == *format!("{name}.prog") {
+            if *dbg!(item.file_name()) == *dbg!(format!("{name}.prog")) {
                 if let Ok(file_content) = fs::read_to_string(item.path()) {
                     source = Some(file_content);
                     break;

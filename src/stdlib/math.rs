@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 pub fn functions() -> Vec<Function> {
-    vec![add(), subtract(), multiply()]
+    vec![add(), subtract(), multiply(), divide(), modulo()]
 }
 
 fn arithmetic_fn_builder(
@@ -35,4 +35,12 @@ fn subtract() -> Function {
 
 fn multiply() -> Function {
     arithmetic_fn_builder("*", "multiplication", i64::checked_mul)
+}
+
+fn divide() -> Function {
+    arithmetic_fn_builder("/", "division", i64::checked_div)
+}
+
+fn modulo() -> Function {
+    arithmetic_fn_builder("%", "modulo", i64::checked_rem)
 }
