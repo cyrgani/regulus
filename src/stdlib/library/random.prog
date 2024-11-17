@@ -1,0 +1,5 @@
+_(
+    def(random_byte, @(), _(
+        # todo
+    ))
+)

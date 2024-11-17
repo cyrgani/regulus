@@ -84,6 +84,7 @@ impl Function {
 }
 
 pub fn all_functions() -> Vec<Function> {
+    #[allow(clippy::wildcard_imports, reason = "more practical")]
     use crate::stdlib::*;
 
     let mut functions = vec![];
@@ -96,6 +97,7 @@ pub fn all_functions() -> Vec<Function> {
         logic::functions(),
         list::functions(),
         string::functions(),
+        time::functions(),
     ] {
         for function in module {
             functions.push(function.clone());

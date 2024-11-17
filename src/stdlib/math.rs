@@ -7,7 +7,7 @@ pub fn functions() -> Vec<Function> {
 fn arithmetic_fn_builder(
     name: &str,
     operation_name: &'static str,
-    f: fn(i32, i32) -> Option<i32>,
+    f: fn(i64, i64) -> Option<i64>,
 ) -> Function {
     Function {
         aliases: vec![],
@@ -26,13 +26,13 @@ fn arithmetic_fn_builder(
 }
 
 fn add() -> Function {
-    arithmetic_fn_builder("+", "addition", i32::checked_add)
+    arithmetic_fn_builder("+", "addition", i64::checked_add)
 }
 
 fn subtract() -> Function {
-    arithmetic_fn_builder("-", "subtraction", i32::checked_sub)
+    arithmetic_fn_builder("-", "subtraction", i64::checked_sub)
 }
 
 fn multiply() -> Function {
-    arithmetic_fn_builder("*", "multiplication", i32::checked_mul)
+    arithmetic_fn_builder("*", "multiplication", i64::checked_mul)
 }

@@ -41,7 +41,7 @@ fn not() -> Function {
     )
 }
 
-fn int_cmp_fn_builder(name: &str, f: fn(&i32, &i32) -> bool) -> Function {
+fn int_cmp_fn_builder(name: &str, f: fn(&i64, &i64) -> bool) -> Function {
     Function::new(
         &[name],
         Some(2),
@@ -55,17 +55,17 @@ fn int_cmp_fn_builder(name: &str, f: fn(&i32, &i32) -> bool) -> Function {
 }
 
 fn less() -> Function {
-    int_cmp_fn_builder("<", i32::lt)
+    int_cmp_fn_builder("<", i64::lt)
 }
 
 fn less_equals() -> Function {
-    int_cmp_fn_builder("<=", i32::le)
+    int_cmp_fn_builder("<=", i64::le)
 }
 
 fn greater() -> Function {
-    int_cmp_fn_builder(">", i32::gt)
+    int_cmp_fn_builder(">", i64::gt)
 }
 
 fn greater_equals() -> Function {
-    int_cmp_fn_builder(">=", i32::ge)
+    int_cmp_fn_builder(">=", i64::ge)
 }

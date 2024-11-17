@@ -16,9 +16,9 @@ function! {
         let atom = args[0].eval(state)?;
         Ok(Atom::Int(match &atom {
             Atom::Int(val) => *val,
-            Atom::Bool(val) => i32::from(*val),
+            Atom::Bool(val) => i64::from(*val),
             Atom::String(val) => val
-                .parse::<i32>()
+                .parse::<i64>()
                 .map_err(|_error| cast_error_builder(&atom, "int"))?,
             _ => return Err(cast_error_builder(&atom, "int")),
         }))

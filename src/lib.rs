@@ -24,15 +24,7 @@ mod function;
 mod state;
 mod utils;
 
-mod stdlib {
-    pub mod cast;
-    pub mod core;
-    pub mod io;
-    pub mod list;
-    pub mod logic;
-    pub mod math;
-    pub mod string;
-}
+mod stdlib;
 
 pub mod prelude {
     pub use crate::{

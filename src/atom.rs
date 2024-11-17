@@ -4,7 +4,7 @@ use crate::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
-    Int(i32),
+    Int(i64),
     Bool(bool),
     Null,
     List(Vec<Atom>),
@@ -16,7 +16,7 @@ impl TryFrom<&str> for Atom {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        if let Ok(int) = value.parse::<i32>() {
+        if let Ok(int) = value.parse::<i64>() {
             Ok(Self::Int(int))
         } else {
             Ok(match value {
@@ -44,7 +44,7 @@ macro_rules! unwrap_type {
 }
 
 impl Atom {
-    unwrap_type! {i32, Int, int}
+    unwrap_type! {i64, Int, int}
     unwrap_type! {bool, Bool, bool}
     unwrap_type! {Vec<Self>, List, list}
     unwrap_type! {String, String, string}
