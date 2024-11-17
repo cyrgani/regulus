@@ -11,7 +11,6 @@ pub fn functions() -> Vec<Function> {
 }
 
 function! {
-    aliases: vec![],
     name: print,
     argc: None,
     callback: |state, args| {
@@ -25,7 +24,6 @@ function! {
 }
 
 function! {
-    aliases: vec![],
     name: input,
     argc: Some(0),
     callback: |state, _| {
@@ -40,7 +38,6 @@ function! {
 }
 
 function! {
-    aliases: vec![],
     name: debug,
     argc: Some(1),
     callback: |state, args| {

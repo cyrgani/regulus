@@ -1,17 +1,15 @@
+use crate::function;
 use crate::prelude::*;
 
 pub fn functions() -> Vec<Function> {
     vec![len()]
 }
 
-fn len() -> Function {
-    Function {
-        aliases: vec![],
-        name: String::from("len"),
-        argc: Some(1),
-        callback: Rc::new(|state, args| {
-            let len = args[0].eval(state)?.string()?.len();
-            Ok(Atom::Int(len as i32))
-        }),
-    }
+function! {
+    name: len,
+    argc: Some(1),
+    callback: |state, args| {
+        let len = args[0].eval(state)?.string()?.len();
+        Ok(Atom::Int(len as i32))
+    },
 }
