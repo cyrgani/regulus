@@ -1,7 +1,8 @@
 use crate::function;
 use crate::prelude::*;
+use crate::stdlib::NamedFunction;
 
-pub fn functions() -> Vec<Function> {
+pub fn functions() -> Vec<NamedFunction> {
     vec![strlen()]
 }
 

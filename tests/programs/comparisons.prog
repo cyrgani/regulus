@@ -4,7 +4,7 @@ _(
 	assert(&&(true, true)),
 	assert(==(null, null)),
 	assert(==(+(2, 2), *(2, 2))),
-	assert(==(print, print)),
+	assert(!(==(print, print))),
 	assert(!(==(print, null))),
 	assert(!(==(string(+(2, 2)), *(2, 2)))),
 )

@@ -1,8 +1,9 @@
 use crate::function;
 use crate::prelude::*;
+use crate::stdlib::NamedFunction;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-pub fn functions() -> Vec<Function> {
+pub fn functions() -> Vec<NamedFunction> {
     vec![now(), now_nanos_part()]
 }
 
