@@ -13,8 +13,6 @@ fn arithmetic_fn_builder(
     (
         name,
         Function {
-            aliases: vec![],
-            name: String::from(name),
             argc: Some(2),
             callback: Rc::new(move |state, args| {
                 match f(args[0].eval(state)?.int()?, args[1].eval(state)?.int()?) {

@@ -14,7 +14,6 @@
     clippy::must_use_candidate
 )]
 
-pub const STL_PATH: &str = "./src/stdlib/library/library.prog";
 pub const STL_DIRECTORY: &str = "./src/stdlib/library";
 
 mod argument;
