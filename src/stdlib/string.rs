@@ -2,11 +2,11 @@ use crate::function;
 use crate::prelude::*;
 
 pub fn functions() -> Vec<Function> {
-    vec![len()]
+    vec![strlen()]
 }
 
 function! {
-    name: len,
+    name: strlen,
     argc: Some(1),
     callback: |state, args| {
         let len = args[0].eval(state)?.string()?.len();

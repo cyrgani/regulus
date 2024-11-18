@@ -195,7 +195,7 @@ function! {
 
         for item in read_dir_files(&state.file_directory).chain(read_dir_files(&STL_DIRECTORY))
         {
-            if *dbg!(item.file_name()) == *dbg!(format!("{name}.prog")) {
+            if *dbg!(item.file_name()) == *format!("{name}.prog") {
                 if let Ok(file_content) = fs::read_to_string(item.path()) {
                     source = Some(file_content);
                     break;
