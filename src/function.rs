@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::prelude::*;
 use crate::state::State;
 use std::fmt;
@@ -33,7 +34,7 @@ impl FunctionCall {
                 return Exception::new_err(
                     format!(
                         "expected `{argc}` args, found `{arg_len}` args for `{}`",
-                        function.name
+                        self.name
                     ),
                     Error::Argument,
                 );
@@ -48,7 +49,9 @@ type Callback = dyn Fn(&mut State, &[Argument]) -> ProgResult<Atom>;
 
 #[derive(Clone)]
 pub struct Function {
+    #[deprecated]
     pub name: String,
+    #[deprecated]
     pub aliases: Vec<String>,
     pub argc: Option<usize>,
     pub callback: Rc<Callback>,
@@ -67,8 +70,8 @@ impl fmt::Debug for Function {
 }
 
 impl PartialEq for Function {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name
+    fn eq(&self, _other: &Self) -> bool {
+        false
     }
 }
 
@@ -81,13 +84,25 @@ impl Function {
             callback,
         }
     }
+
+    pub fn new_group(names: &[&str], argc: Option<usize>, callback: Rc<Callback>) -> Vec<Self> {
+        names
+            .iter()
+            .map(|name| Self {
+                name: String::from("deprecated"),
+                aliases: vec![],
+                argc,
+                callback: callback.clone(),
+            })
+            .collect()
+    }
 }
 
-pub fn all_functions() -> Vec<Function> {
+pub fn all_functions() -> HashMap<String, Atom> {
     #[allow(clippy::wildcard_imports, reason = "more practical")]
     use crate::stdlib::*;
 
-    let mut functions = vec![];
+    let mut functions = HashMap::new();
 
     for module in [
         cast::functions(),
@@ -99,13 +114,8 @@ pub fn all_functions() -> Vec<Function> {
         string::functions(),
         time::functions(),
     ] {
-        for function in module {
-            functions.push(function.clone());
-            for alias in &function.aliases {
-                let mut new = function.clone();
-                new.name = alias.to_string();
-                functions.push(new);
-            }
+        for (name, function) in module {
+            functions.insert(name.to_string(), Atom::Function(function));
         }
     }
 

@@ -24,21 +24,21 @@ impl State {
     }
 
     pub fn get_function(&self, name: &str) -> ProgResult<Function> {
-        self.storage
-            .values()
-            .find_map(|atom| match atom {
-                Atom::Function(function) if function.name == name => Some(function.clone()),
-                _ => None,
-            })
-            .ok_or_else(|| Exception::new(format!("No function `{name}` found!"), Error::Name))
+        match self.storage.get(name) {
+            Some(atom) => {
+                if let Atom::Function(func) = atom {
+                    Ok(func.clone())
+                } else {
+                    Exception::new_err(format!("`{name}` is not a function!"), Error::Name)
+                }
+            }
+            None => Exception::new_err(format!("No function `{name}` found!"), Error::Name),
+        }
     }
 }
 
 pub fn initial_storage() -> HashMap<String, Atom> {
     crate::function::all_functions()
-        .into_iter()
-        .map(|f| (f.name.clone(), Atom::Function(f)))
-        .collect()
 }
 
 pub enum WriteHandle<T> {

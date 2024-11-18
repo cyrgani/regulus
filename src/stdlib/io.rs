@@ -1,12 +1,13 @@
 use crate::function;
 use crate::prelude::*;
 use crate::state::State;
+use crate::stdlib::NamedFunction;
 
 fn write_to_stdout(state: &mut State, msg: &str) {
     state.stdout.write_all(msg.as_bytes());
 }
 
-pub fn functions() -> Vec<Function> {
+pub fn functions() -> Vec<NamedFunction> {
     vec![print(), input(), debug()]
 }
 

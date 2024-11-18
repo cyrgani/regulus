@@ -1,47 +1,98 @@
 use crate::function;
 use crate::prelude::*;
+use crate::stdlib::NamedFunction;
 use crate::STL_DIRECTORY;
 use std::fs::{self, DirEntry};
 use std::path::Path;
 
-pub fn functions() -> Vec<Function> {
+pub fn functions() -> Vec<NamedFunction> {
     vec![
         run_fn(),
+        run_fn_underscore(),
         assign(),
+        assign_eq_fn(),
         r#if(),
         ifelse(),
         r#while(),
         def(),
         def_args(),
+        def_args_at(),
         import(),
         error(),
         equals(),
+        equals_signs(),
         assert(),
         catch(),
     ]
 }
 
-fn run_fn() -> Function {
-    Function {
-        name: String::from("_"),
-        aliases: vec!["run".to_string()],
-        argc: None,
-        callback: Rc::new(|state, args| {
-            if args.is_empty() {
-                Ok(Atom::Null)
-            } else {
-                for arg in &args[0..args.len() - 1] {
-                    arg.eval(state)?;
+fn run_fn_underscore() -> NamedFunction {
+    (
+        "_",
+        Function {
+            name: String::from("_"),
+            aliases: vec!["run".to_string()],
+            argc: None,
+            callback: Rc::new(|state, args| {
+                if args.is_empty() {
+                    Ok(Atom::Null)
+                } else {
+                    for arg in &args[0..args.len() - 1] {
+                        arg.eval(state)?;
+                    }
+                    args[args.len() - 1].eval(state)
                 }
-                args[args.len() - 1].eval(state)
-            }
-        }),
-    }
+            }),
+        },
+    )
+}
+
+fn run_fn() -> NamedFunction {
+    (
+        "run",
+        Function {
+            name: String::from("_"),
+            aliases: vec!["run".to_string()],
+            argc: None,
+            callback: Rc::new(|state, args| {
+                if args.is_empty() {
+                    Ok(Atom::Null)
+                } else {
+                    for arg in &args[0..args.len() - 1] {
+                        arg.eval(state)?;
+                    }
+                    args[args.len() - 1].eval(state)
+                }
+            }),
+        },
+    )
+}
+
+fn assign_eq_fn() -> NamedFunction {
+    (
+        "=",
+        Function {
+            name: String::from("deprecated"),
+            aliases: vec![],
+            argc: None,
+            callback: Rc::new(|state, args| {
+                if let Argument::Variable(var) = &args[0] {
+                    let val = args[1].eval(state)?;
+                    state.storage.insert(var.clone(), val);
+                    Ok(Atom::Null)
+                } else {
+                    Exception::new_err(
+                        "Error during assignment: no variable was given to assign to!",
+                        Error::Assign,
+                    )
+                }
+            }),
+        },
+    )
 }
 
 function! {
     name: assign,
-    aliases: vec!["=".to_string()],
     argc: Some(2),
     callback: |state, args| {
         if let Argument::Variable(var) = &args[0] {
@@ -155,13 +206,29 @@ function! {
     },
 }
 
-fn def_args() -> Function {
-    Function::new(
-        &["@", "args"],
-        None,
-        Rc::new(|_state, _args| {
-            unreachable!("this function should never get evaluated and only be used without evaluation by `def`s internals!")
-        }),
+fn def_args_at() -> NamedFunction {
+    (
+        "@",
+        Function::new(
+            &["@", "args"],
+            None,
+            Rc::new(|_state, _args| {
+                unreachable!("this function should never get evaluated and only be used without evaluation by `def`s internals!")
+            }),
+        ),
+    )
+}
+
+fn def_args() -> NamedFunction {
+    (
+        "args",
+        Function::new(
+            &["@", "args"],
+            None,
+            Rc::new(|_state, _args| {
+                unreachable!("this function should never get evaluated and only be used without evaluation by `def`s internals!")
+            }),
+        ),
     )
 }
 
@@ -195,7 +262,7 @@ function! {
 
         for item in read_dir_files(&state.file_directory).chain(read_dir_files(&STL_DIRECTORY))
         {
-            if *dbg!(item.file_name()) == *format!("{name}.prog") {
+            if *item.file_name() == *format!("{name}.prog") {
                 if let Ok(file_content) = fs::read_to_string(item.path()) {
                     source = Some(file_content);
                     break;
@@ -236,15 +303,32 @@ function! {
     },
 }
 
-fn equals() -> Function {
-    Function {
-        name: String::from("=="),
-        aliases: vec!["equals".to_string()],
-        argc: Some(2),
-        callback: Rc::new(|state, args| {
-            Ok(Atom::Bool(args[0].eval(state)? == args[1].eval(state)?))
-        }),
-    }
+fn equals() -> NamedFunction {
+    (
+        "equals",
+        Function {
+            name: String::from("=="),
+            aliases: vec!["equals".to_string()],
+            argc: Some(2),
+            callback: Rc::new(|state, args| {
+                Ok(Atom::Bool(args[0].eval(state)? == args[1].eval(state)?))
+            }),
+        },
+    )
+}
+
+fn equals_signs() -> NamedFunction {
+    (
+        "==",
+        Function {
+            name: String::from("=="),
+            aliases: vec!["equals".to_string()],
+            argc: Some(2),
+            callback: Rc::new(|state, args| {
+                Ok(Atom::Bool(args[0].eval(state)? == args[1].eval(state)?))
+            }),
+        },
+    )
 }
 
 function! {
