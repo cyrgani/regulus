@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fmt;
 
 #[derive(Debug, Clone)]
+#[expect(clippy::module_name_repetitions, reason = "preference")]
 pub struct FunctionCall {
     pub args: Vec<Argument>,
     pub name: String,

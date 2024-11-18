@@ -1,5 +1,5 @@
 _(
-    def(random_u16, @(), _(
+    def(random_u16, _(
         # source: https://en.wikipedia.org/wiki/Linear_congruential_generator#Parameters_in_common_use
         =(a, 75),
         =(c, 74),

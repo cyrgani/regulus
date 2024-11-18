@@ -44,7 +44,6 @@ const ALIASES: &[(&str, &str)] = &[
     ("run", "_"),
     ("assign", "="),
     ("equals", "=="),
-    ("args", "@"),
 ];
 
 /// Constructs the initial storage at startup.

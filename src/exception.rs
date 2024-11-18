@@ -22,6 +22,7 @@ pub struct Exception {
 }
 
 impl Exception {
+    #[expect(clippy::needless_pass_by_value, reason = "unhelpful lint")]
     pub fn new(msg: impl ToString, error: Error) -> Self {
         Self {
             msg: msg.to_string(),

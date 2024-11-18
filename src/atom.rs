@@ -58,7 +58,7 @@ impl fmt::Display for Atom {
             "{}",
             match self {
                 Self::Bool(val) => val.to_string(),
-                Self::Function(_) => format!("<function>"),
+                Self::Function(_) => "<function>".to_string(),
                 Self::Int(val) => val.to_string(),
                 Self::List(val) => format!(
                     "[{}]",

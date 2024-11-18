@@ -18,7 +18,6 @@ pub fn functions() -> Vec<NamedFunction> {
         equals(),
         assert(),
         catch(),
-        args(),
     ]
 }
 
@@ -91,53 +90,48 @@ function! {
 
 function! {
     name: def,
-    argc: Some(3),
+    argc: None,
     callback: |state, args| {
+        if args.len() < 2 {
+            return Exception::new_err(format!("too few arguments passed to `def`: expected at least 2, found {}", args.len()), Error::Argument);
+        }
         if let Argument::Variable(var) = &args[0] {
-            if let Argument::FunctionCall(arg_call) = &args[1] {
-                if let Argument::FunctionCall(inner) = &args[2] {
-                    let body = inner.clone();
-                    let function_arg_names = arg_call
-                        .args
-                        .iter()
-                        .cloned()
-                        .map(|fn_arg| match fn_arg {
-                            Argument::Variable(fn_arg) => Ok(fn_arg),
-                            _ => Exception::new_err(
-                                "Error during definition: invalid args were given!",
-                                Error::Assign,
-                            ),
-                        })
-                        .collect::<Result<Vec<String>, Exception>>()?;
+            if let Argument::FunctionCall(inner) = args.last().unwrap() {
+                let body = inner.clone();
+                let function_arg_names = args[1..args.len() - 1]
+                    .iter()
+                    .cloned()
+                    .map(|fn_arg| match fn_arg {
+                        Argument::Variable(fn_arg) => Ok(fn_arg),
+                        _ => Exception::new_err(
+                            "Error during definition: invalid args were given!",
+                            Error::Assign,
+                        ),
+                    })
+                    .collect::<Result<Vec<String>, Exception>>()?;
 
-                    let function = Function {
-                        argc: Some(function_arg_names.len()),
-                        callback: Rc::new(move |state, args| {
-                            // a function call should have its own scope and not leak variables
-                            let old_storage = state.storage.clone();
+                let function = Function {
+                    argc: Some(function_arg_names.len()),
+                    callback: Rc::new(move |state, args| {
+                        // a function call should have its own scope and not leak variables
+                        let old_storage = state.storage.clone();
 
-                            for (idx, arg) in function_arg_names.iter().enumerate() {
-                                let arg_result = args[idx].eval(state)?;
-                                state.storage.insert(arg.clone(), arg_result);
-                            }
+                        for (idx, arg) in function_arg_names.iter().enumerate() {
+                            let arg_result = args[idx].eval(state)?;
+                            state.storage.insert(arg.clone(), arg_result);
+                        }
 
-                            let function_result = body.eval(state);
-                            state.storage = old_storage;
-                            function_result
-                        }),
-                    };
+                        let function_result = body.eval(state);
+                        state.storage = old_storage;
+                        function_result
+                    }),
+                };
 
-                    state.storage.insert(var.clone(), Atom::Function(function));
-                    Ok(Atom::Null)
-                } else {
-                    Exception::new_err(
-                        "Error during definition: no valid function body was given!",
-                        Error::Assign,
-                    )
-                }
+                state.storage.insert(var.clone(), Atom::Function(function));
+                Ok(Atom::Null)
             } else {
                 Exception::new_err(
-                    "Error during definition: no valid argument was given!",
+                    "Error during definition: no valid function body was given!",
                     Error::Assign,
                 )
             }
@@ -147,14 +141,6 @@ function! {
                 Error::Assign,
             )
         }
-    },
-}
-
-function! {
-    name: args,
-    argc: None,
-    callback: |_, _| {
-        unreachable!("this function should never get evaluated and only be used without evaluation by `def`s internals")
     },
 }
 
