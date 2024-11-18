@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use crate::prelude::*;
 use crate::state::State;
+use std::collections::HashMap;
 use std::fmt;
 
 #[derive(Debug, Clone)]
@@ -49,10 +49,6 @@ type Callback = dyn Fn(&mut State, &[Argument]) -> ProgResult<Atom>;
 
 #[derive(Clone)]
 pub struct Function {
-    #[deprecated]
-    pub name: String,
-    #[deprecated]
-    pub aliases: Vec<String>,
     pub argc: Option<usize>,
     pub callback: Rc<Callback>,
 }
@@ -61,10 +57,8 @@ pub struct Function {
 impl fmt::Debug for Function {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Function")
-            .field("name", &self.name)
             .field("argc", &self.argc)
-            .field("aliases", &self.aliases)
-            .field("callback", &Rc::new(()))
+            .field("callback", &"..")
             .finish()
     }
 }
@@ -72,29 +66,6 @@ impl fmt::Debug for Function {
 impl PartialEq for Function {
     fn eq(&self, _other: &Self) -> bool {
         false
-    }
-}
-
-impl Function {
-    pub fn new(names: &[&str], argc: Option<usize>, callback: Rc<Callback>) -> Self {
-        Self {
-            name: names[0].to_string(),
-            aliases: names[1..].iter().map(ToString::to_string).collect(),
-            argc,
-            callback,
-        }
-    }
-
-    pub fn new_group(names: &[&str], argc: Option<usize>, callback: Rc<Callback>) -> Vec<Self> {
-        names
-            .iter()
-            .map(|name| Self {
-                name: String::from("deprecated"),
-                aliases: vec![],
-                argc,
-                callback: callback.clone(),
-            })
-            .collect()
     }
 }
 

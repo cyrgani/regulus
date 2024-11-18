@@ -37,8 +37,38 @@ impl State {
     }
 }
 
+const ALIASES: &[(&str, &str)] = &[
+    ("not", "!"),
+    ("and", "&&"),
+    ("or", "||"),
+    ("run", "_"),
+    ("assign", "="),
+    ("equals", "=="),
+    ("args", "@"),
+];
+
+/// Constructs the initial storage at startup.
+///
+/// # Panics
+/// Panics if an alias for a non-existent function was set in [`ALIASES`].
 pub fn initial_storage() -> HashMap<String, Atom> {
-    crate::function::all_functions()
+    let mut base_functions = crate::function::all_functions();
+    for (name, alias) in ALIASES {
+        base_functions.insert(
+            (*alias).to_string(),
+            base_functions
+                .iter()
+                .find_map(|(fn_name, fn_item)| {
+                    if fn_name == name {
+                        Some(fn_item.clone())
+                    } else {
+                        None
+                    }
+                })
+                .unwrap_or_else(|| panic!("internal error: tried to alias a non-existent function: `({name}, {alias})`")),
+        );
+    }
+    base_functions
 }
 
 pub enum WriteHandle<T> {

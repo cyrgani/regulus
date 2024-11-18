@@ -1,20 +1,7 @@
 #[macro_export]
 macro_rules! function {
-    /*(
-        name: $name: ident,
-        argc: $argc: expr,
-        callback: $callback: expr,
-    ) => {
-        function! {
-            name: $name,
-            aliases: vec![],
-            argc: $argc,
-            callback: $callback,
-        }
-    };*/
     (
         name: $name: ident,
-        //aliases: $aliases: expr,
         argc: $argc: expr,
         callback: $callback: expr,
     ) => {
@@ -26,8 +13,6 @@ macro_rules! function {
             (
                 name,
                 $crate::prelude::Function {
-                    name: String::from(name),
-                    aliases: vec![],
                     argc: $argc,
                     callback: std::rc::Rc::new($callback),
                 },
