@@ -54,6 +54,8 @@ pub fn run_test(dir_path: &str, name: &str) {
 
     let stdout = final_state.stdout.get_buffer();
     let stderr = final_state.stderr.get_buffer();
+    // TODO: consider if this is a good idea
+    assert!(stderr.is_empty());
 
     if overwrite_stream_files {
         let new_data = TestStreamData {
