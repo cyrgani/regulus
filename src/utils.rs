@@ -20,3 +20,14 @@ macro_rules! function {
         }
     };
 }
+
+#[macro_export]
+macro_rules! export {
+    ($($func: ident),*,) => {
+        pub fn functions() -> Vec<(&'static str, $crate::prelude::Function)> {
+            vec![
+                $($func(),)*
+            ]
+        }
+    };
+}

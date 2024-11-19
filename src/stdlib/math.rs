@@ -1,8 +1,9 @@
+use crate::export;
 use crate::prelude::*;
 use crate::stdlib::NamedFunction;
 
-pub fn functions() -> Vec<NamedFunction> {
-    vec![add(), subtract(), multiply(), divide(), modulo()]
+export! {
+    add, subtract, multiply, divide, modulo,
 }
 
 fn arithmetic_fn_builder(

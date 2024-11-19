@@ -29,7 +29,7 @@ impl TryFrom<&str> for Atom {
     }
 }
 
-macro_rules! unwrap_type {
+macro_rules! try_as_type {
     ($ty:ty, $variant:ident, $method_name:ident) => {
         pub fn $method_name(&self) -> ProgResult<$ty> {
             match self {
@@ -44,11 +44,11 @@ macro_rules! unwrap_type {
 }
 
 impl Atom {
-    unwrap_type! {i64, Int, int}
-    unwrap_type! {bool, Bool, bool}
-    unwrap_type! {Vec<Self>, List, list}
-    unwrap_type! {String, String, string}
-    unwrap_type! {Function, Function, function}
+    try_as_type! {i64, Int, int}
+    try_as_type! {bool, Bool, bool}
+    try_as_type! {Vec<Self>, List, list}
+    try_as_type! {String, String, string}
+    try_as_type! {Function, Function, function}
 }
 
 impl fmt::Display for Atom {

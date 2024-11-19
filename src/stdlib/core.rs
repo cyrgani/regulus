@@ -1,25 +1,21 @@
-use crate::function;
 use crate::prelude::{self, *};
-use crate::stdlib::NamedFunction;
-use crate::STL_DIRECTORY;
+use crate::{export, function, STL_DIRECTORY};
 use std::fs::{self, DirEntry};
 use std::path::Path;
 
-pub fn functions() -> Vec<NamedFunction> {
-    vec![
-        run(),
-        assign(),
-        r#if(),
-        ifelse(),
-        r#while(),
-        def(),
-        import(),
-        error(),
-        equals(),
-        assert(),
-        assert_eq(),
-        catch(),
-    ]
+export! {
+    run,
+    assign,
+    r#if,
+    ifelse,
+    r#while,
+    def,
+    import,
+    error,
+    equals,
+    assert,
+    assert_eq,
+    catch,
 }
 
 function! {

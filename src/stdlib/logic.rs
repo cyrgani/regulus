@@ -1,17 +1,15 @@
-use crate::function;
+use crate::{export, function};
 use crate::prelude::*;
 use crate::stdlib::NamedFunction;
 
-pub fn functions() -> Vec<NamedFunction> {
-    vec![
-        less(),
-        less_equals(),
-        greater(),
-        greater_equals(),
-        not(),
-        and(),
-        or(),
-    ]
+export! {
+    less,
+    less_equals,
+    greater,
+    greater_equals,
+    not,
+    and,
+    or,
 }
 
 function! {

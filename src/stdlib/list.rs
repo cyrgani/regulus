@@ -1,9 +1,8 @@
-use crate::function;
+use crate::{export, function};
 use crate::prelude::*;
-use crate::stdlib::NamedFunction;
 
-pub fn functions() -> Vec<NamedFunction> {
-    vec![list(), push(), index(), pop(), for_in(), len(), map()]
+export!{
+    list, push, index, pop, for_in, len, map,
 }
 
 function! {

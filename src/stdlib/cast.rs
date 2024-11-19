@@ -1,9 +1,8 @@
-use crate::function;
+use crate::{export, function};
 use crate::prelude::*;
-use crate::stdlib::NamedFunction;
 
-pub fn functions() -> Vec<NamedFunction> {
-    vec![int(), string(), bool()]
+export! {
+    int, string, bool,
 }
 
 fn cast_error_builder(atom: &Atom, new_type: &str) -> Exception {

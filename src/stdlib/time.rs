@@ -1,10 +1,9 @@
-use crate::function;
+use crate::{export, function};
 use crate::prelude::*;
-use crate::stdlib::NamedFunction;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-pub fn functions() -> Vec<NamedFunction> {
-    vec![now(), now_nanos_part()]
+export! {
+    now, now_nanos_part,
 }
 
 fn epoch_duration() -> Duration {
