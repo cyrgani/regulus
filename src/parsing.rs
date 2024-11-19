@@ -11,62 +11,55 @@ pub enum Token {
     Comment(String),
 }
 
+/// Takes characters from the stream until `target` is reached, return all characters before `target`.
+fn take_until(chars: impl Iterator<Item = char>, target: char) -> String {
+    let mut result = String::new();
+    for c in chars {
+        if c == target {
+            break;
+        }
+        result.push(c);
+    }
+    result
+}
+
 pub fn tokenize(code: &str) -> Vec<Token> {
     let mut tokens = vec![];
     let mut current = String::new();
-    let mut in_string = false;
 
     let mut chars = code.chars();
 
     while let Some(c) = chars.next() {
-        if in_string {
-            match c {
-                '"' => {
-                    tokens.push(Token::Atom(Atom::String(current.clone())));
+        match c {
+            '(' => {
+                if !current.is_empty() {
+                    tokens.push(Token::Function(current.clone()));
                     current.clear();
-                    in_string = !in_string;
                 }
-                _ => current.push(c),
+                tokens.push(Token::LeftParen);
             }
-        } else {
-            match c {
-                '(' => {
-                    if !current.is_empty() {
-                        tokens.push(Token::Function(current.clone()));
-                        current.clear();
-                    }
-                    tokens.push(Token::LeftParen);
-                }
-                ')' | ',' => {
-                    if !current.is_empty() {
-                        tokens.push(match Atom::try_from(current.as_str()) {
-                            Ok(value) => Token::Atom(value),
-                            Err(()) => Token::Name(current.clone()),
-                        });
-                        current.clear();
-                    }
-                    tokens.push(match c {
-                        ')' => Token::RightParen,
-                        ',' => Token::Comma,
-                        _ => unreachable!(),
+            ')' | ',' => {
+                if !current.is_empty() {
+                    tokens.push(match Atom::try_from(current.as_str()) {
+                        Ok(value) => Token::Atom(value),
+                        Err(()) => Token::Name(current.clone()),
                     });
+                    current.clear();
                 }
-                '"' => {
-                    in_string = !in_string;
-                }
-                ' ' | '\n' | '\t' => (),
-                '#' => {
-                    let mut comment = String::new();
-                    for c in chars.by_ref() {
-                        comment.push(c);
-                        if c == '\n' {
-                            break;
-                        }
-                    }
-                    tokens.push(Token::Comment(comment));
-                }
-                _ => current.push(c),
+                tokens.push(match c {
+                    ')' => Token::RightParen,
+                    ',' => Token::Comma,
+                    _ => unreachable!(),
+                });
             }
+            '"' => {
+                tokens.push(Token::Atom(Atom::String(take_until(chars.by_ref(), '"'))));
+            }
+            ' ' | '\n' | '\t' => (),
+            '#' => {
+                tokens.push(Token::Comment(take_until(chars.by_ref(), '\n')));
+            }
+            _ => current.push(c),
         }
     }
 
