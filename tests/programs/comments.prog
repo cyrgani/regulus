@@ -6,7 +6,7 @@ _(
     #actual body of `#` now
     b, "a#b"
     ),
-    assert(==(a, b)),
+    assert_eq(a, b),
     assert(!(==("
 #
 #", "

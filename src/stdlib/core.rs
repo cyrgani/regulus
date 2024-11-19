@@ -17,6 +17,7 @@ pub fn functions() -> Vec<NamedFunction> {
         error(),
         equals(),
         assert(),
+        assert_eq(),
         catch(),
     ]
 }
@@ -231,6 +232,20 @@ function! {
             Ok(Atom::Null)
         } else {
             Exception::new_err("Assertion failed!", Error::Assertion)
+        }
+    },
+}
+
+function! {
+    name: assert_eq,
+    argc: Some(2),
+    callback: |state, args| {
+        let lhs = args[0].eval(state)?;
+        let rhs = args[1].eval(state)?;
+        if lhs == rhs {
+            Ok(Atom::Null)
+        } else {
+            Exception::new_err(format!("Assertion failed: `{lhs} == {rhs}`!"), Error::Assertion)
         }
     },
 }

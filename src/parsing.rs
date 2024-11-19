@@ -11,7 +11,7 @@ pub enum Token {
     Comment(String),
 }
 
-/// Takes characters from the stream until `target` is reached, return all characters before `target`.
+/// Takes characters from the stream until `target` is reached, returns all characters before `target`.
 fn take_until(chars: impl Iterator<Item = char>, target: char) -> String {
     let mut result = String::new();
     for c in chars {
