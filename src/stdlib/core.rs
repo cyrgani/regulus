@@ -2,6 +2,7 @@ use crate::prelude::{self, *};
 use crate::STL_DIRECTORY;
 use std::fs::{self, DirEntry};
 use std::path::Path;
+use std::rc::Rc;
 
 export! {
     run,

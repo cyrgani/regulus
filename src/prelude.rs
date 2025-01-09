@@ -7,4 +7,3 @@ pub use crate::{
     run,
     state::{initial_storage, State, WriteHandle},
 };
-pub use std::rc::Rc;

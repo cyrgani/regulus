@@ -1,6 +1,7 @@
 use crate::prelude::*;
 use std::collections::HashMap;
 use std::fmt;
+use std::rc::Rc;
 
 #[derive(Debug, Clone)]
 #[expect(clippy::module_name_repetitions, reason = "preference")]
