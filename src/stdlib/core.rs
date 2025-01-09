@@ -6,9 +6,9 @@ use std::path::Path;
 export! {
     run,
     assign,
-    r#if,
+    if_fn,
     ifelse,
-    r#while,
+    while_fn,
     def,
     import,
     error,
@@ -20,6 +20,7 @@ export! {
 
 function! {
     name: run,
+    override_name: _,
     argc: None,
     callback: |state, args| {
         if args.is_empty() {
@@ -35,6 +36,7 @@ function! {
 
 function! {
     name: assign,
+    override_name: =,
     argc: None,
     callback: |state, args| {
         if let Argument::Variable(var) = &args[0] {
@@ -51,7 +53,8 @@ function! {
 }
 
 function! {
-    name: r#if,
+    name: if_fn,
+    override_name: if,
     argc: Some(2),
     callback: |state, args| {
         Ok(if args[0].eval(state)?.bool()? {
@@ -75,7 +78,8 @@ function! {
 }
 
 function! {
-    name: r#while,
+    name: while_fn,
+    override_name: while,
     argc: Some(2),
     callback: |state, args| {
         while args[0].eval(state)?.bool()? {
@@ -214,6 +218,7 @@ function! {
 
 function! {
     name: equals,
+    override_name: ==,
     argc: Some(2),
     callback: |state, args| {
         Ok(Atom::Bool(args[0].eval(state)? == args[1].eval(state)?))

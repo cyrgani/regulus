@@ -1,3 +1,7 @@
-run(
-assign(x, -(5, 3)),
-print(+(2, x)),)
+_(
+    import("aliases"),
+    run(
+        assign(x, -(5, 3)),
+        print(+(2, x)),
+    )
+)

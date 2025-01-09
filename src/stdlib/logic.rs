@@ -12,6 +12,7 @@ export! {
 
 function! {
     name: or,
+    override_name: ||,
     argc: Some(2),
     callback: |state, args| Ok(Atom::Bool(
         args[0].eval(state)?.bool()? ||
@@ -21,6 +22,7 @@ function! {
 
 function! {
     name: and,
+    override_name: &&,
     argc: Some(2),
     callback: |state, args| Ok(Atom::Bool(
         args[0].eval(state)?.bool()? &&
@@ -30,6 +32,7 @@ function! {
 
 function! {
     name: not,
+    override_name: !,
     argc: Some(1),
     callback: |state, args| Ok(Atom::Bool(!args[0].eval(state)?.bool()?)),
 }

@@ -1,0 +1,9 @@
+_(
+    def(foo, x, _(
+        =(y, 0),
+        x
+    )),
+
+    print(foo(2)),
+    print(catch(y))
+)

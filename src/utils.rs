@@ -43,12 +43,8 @@ macro_rules! function {
         callback: $callback: expr,
     ) => {
         fn $name() -> (&'static str, $crate::prelude::Function) {
-            let mut real_name = stringify!($override_name);
-            if let Some(stripped_name) = real_name.strip_prefix("r#") {
-                real_name = stripped_name;
-            }
             (
-                real_name,
+                stringify!($override_name),
                 $crate::prelude::Function {
                     argc: $argc,
                     callback: std::rc::Rc::new($callback),
