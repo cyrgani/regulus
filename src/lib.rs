@@ -22,9 +22,9 @@ mod argument;
 mod atom;
 mod exception;
 mod function;
+mod macros;
 mod parsing;
 mod state;
-mod utils;
 
 mod stdlib;
 
@@ -49,7 +49,7 @@ pub fn run(
 
     let program = build_program(&tokens, "_")?;
 
-    let mut state = start_state.unwrap_or_else(|| state::State::initial(dir));
+    let mut state = start_state.unwrap_or_else(|| State::initial(dir));
 
     let result = program.eval(&mut state)?;
     Ok((result, state))

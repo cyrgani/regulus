@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use crate::state::State;
 
 fn write_to_stdout(state: &mut State, msg: &str) {
     state.stdout.write_all(msg.as_bytes());
