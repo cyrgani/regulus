@@ -1,7 +1,7 @@
 pub mod token;
 
-pub use token::{tokenize, validate_tokens, Token};
 use crate::prelude::*;
+pub use token::{tokenize, validate_tokens, Token};
 
 pub fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCall> {
     let mut call = FunctionCall {

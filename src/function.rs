@@ -71,7 +71,6 @@ impl PartialEq for Function {
 }
 
 pub fn all_functions() -> HashMap<String, Atom> {
-    #[allow(clippy::wildcard_imports, reason = "more practical")]
     use crate::stdlib::*;
 
     let mut functions = HashMap::new();

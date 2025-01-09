@@ -1,6 +1,6 @@
-use std::path::PathBuf;
 use crate::atom::Atom;
 use crate::exception::{Error, Exception, ProgResult};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
@@ -13,6 +13,7 @@ pub enum Token {
     Comment(String),
 }
 
+// TODO unused
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Span {
     pub file: PathBuf,

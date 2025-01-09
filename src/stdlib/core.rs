@@ -1,5 +1,5 @@
 use crate::prelude::{self, *};
-use crate::{export, function, STL_DIRECTORY};
+use crate::STL_DIRECTORY;
 use std::fs::{self, DirEntry};
 use std::path::Path;
 

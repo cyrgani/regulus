@@ -37,6 +37,9 @@ impl State {
     }
 }
 
+#[deprecated(
+    note = "supporting the verbose names of these calls is probably going to move to the stl"
+)]
 const ALIASES: &[(&str, &str)] = &[
     ("not", "!"),
     ("and", "&&"),

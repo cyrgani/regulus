@@ -3,7 +3,8 @@
     clippy::pedantic,
     clippy::print_stdout,
     clippy::print_stderr,
-    clippy::dbg_macro
+    clippy::dbg_macro,
+    clippy::allow_attributes
 )]
 #![allow(
     clippy::missing_errors_doc,
@@ -11,7 +12,8 @@
     clippy::cast_possible_truncation,
     clippy::cast_possible_wrap,
     clippy::cast_sign_loss,
-    clippy::must_use_candidate
+    clippy::must_use_candidate,
+    clippy::wildcard_imports
 )]
 
 pub const STL_DIRECTORY: &str = "./src/stdlib/library";

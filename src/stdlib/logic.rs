@@ -1,6 +1,4 @@
-use crate::{export, function};
 use crate::prelude::*;
-use crate::stdlib::NamedFunction;
 
 export! {
     less,
@@ -36,33 +34,25 @@ function! {
     callback: |state, args| Ok(Atom::Bool(!args[0].eval(state)?.bool()?)),
 }
 
-fn int_cmp_fn_builder(name: &'static str, f: fn(&i64, &i64) -> bool) -> NamedFunction {
-    (
-        name,
-        Function {
+macro_rules! cmp_functions {
+    ($(($name: ident, $sym: tt, $cmp: path)),*) => {
+        $(function! {
+            name: $name,
+            override_name: $sym,
             argc: Some(2),
-            callback: Rc::new(move |state, args| {
-                Ok(Atom::Bool(f(
+            callback: |state, args| {
+                Ok(Atom::Bool($cmp(
                     &args[0].eval(state)?.int()?,
                     &args[1].eval(state)?.int()?,
                 )))
-            }),
-        },
-    )
+            },
+        })*
+    };
 }
 
-fn less() -> NamedFunction {
-    int_cmp_fn_builder("<", i64::lt)
-}
-
-fn less_equals() -> NamedFunction {
-    int_cmp_fn_builder("<=", i64::le)
-}
-
-fn greater() -> NamedFunction {
-    int_cmp_fn_builder(">", i64::gt)
-}
-
-fn greater_equals() -> NamedFunction {
-    int_cmp_fn_builder(">=", i64::ge)
+cmp_functions! {
+    (less, <, i64::lt),
+    (less_equals, <=, i64::le),
+    (greater, >, i64::gt),
+    (greater_equals, >=, i64::ge)
 }

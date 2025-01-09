@@ -1,7 +1,6 @@
-use crate::{export, function};
 use crate::prelude::*;
 
-export!{
+export! {
     list, push, index, pop, for_in, len, map,
 }
 
