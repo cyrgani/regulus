@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 export! {
-    int, string, bool,
+    int, string, bool_fn,
 }
 
 fn cast_error_builder(atom: &Atom, new_type: &str) -> Exception {
@@ -40,7 +40,8 @@ function! {
 }
 
 function! {
-    name: bool,
+    name: bool_fn,
+    override_name: bool,
     argc: Some(1),
     callback: |state, args| {
         let atom = args[0].eval(state)?;

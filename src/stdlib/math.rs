@@ -4,7 +4,7 @@ export! {
     add, subtract, multiply, divide, modulo,
 }
 
-macro_rules! aritmethic_functions {
+macro_rules! arithmetic_functions {
     ($(($name: ident, $sym: tt, $op_name: literal, $cmp: path)),*) => {
         $(function! {
             name: $name,
@@ -23,7 +23,7 @@ macro_rules! aritmethic_functions {
     };
 }
 
-aritmethic_functions! {
+arithmetic_functions! {
     (add, +, "addition", i64::checked_add),
     (subtract, -, "subtraction", i64::checked_sub),
     (multiply, *, "multiplication", i64::checked_mul),
