@@ -21,7 +21,7 @@ fn {name}() {{
 "##,
                         dir_path.as_ref().display()
                     ))
-                        .unwrap(),
+                    .unwrap(),
                 );
             }
         } else if file_type.is_dir() {

@@ -1,67 +1,36 @@
 use crate::prelude::*;
 
-export! {
-    list, push, index, pop, for_in, len, map,
-}
-
-function! {
-    name: list,
-    argc: None,
-    callback: |state, args| {
+functions! {
+    list(_) => |state, args| {
         let mut list = vec![];
         for arg in args {
             list.push(arg.eval(state)?);
         }
         Ok(Atom::List(list))
-    },
-}
-
-function! {
-    name: push,
-    argc: Some(2),
-    callback: |state, args| {
+    }
+    push(2) => |state, args| {
         args[0].eval(state)?.list()?.push(args[1].eval(state)?);
         Ok(Atom::Null)
-    },
-}
-
-function! {
-    name: index,
-    argc: Some(2),
-    callback: |state, args| {
+    }
+    index(2) => |state, args| {
         args[0]
             .eval(state)?
             .list()?
             .get(args[1].eval(state)?.int()? as usize)
             .ok_or_else(|| Exception::new("Unable to index list!", Error::Index))
             .cloned()
-    },
-}
-
-function! {
-    name: pop,
-    argc: Some(1),
-    callback: |state, args| {
+    }
+    pop(1) => |state, args| {
         args[0]
             .eval(state)?
             .list()?
             .pop()
             .ok_or_else(|| Exception::new("Unable to pop from list!", Error::Index))
-    },
-}
-
-function! {
-    name: len,
-    argc: Some(1),
-    callback: |state, args| {
+    }
+    len(1) => |state, args| {
         Ok(Atom::Int(args[0].eval(state)?.list()?.len() as i64))
-    },
-}
-
-function! {
-    name: for_in,
-    argc: Some(3),
-    callback: |state, args| {
+    }
+    for_in(3) => |state, args| {
         let list = args[0].eval(state)?.list()?;
         let Argument::Variable(loop_var) = &args[1] else {
             return Exception::new_err("invalid loop variable given to `for_in`", Error::Argument)
@@ -81,13 +50,8 @@ function! {
             state.storage.insert(loop_var.clone(), val);
         }
         Ok(Atom::Null)
-    },
-}
-
-function! {
-    name: map,
-    argc: Some(2),
-    callback: |state, args| {
+    }
+    map(2) => |state, args| {
         let function = args[1].eval(state)?.function()?;
         let list = args[0].eval(state)?.list()?;
         Ok(Atom::List(
@@ -95,5 +59,5 @@ function! {
                 .map(|atom| (function.callback)(state, &[Argument::Atom(atom)]))
                 .collect::<Result<_, _>>()?,
         ))
-    },
+    }
 }

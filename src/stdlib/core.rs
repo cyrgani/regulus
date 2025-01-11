@@ -4,26 +4,8 @@ use std::fs::{self, DirEntry};
 use std::path::Path;
 use std::rc::Rc;
 
-export! {
-    run,
-    assign,
-    if_fn,
-    ifelse,
-    while_fn,
-    def,
-    import,
-    error,
-    equals,
-    assert,
-    assert_eq,
-    catch,
-}
-
-function! {
-    name: run,
-    override_name: _,
-    argc: None,
-    callback: |state, args| {
+functions! {
+    "_"(_) => |state, args| {
         if args.is_empty() {
             Ok(Atom::Null)
         } else {
@@ -32,14 +14,8 @@ function! {
             }
             args[args.len() - 1].eval(state)
         }
-    },
-}
-
-function! {
-    name: assign,
-    override_name: =,
-    argc: None,
-    callback: |state, args| {
+    }
+    "="(2) => |state, args| {
         if let Argument::Variable(var) = &args[0] {
             let val = args[1].eval(state)?;
             state.storage.insert(var.clone(), val);
@@ -50,50 +26,28 @@ function! {
                 Error::Assign,
             )
         }
-    },
-}
-
-function! {
-    name: if_fn,
-    override_name: if,
-    argc: Some(2),
-    callback: |state, args| {
+    }
+    "if"(2) => |state, args| {
         Ok(if args[0].eval(state)?.bool()? {
             args[1].eval(state)?
         } else {
             Atom::Null
         })
-    },
-}
-
-function! {
-    name: ifelse,
-    argc: Some(3),
-    callback: |state, args| {
+    }
+    "ifelse"(3) => |state, args| {
         Ok(if args[0].eval(state)?.bool()? {
             args[1].eval(state)?
         } else {
             args[2].eval(state)?
         })
-    },
-}
-
-function! {
-    name: while_fn,
-    override_name: while,
-    argc: Some(2),
-    callback: |state, args| {
+    }
+    "while"(2) => |state, args| {
         while args[0].eval(state)?.bool()? {
             args[1].eval(state)?;
         }
         Ok(Atom::Null)
-    },
-}
-
-function! {
-    name: def,
-    argc: None,
-    callback: |state, args| {
+    }
+    "def"(_) => |state, args| {
         if args.len() < 2 {
             return Exception::new_err(format!("too few arguments passed to `def`: expected at least 2, found {}", args.len()), Error::Argument);
         }
@@ -143,24 +97,8 @@ function! {
                 Error::Assign,
             )
         }
-    },
-}
-
-fn read_dir_files(path: impl AsRef<Path>) -> impl Iterator<Item = DirEntry> {
-    fs::read_dir(&path)
-        .unwrap_or_else(|err| {
-            panic!(
-                "error when reading directory `{}`: {err}",
-                path.as_ref().display()
-            )
-        })
-        .flatten()
-}
-
-function! {
-    name: import,
-    argc: Some(1),
-    callback: |state, args| {
+    }
+    "import"(1) => |state, args| {
         let name = args[0].eval(state)?.string()?;
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
             return Exception::new_err(
@@ -196,52 +134,26 @@ function! {
             state.storage.insert(k, v);
         }
         Ok(atom)
-    },
-}
-
-function! {
-    name: error,
-    argc: Some(1),
-    callback: |state, args| {
+    }
+    "error"(1) => |state, args| {
         Exception::new_err(args[0].eval(state)?.string()?, Error::UserRaised)
-    },
-}
-
-function! {
-    name: catch,
-    argc: Some(1),
-    callback: |state, args| {
+    }
+    "catch"(1) => |state, args| {
         Ok(args[0]
             .eval(state)
             .unwrap_or_else(|exc| Atom::String(exc.to_string())))
-    },
-}
-
-function! {
-    name: equals,
-    override_name: ==,
-    argc: Some(2),
-    callback: |state, args| {
+    }
+    "=="(2) => |state, args| {
         Ok(Atom::Bool(args[0].eval(state)? == args[1].eval(state)?))
-    },
-}
-
-function! {
-    name: assert,
-    argc: Some(1),
-    callback: |state, args| {
+    }
+    "assert"(1) => |state, args| {
         if args[0].eval(state)?.bool()? {
             Ok(Atom::Null)
         } else {
             Exception::new_err("Assertion failed!", Error::Assertion)
         }
-    },
-}
-
-function! {
-    name: assert_eq,
-    argc: Some(2),
-    callback: |state, args| {
+    }
+    "assert_eq"(2) => |state, args| {
         let lhs = args[0].eval(state)?;
         let rhs = args[1].eval(state)?;
         if lhs == rhs {
@@ -249,5 +161,16 @@ function! {
         } else {
             Exception::new_err(format!("Assertion failed: `{lhs} == {rhs}`!"), Error::Assertion)
         }
-    },
+    }
+}
+
+fn read_dir_files(path: impl AsRef<Path>) -> impl Iterator<Item = DirEntry> {
+    fs::read_dir(&path)
+        .unwrap_or_else(|err| {
+            panic!(
+                "error when reading directory `{}`: {err}",
+                path.as_ref().display()
+            )
+        })
+        .flatten()
 }
