@@ -9,6 +9,7 @@ pub struct FunctionCall {
     pub name: String,
 }
 
+#[cfg(feature = "display_impls")]
 impl fmt::Display for FunctionCall {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(

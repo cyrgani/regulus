@@ -1,4 +1,5 @@
 use crate::prelude::*;
+#[cfg(feature = "display_impls")]
 use std::fmt;
 
 #[derive(Debug, Clone)]
@@ -23,6 +24,7 @@ impl Argument {
     }
 }
 
+#[cfg(feature = "display_impls")]
 impl fmt::Display for Argument {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(

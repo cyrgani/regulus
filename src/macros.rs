@@ -1,17 +1,23 @@
-#[macro_export]
-#[doc(hidden)]
-macro_rules! make_argc {
-    (_) => {
-        None
-    };
-    ($num: literal) => {
-        Some($num)
-    };
-}
-
 /// Declares a group of builtin functions and exports them into a `Vec`.
 ///
-/// # Example
+/// # Examples
+/// ```rust
+/// use newlang::prelude::*;
+/// functions! {
+///     strlen(1) => |state, args| {
+///         let len = args[0].eval(state)?.string()?.len();
+///         Ok(Atom::Int(len as i64))
+///     }
+///     strconcat(_) => |state, args| {
+///         let mut string = String::new();
+///         for arg in args {
+///             string.push_str(&arg.eval(state)?.string()?);
+///         }
+///         Ok(Atom::String(string))
+///     }
+///  }
+/// ```
+/// Temporary syntax with string literals (see below):
 /// ```rust
 /// use newlang::prelude::*;
 /// functions! {
@@ -63,5 +69,16 @@ macro_rules! functions {
                 )),*
             ]
         }
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! make_argc {
+    (_) => {
+        None
+    };
+    ($num: literal) => {
+        Some($num)
     };
 }

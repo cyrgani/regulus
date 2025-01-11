@@ -44,6 +44,7 @@ macro_rules! try_as_type {
 }
 
 impl Atom {
+    // rust type, atom variant name, method uxd
     try_as_type! {i64, Int, int}
     try_as_type! {bool, Bool, bool}
     try_as_type! {Vec<Self>, List, list}
