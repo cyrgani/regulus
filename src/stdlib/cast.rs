@@ -1,9 +1,4 @@
 use crate::prelude::*;
-/*
-export! {
-    int, string, bool,
-}
-*/
 
 fn cast_error_builder(atom: &Atom, new_type: &str) -> Exception {
     Exception::new(format!("Unable to cast {atom} to {new_type}"), Error::Type)
