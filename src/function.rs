@@ -4,7 +4,6 @@ use std::fmt;
 use std::rc::Rc;
 
 #[derive(Debug, Clone)]
-#[expect(clippy::module_name_repetitions, reason = "preference")]
 pub struct FunctionCall {
     pub args: Vec<Argument>,
     pub name: String,

@@ -1,4 +1,4 @@
 /target
 /.idea
 /.vscode
-tests_generator_macro/target
+*/target

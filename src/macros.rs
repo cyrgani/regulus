@@ -64,3 +64,55 @@ macro_rules! export {
         }
     };
 }
+
+#[macro_export]
+macro_rules! make_argc {
+    (_) => {
+        None
+    };
+    ($num: literal) => {
+        Some($num)
+    };
+}
+
+/// Advantages of making this a proc macro:
+/// 1. any function name is supported, even `if` or `<`
+/// 2. `export!` is not required anymore
+///
+/// Disadvantages:
+/// 1. either `syn` as a library dep (not nice but ok)
+/// 2. less syntax suggestions (but few are possible anyway)
+/// 3. worse diagnostics (?), maybe better in some cases?
+#[macro_export]
+macro_rules! functions {
+    /*($($name: tt (_) => $callback: expr)*) => {
+        /*pub fn functions() -> Vec<(&'static str, $crate::prelude::Function)> {
+
+        }*/
+        $(function! {
+            name: $name,
+            override_name: $name,
+            argc: None,
+            callback: $callback,
+        })*
+    };*/
+    ($($name: tt ($argc: tt) => $callback: expr)*) => {
+        pub fn functions() -> Vec<(&'static str, $crate::prelude::Function)> {
+            vec![
+                 $((
+                    stringify!($name),
+                    $crate::prelude::Function {
+                        argc: $crate::make_argc!($argc),
+                        callback: std::rc::Rc::new($callback),
+                    },
+                )),*
+            ]
+        }
+        /*$(function! {
+            name: $name,
+            override_name: $name,
+            argc: Some($argc),
+            callback: $callback,
+        })**/
+    };
+}
