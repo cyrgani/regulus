@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use crate::stdlib::all_functions;
 use std::collections::HashMap;
 use std::io::{stderr, stdin, stdout, BufRead, BufReader, Stderr, Stdout, Write};
 use std::path::{Path, PathBuf};
@@ -39,7 +40,7 @@ impl State {
 
 /// Constructs the initial storage at startup.
 pub fn initial_storage() -> HashMap<String, Atom> {
-    crate::function::all_functions()
+    all_functions()
 }
 
 pub enum WriteHandle<T> {

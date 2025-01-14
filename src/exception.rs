@@ -13,6 +13,7 @@ pub enum Error {
     Import,
     UserRaised,
     Assertion,
+    Unimplemented,
 }
 
 #[derive(Debug)]

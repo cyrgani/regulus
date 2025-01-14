@@ -2,7 +2,7 @@ use tests_generator_macro::make_tests;
 
 use newlang::prelude::{initial_storage, run, State, WriteHandle};
 use serde::{Deserialize, Serialize};
-use std::fs;
+use std::{env, fs};
 use std::io::{self, BufReader, Read};
 use std::path::PathBuf;
 use std::str;
@@ -16,6 +16,7 @@ struct TestStreamData {
 
 /// Run a test program, making sure it produces the expected stdout and stderr.
 pub fn run_test(dir_path: &str, name: &str) {
+    //let mut overwrite_stream_files = env::args().any(|arg| arg == "--bless");
     let mut overwrite_stream_files = false;
     if let Some(var) = OVERWRITE_STREAM_FILES {
         if ["y", "yes", "true"].contains(&var) {

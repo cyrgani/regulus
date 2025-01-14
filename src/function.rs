@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use std::collections::HashMap;
 use std::fmt;
 use std::rc::Rc;
 
@@ -68,27 +67,4 @@ impl PartialEq for Function {
     fn eq(&self, _other: &Self) -> bool {
         false
     }
-}
-
-pub fn all_functions() -> HashMap<String, Atom> {
-    use crate::stdlib::*;
-
-    let mut functions = HashMap::new();
-
-    for module in [
-        cast::functions(),
-        core::functions(),
-        io::functions(),
-        math::functions(),
-        logic::functions(),
-        list::functions(),
-        string::functions(),
-        time::functions(),
-    ] {
-        for (name, function) in module {
-            functions.insert(name.to_string(), Atom::Function(function));
-        }
-    }
-
-    functions
 }
