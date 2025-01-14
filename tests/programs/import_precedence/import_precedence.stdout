@@ -1,0 +1,2 @@
+not random 
+expected error: Name: No function `random_u16` found! 

@@ -1,17 +1,49 @@
 use tests_generator_macro::make_tests;
 
 use newlang::prelude::{initial_storage, run, State, WriteHandle};
-use serde::{Deserialize, Serialize};
-use std::{env, fs};
+use std::fs;
 use std::io::{self, BufReader, Read};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str;
 
-#[derive(Deserialize, Serialize, Default)]
+#[derive(Default)]
 struct TestStreamData {
     stdin: String,
     stdout: String,
     stderr: String,
+}
+
+fn read_file_or_empty(
+    base_path: impl AsRef<Path>,
+    prog_name: impl AsRef<Path>,
+    extension: &str,
+) -> String {
+    fs::read_to_string(
+        PathBuf::new()
+            .join(base_path)
+            .join(prog_name)
+            .with_extension(extension),
+    )
+    .unwrap_or_default()
+}
+
+fn write_file_if_nonempty(
+    base_path: impl AsRef<Path>,
+    prog_name: impl AsRef<Path>,
+    extension: &str,
+    content: &str,
+) {
+    if content.is_empty() {
+        return;
+    }
+    fs::write(
+        PathBuf::new()
+            .join(base_path)
+            .join(prog_name)
+            .with_extension(extension),
+        content,
+    )
+    .unwrap();
 }
 
 /// Run a test program, making sure it produces the expected stdout and stderr.
@@ -26,18 +58,11 @@ pub fn run_test(dir_path: &str, name: &str) {
 
     let source = fs::read_to_string(format!("{dir_path}/{name}.prog"))
         .expect("fatal error: program file not found");
-    let data_path = format!("{dir_path}/{name}_streams.json");
 
-    let data = match fs::read_to_string(&data_path) {
-        Ok(streams_text) => serde_json::from_str::<TestStreamData>(&streams_text)
-            .expect("fatal error: failed to parse stream file"),
-        Err(err) => {
-            if overwrite_stream_files {
-                TestStreamData::default()
-            } else {
-                panic!("fatal error: stream file not found: {err}")
-            }
-        }
+    let data = TestStreamData {
+        stdin: read_file_or_empty(dir_path, name, "stdin"),
+        stdout: read_file_or_empty(dir_path, name, "stdout"),
+        stderr: read_file_or_empty(dir_path, name, "stderr"),
     };
 
     let (_, final_state) = run(
@@ -59,16 +84,8 @@ pub fn run_test(dir_path: &str, name: &str) {
     assert!(stderr.is_empty());
 
     if overwrite_stream_files {
-        let new_data = TestStreamData {
-            stdin: String::new(),
-            stdout: stdout.to_string(),
-            stderr: stderr.to_string(),
-        };
-        fs::write(
-            data_path,
-            serde_json::to_vec(&new_data).expect("fatal error: failed to serialize stream data"),
-        )
-        .expect("fatal error: failed to overwrite stream file");
+        write_file_if_nonempty(dir_path, name, "stdout", stdout);
+        write_file_if_nonempty(dir_path, name, "stderr", stderr);
     } else {
         assert_eq!(stdout, data.stdout);
         assert_eq!(stderr, data.stderr);
