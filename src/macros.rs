@@ -21,7 +21,6 @@
 /// ```rust
 /// use newlang::prelude::*;
 /// functions! {
-///     "!"(1) => |state, args| Ok(Atom::Bool(!args[0].eval(state)?.bool()?))
 ///     "&&"(2) => |state, args| Ok(Atom::Bool(
 ///         args[0].eval(state)?.bool()? &&
 ///         args[1].eval(state)?.bool()?
@@ -35,33 +34,19 @@
 ///
 /// Currently, some function names need to be passed as a string literal if they are multiple Rust
 /// tokens wide. This will be fixed eventually.
-/// Note that this needs to be done for each function in that macro invocation at the moment.
 #[macro_export]
 macro_rules! functions {
-    // TODO: workaround, see below
-    ($($name: literal ($argc: tt) => $callback: expr)*) => {
-        pub fn functions() -> Vec<(&'static str, $crate::prelude::Function)> {
-            vec![
-                 $((
-                    $name,
-                    $crate::prelude::Function {
-                        argc: $crate::make_argc!($argc),
-                        callback: std::rc::Rc::new($callback),
-                    },
-                )),*
-            ]
-        }
-    };
     // TODO:
     //  this has problems when a name is multiple tokens wide (`&&`, `==` etc.).
     //  this is because `$name: tt` matches only one token and `$($name: tt)* would cause
     //  ambiguity errors when matching `(`
     //  objective: fix these problems and use this everywhere eventually as it is a nicer syntax
+    //  compared to putting the value into a string literal
     ($($name: tt ($argc: tt) => $callback: expr)*) => {
         pub fn functions() -> Vec<(&'static str, $crate::prelude::Function)> {
             vec![
                  $((
-                    stringify!($name),
+                    $crate::stringify_non_literals!($name),
                     $crate::prelude::Function {
                         argc: $crate::make_argc!($argc),
                         callback: std::rc::Rc::new($callback),
@@ -80,5 +65,16 @@ macro_rules! make_argc {
     };
     ($num: literal) => {
         Some($num)
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! stringify_non_literals {
+    ($lit: literal) => {
+        $lit
+    };
+    ($t: tt) => {
+        stringify!($t)
     };
 }

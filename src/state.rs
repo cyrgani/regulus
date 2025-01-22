@@ -60,7 +60,7 @@ impl<T: Write> WriteHandle<T> {
     ///
     /// # Panics
     /// Panics if it is not a buffer.
-    pub fn get_buffer(&self) -> &str {
+    pub fn read_buffer(&self) -> &str {
         let Self::Buffer(buf) = self else {
             unreachable!()
         };
