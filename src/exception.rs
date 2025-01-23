@@ -1,3 +1,7 @@
+/// TODO: the future of exception handling:
+///  - exceptions have spans and tracebacks
+///  - `Error` will be removed
+///  - `catch(1)`'s functionality (exception -> string) will remain but might be renamed
 use std::{error, fmt, result};
 
 #[derive(Debug)]

@@ -27,27 +27,31 @@ impl Atom {
     }
 }
 
-macro_rules! try_as_type {
-    ($ty:ty, $variant:ident, $method_name:ident) => {
-        pub fn $method_name(&self) -> Result<$ty> {
-            match self {
-                Self::$variant(v) => Ok(v.clone()),
-                _ => Exception::new_err(
-                    format!("{self} is not a {}!", stringify!($variant)),
-                    Error::Type,
-                ),
-            }
+macro_rules! atom_try_as_variant_methods {
+    ($($method_name: ident -> $ty:ty: $variant:ident;)*) => {
+        impl Atom {
+            $(
+                pub fn $method_name(&self) -> Result<$ty> {
+                    match self {
+                        Self::$variant(v) => Ok(v.clone()),
+                        _ => Exception::new_err(
+                            format!("{self} is not a {}!", stringify!($variant)),
+                            Error::Type,
+                        ),
+                    }
+                }
+            )*
         }
     };
 }
 
-impl Atom {
-    // rust type, atom variant name, method uxd
-    try_as_type! {i64, Int, int}
-    try_as_type! {bool, Bool, bool}
-    try_as_type! {Vec<Self>, List, list}
-    try_as_type! {String, String, string}
-    try_as_type! {Function, Function, function}
+// method name, rust type, atom variant name
+atom_try_as_variant_methods! {
+    int -> i64: Int;
+    bool -> bool: Bool;
+    list -> Vec<Self>: List;
+    string -> String: String;
+    function -> Function: Function;
 }
 
 impl fmt::Display for Atom {
