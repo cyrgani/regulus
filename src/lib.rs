@@ -30,10 +30,10 @@ mod stdlib;
 
 pub mod prelude;
 
-use crate::parsing::token::extract;
 use crate::{
     atom::Atom,
     exception::ProgResult,
+    parsing::token::extract,
     parsing::{build_program, tokenize, validate_tokens},
     state::State,
 };
@@ -48,14 +48,14 @@ pub fn run(
 
     validate_tokens(&tokens)?;
     for token in &tokens {
-        println!("token `{:?}` and span ``{:?}", token.data, token.span);
+        println!("token `{:?}` and span ``{:?}", token.data, token.indices);
     }
 
     for token in &tokens {
         println!(
             "token `{:?}` has expansion `{}`",
             token.data,
-            extract(code, token.span.clone()).unwrap()
+            extract(code, token.indices.clone()).unwrap()
         );
     }
 
