@@ -32,18 +32,14 @@ pub mod prelude;
 
 use crate::{
     atom::Atom,
-    exception::ProgResult,
+    exception::Result,
     parsing::token::extract,
     parsing::{build_program, tokenize, validate_tokens},
     state::State,
 };
 use std::path::Path;
 
-pub fn run(
-    code: &str,
-    dir: impl AsRef<Path>,
-    start_state: Option<State>,
-) -> ProgResult<(Atom, State)> {
+pub fn run(code: &str, dir: impl AsRef<Path>, start_state: Option<State>) -> Result<(Atom, State)> {
     let tokens = tokenize(code);
 
     validate_tokens(&tokens)?;

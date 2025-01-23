@@ -25,7 +25,7 @@ impl fmt::Display for FunctionCall {
 }
 
 impl FunctionCall {
-    pub fn eval(&self, state: &mut State) -> ProgResult<Atom> {
+    pub fn eval(&self, state: &mut State) -> Result<Atom> {
         let function = state.get_function(&self.name)?;
 
         if let Some(argc) = function.argc {
@@ -45,7 +45,7 @@ impl FunctionCall {
     }
 }
 
-type Callback = dyn Fn(&mut State, &[Argument]) -> ProgResult<Atom>;
+type Callback = dyn Fn(&mut State, &[Argument]) -> Result<Atom>;
 
 #[derive(Clone)]
 pub struct Function {

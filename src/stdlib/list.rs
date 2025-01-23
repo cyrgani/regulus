@@ -57,7 +57,7 @@ functions! {
         Ok(Atom::List(
             list.into_iter()
                 .map(|atom| (function.callback)(state, &[Argument::Atom(atom)]))
-                .collect::<Result<_, _>>()?,
+                .collect::<Result<_>>()?,
         ))
     }
 }

@@ -24,7 +24,7 @@ impl State {
         }
     }
 
-    pub fn get_function(&self, name: &str) -> ProgResult<Function> {
+    pub fn get_function(&self, name: &str) -> Result<Function> {
         match self.storage.get(name) {
             Some(atom) => {
                 if let Atom::Function(func) = atom {

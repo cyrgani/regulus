@@ -12,18 +12,16 @@ pub enum Atom {
     Function(Function),
 }
 
-impl TryFrom<&str> for Atom {
-    type Error = ();
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
+impl Atom {
+    pub fn try_from_str(value: &str) -> Option<Self> {
         if let Ok(int) = value.parse::<i64>() {
-            Ok(Self::Int(int))
+            Some(Self::Int(int))
         } else {
-            Ok(match value {
+            Some(match value {
                 "true" => Self::Bool(true),
                 "false" => Self::Bool(false),
                 "null" => Self::Null,
-                _ => return Err(()),
+                _ => return None,
             })
         }
     }
@@ -31,7 +29,7 @@ impl TryFrom<&str> for Atom {
 
 macro_rules! try_as_type {
     ($ty:ty, $variant:ident, $method_name:ident) => {
-        pub fn $method_name(&self) -> ProgResult<$ty> {
+        pub fn $method_name(&self) -> Result<$ty> {
             match self {
                 Self::$variant(v) => Ok(v.clone()),
                 _ => Exception::new_err(

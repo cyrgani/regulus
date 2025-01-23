@@ -1,5 +1,5 @@
 use crate::atom::Atom;
-use crate::exception::{Error, Exception, ProgResult};
+use crate::exception::{Error, Exception, Result};
 use std::ops::RangeInclusive;
 
 #[derive(Debug)]
@@ -86,9 +86,9 @@ pub fn tokenize(code: &str) -> Vec<Token> {
             ')' | ',' => {
                 if !current.is_empty() {
                     add_token(
-                        match Atom::try_from(current.as_str()) {
-                            Ok(value) => TokenData::Atom(value),
-                            Err(()) => TokenData::Name(current.clone()),
+                        match Atom::try_from_str(current.as_str()) {
+                            Some(value) => TokenData::Atom(value),
+                            None => TokenData::Name(current.clone()),
                         },
                         current_start_idx.unwrap(),
                         char_idx - 1,
@@ -127,7 +127,7 @@ pub fn tokenize(code: &str) -> Vec<Token> {
     tokens
 }
 
-pub fn validate_tokens(tokens: &[Token]) -> ProgResult<()> {
+pub fn validate_tokens(tokens: &[Token]) -> Result<()> {
     let mut left_parens = 0;
     let mut right_parens = 0;
 
