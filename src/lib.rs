@@ -30,6 +30,7 @@ mod stdlib;
 
 pub mod prelude;
 
+use crate::parsing::token::extract;
 use crate::{
     atom::Atom,
     exception::ProgResult,
@@ -46,6 +47,17 @@ pub fn run(
     let tokens = tokenize(code);
 
     validate_tokens(&tokens)?;
+    for token in &tokens {
+        println!("token `{:?}` and span ``{:?}", token.data, token.span);
+    }
+
+    for token in &tokens {
+        println!(
+            "token `{:?}` has expansion `{}`",
+            token.data,
+            extract(code, token.span.clone()).unwrap()
+        );
+    }
 
     let program = build_program(&tokens, "_")?;
 
