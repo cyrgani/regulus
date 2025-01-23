@@ -1,7 +1,8 @@
 pub mod token;
 
+use crate::parsing::token::Token;
 use crate::prelude::*;
-pub use token::{tokenize, validate_tokens, Token};
+pub use token::{tokenize, validate_tokens, TokenData};
 
 pub fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCall> {
     let mut call = FunctionCall {
@@ -12,15 +13,15 @@ pub fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<Functi
     let mut iter = tokens.iter().enumerate();
 
     while let Some((idx, token)) = iter.next() {
-        match token {
-            Token::Atom(atom) => call.args.push(Argument::Atom(atom.clone())),
-            Token::Comma | Token::LeftParen | Token::Comment(_) => (),
-            Token::Function(function) => {
+        match &token.data {
+            TokenData::Atom(atom) => call.args.push(Argument::Atom(atom.clone())),
+            TokenData::Comma | TokenData::LeftParen | TokenData::Comment(_) => (),
+            TokenData::Function(function) => {
                 let mut required_right_parens = 1;
                 for (i, t) in tokens[idx + 2..].iter().enumerate() {
-                    match t {
-                        Token::LeftParen => required_right_parens += 1,
-                        Token::RightParen => required_right_parens -= 1,
+                    match t.data {
+                        TokenData::LeftParen => required_right_parens += 1,
+                        TokenData::RightParen => required_right_parens -= 1,
                         _ => (),
                     }
                     if required_right_parens == 0 {
@@ -37,8 +38,8 @@ pub fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<Functi
                     "token validation should cover this"
                 );
             }
-            Token::Name(name) => call.args.push(Argument::Variable(name.clone())),
-            Token::RightParen => return Ok(call),
+            TokenData::Name(name) => call.args.push(Argument::Variable(name.clone())),
+            TokenData::RightParen => return Ok(call),
         }
     }
 
