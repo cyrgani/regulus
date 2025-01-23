@@ -33,7 +33,6 @@ pub mod prelude;
 use crate::{
     atom::Atom,
     exception::Result,
-    parsing::token::extract,
     parsing::{build_program, tokenize, validate_tokens},
     state::State,
 };
@@ -51,19 +50,8 @@ macro_rules! return_err {
 pub fn run(code: &str, dir: impl AsRef<Path>, start_state: Option<State>) -> (Result<Atom>, State) {
     let mut state = start_state.unwrap_or_else(|| State::initial(dir));
     let tokens = return_err!(tokenize(code), state);
-    return_err!(validate_tokens(&tokens), state);
-    for token in &tokens {
-        println!("token `{:?}` and span ``{:?}", token.data, token.indices);
-    }
 
-    for token in &tokens {
-        /*println!(
-            "token `{:?}` has expansion `{}`",
-            token.data,
-            extract(code, token.indices.clone()).unwrap()
-        );*/
-        print!("\"{}\",", extract(code, token.indices.clone()).unwrap());
-    }
+    return_err!(validate_tokens(&tokens), state);
 
     let program = return_err!(build_program(&tokens, "_"), state);
 
