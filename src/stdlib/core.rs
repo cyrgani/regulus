@@ -128,8 +128,9 @@ functions! {
             );
         };
 
-        let (atom, imported_state) = prelude::run(&code, &state.file_directory, None)?;
-
+        let (atom, imported_state) = prelude::run(&code, &state.file_directory, None);
+        let atom = atom?;
+        
         for (k, v) in imported_state.storage {
             state.storage.insert(k, v);
         }
