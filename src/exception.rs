@@ -31,7 +31,7 @@ impl Exception {
         }
     }
 
-    pub fn new_err<T>(msg: impl ToString, error: Error) -> Result<T, Self> {
+    pub fn new_err<T>(msg: impl ToString, error: Error) -> Result<T> {
         Err(Self::new(msg, error))
     }
 }
@@ -45,4 +45,4 @@ impl fmt::Display for Exception {
 impl error::Error for Exception {}
 
 /// A shorthand alias for `Result<T, Exception>`.
-pub type ProgResult<T> = Result<T, Exception>;
+pub type Result<T> = std::result::Result<T, Exception>;

@@ -64,7 +64,7 @@ functions! {
                             Error::Assign,
                         ),
                     })
-                    .collect::<Result<Vec<String>, Exception>>()?;
+                    .collect::<Result<Vec<String>>>()?;
 
                 let function = Function {
                     argc: Some(function_arg_names.len()),

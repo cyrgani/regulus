@@ -5,7 +5,7 @@ use crate::parsing::token::Token;
 use crate::prelude::*;
 pub use token::{tokenize, validate_tokens, TokenData};
 
-pub fn build_program(tokens: &[Token], function_name: &str) -> ProgResult<FunctionCall> {
+pub fn build_program(tokens: &[Token], function_name: &str) -> Result<FunctionCall> {
     let mut call = FunctionCall {
         args: vec![],
         name: function_name.to_string(),

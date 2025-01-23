@@ -5,7 +5,7 @@ fn arithmetic_operation(
     args: &[Argument],
     name: &str,
     f: fn(i64, i64) -> Option<i64>,
-) -> ProgResult<Atom> {
+) -> Result<Atom> {
     match f(args[0].eval(state)?.int()?, args[1].eval(state)?.int()?) {
         Some(i) => Ok(Atom::Int(i)),
         None => Exception::new_err(format!("overflow occured during {name}!"), Error::Overflow),

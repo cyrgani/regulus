@@ -10,7 +10,7 @@ pub enum Argument {
 }
 
 impl Argument {
-    pub fn eval(&self, state: &mut State) -> ProgResult<Atom> {
+    pub fn eval(&self, state: &mut State) -> Result<Atom> {
         match self {
             Self::FunctionCall(call) => call.eval(state),
             Self::Atom(atom) => Ok(atom.clone()),
