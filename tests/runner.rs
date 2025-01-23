@@ -49,7 +49,7 @@ pub fn run_test(dir_path: &str, name: &str) {
         stderr: read_file_or_empty(&base_path, "stderr"),
     };
 
-    let (_, final_state) = run(
+    let (res, final_state) = run(
         &source,
         dir_path,
         Some(State {
@@ -59,17 +59,18 @@ pub fn run_test(dir_path: &str, name: &str) {
             stderr: WriteHandle::Buffer(vec![]),
             file_directory: PathBuf::from(dir_path),
         }),
-    )
-    .unwrap();
+    );
 
     let stdout = final_state.stdout.read_buffer();
-    let stderr = final_state.stderr.read_buffer();
-    // TODO: consider if this is a good idea
-    assert!(stderr.is_empty());
+    let mut stderr = final_state.stderr.read_buffer().to_string();
+    if let Err(e) = res {
+        stderr.push('\n');
+        stderr.push_str(&e.to_string());
+    }
 
     if overwrite_stream_files {
         write_file_if_nonempty(&base_path, "stdout", stdout);
-        write_file_if_nonempty(&base_path, "stderr", stderr);
+        write_file_if_nonempty(&base_path, "stderr", &stderr);
     } else {
         assert_eq!(stdout, data.stdout);
         assert_eq!(stderr, data.stderr);

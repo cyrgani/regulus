@@ -1,4 +1,4 @@
-use std::{error, fmt};
+use std::{error, fmt, result};
 
 #[derive(Debug)]
 pub enum Error {
@@ -45,4 +45,4 @@ impl fmt::Display for Exception {
 impl error::Error for Exception {}
 
 /// A shorthand alias for `Result<T, Exception>`.
-pub type Result<T> = std::result::Result<T, Exception>;
+pub type Result<T> = result::Result<T, Exception>;

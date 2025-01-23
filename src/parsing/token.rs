@@ -1,6 +1,7 @@
 use crate::atom::Atom;
 use crate::exception::{Error, Exception, Result};
 use std::ops::RangeInclusive;
+use std::result;
 
 #[derive(Debug)]
 pub struct Token {
@@ -42,19 +43,22 @@ impl From<RangeInclusive<usize>> for Span {
 
 /// Takes characters from the stream until `target` is reached.
 /// Returns all characters before `target` and the index of `target`.
-fn take_until(chars: impl Iterator<Item = (usize, char)>, target: char) -> (usize, String) {
+/// Returns `Err(all_consumed_chars)` if `target` was never found.
+fn take_until(
+    chars: impl Iterator<Item = (usize, char)>,
+    target: char,
+) -> result::Result<(usize, String), String> {
     let mut result = String::new();
     for (pos, c) in chars {
         if c == target {
-            return (pos, result);
+            return Ok((pos, result));
         }
         result.push(c);
     }
-    // TODO: fix this position value
-    (usize::MAX, result)
+    Err(result)
 }
 
-pub fn tokenize(code: &str) -> Vec<Token> {
+pub fn tokenize(code: &str) -> Result<Vec<Token>> {
     let mut tokens = vec![];
 
     let mut current = String::new();
@@ -107,12 +111,15 @@ pub fn tokenize(code: &str) -> Vec<Token> {
                 );
             }
             '"' => {
-                let (end_pos, body) = take_until(chars.by_ref(), '"');
+                let Ok((end_pos, body)) = take_until(chars.by_ref(), '"') else {
+                    return Exception::new_err("unclosed string literal", Error::Syntax);
+                };
                 add_token(TokenData::Atom(Atom::String(body)), char_idx, end_pos);
             }
             ' ' | '\n' | '\t' => (),
             '#' => {
-                let (end_pos, body) = take_until(chars.by_ref(), '\n');
+                let (end_pos, body) =
+                    take_until(chars.by_ref(), '\n').unwrap_or_else(|body| (code.len() - 1, body));
                 add_token(TokenData::Comment(body), char_idx, end_pos);
             }
             _ => {
@@ -124,7 +131,7 @@ pub fn tokenize(code: &str) -> Vec<Token> {
         }
     }
 
-    tokens
+    Ok(tokens)
 }
 
 pub fn validate_tokens(tokens: &[Token]) -> Result<()> {
@@ -211,5 +218,48 @@ mod tests {
         assert_eq!(extract(t, sp(5, 5)), so("e"));
         assert_eq!(extract(t, sp(8, 8)), so("\n"));
         assert_eq!(extract(t, sp(9, 9)), None);
+    }
+
+    #[test]
+    fn token_extraction() {
+        let code = "_(
+	def(double_and_print, x, print(*(2, x))),
+)
+";
+        let tokens = tokenize(code).unwrap();
+
+        let parts = tokens
+            .into_iter()
+            .map(|t| extract(code, t.indices).unwrap())
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            parts,
+            [
+                "_",
+                "(",
+                "def",
+                "(",
+                "double_and_print",
+                ",",
+                "x",
+                ",",
+                "print",
+                "(",
+                "*",
+                "(",
+                "2",
+                ",",
+                "x",
+                ")",
+                ")",
+                ")",
+                ",",
+                ")"
+            ]
+            .map(ToString::to_string)
+        );
+
+        assert_eq!(parts.join(""), code.replace(['\n', '\t', ' '], ""));
     }
 }

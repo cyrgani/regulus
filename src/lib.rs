@@ -39,26 +39,34 @@ use crate::{
 };
 use std::path::Path;
 
-pub fn run(code: &str, dir: impl AsRef<Path>, start_state: Option<State>) -> Result<(Atom, State)> {
-    let tokens = tokenize(code);
+macro_rules! return_err {
+    ($val: expr, $state: expr) => {
+        match $val {
+            Ok(ok) => ok,
+            Err(err) => return (Err(err), $state),
+        }
+    };
+}
 
-    validate_tokens(&tokens)?;
+pub fn run(code: &str, dir: impl AsRef<Path>, start_state: Option<State>) -> (Result<Atom>, State) {
+    let mut state = start_state.unwrap_or_else(|| State::initial(dir));
+    let tokens = return_err!(tokenize(code), state);
+    return_err!(validate_tokens(&tokens), state);
     for token in &tokens {
         println!("token `{:?}` and span ``{:?}", token.data, token.indices);
     }
 
     for token in &tokens {
-        println!(
+        /*println!(
             "token `{:?}` has expansion `{}`",
             token.data,
             extract(code, token.indices.clone()).unwrap()
-        );
+        );*/
+        print!("\"{}\",", extract(code, token.indices.clone()).unwrap());
     }
 
-    let program = build_program(&tokens, "_")?;
+    let program = return_err!(build_program(&tokens, "_"), state);
 
-    let mut state = start_state.unwrap_or_else(|| State::initial(dir));
-
-    let result = program.eval(&mut state)?;
-    Ok((result, state))
+    let result = return_err!(program.eval(&mut state), state);
+    (Ok(result), state)
 }

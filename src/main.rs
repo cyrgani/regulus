@@ -32,7 +32,7 @@ fn main() {
             dir.pop();
             let result = run(&code, dir, None);
             match result {
-                Ok((atom, state)) => {
+                (Ok(atom), state) => {
                     match atom {
                         Atom::Null => (),
                         _ => println!("{atom:?}"),
@@ -41,7 +41,7 @@ fn main() {
                         println!("{:?}", state.storage)
                     }
                 }
-                Err(error) => {
+                (Err(error), _) => {
                     eprintln!("{}", format!("The program caused an error: {error}").red());
                 }
             }
