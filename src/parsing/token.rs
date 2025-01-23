@@ -1,12 +1,11 @@
 use crate::atom::Atom;
 use crate::exception::{Error, Exception, ProgResult};
-use std::cmp::Ordering;
-use std::str::Chars;
+use std::ops::RangeInclusive;
 
 #[derive(Debug)]
 pub struct Token {
     pub data: TokenData,
-    pub span: Span,
+    pub indices: RangeInclusive<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -24,7 +23,7 @@ pub enum TokenData {
 /// Both start and end are inclusive.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Span {
-    // TODO add this field
+    // TODO add this field or rather not?
     // pub file: PathBuf,
     /// The start index of the span, inclusive.
     pub start: usize,
@@ -32,30 +31,13 @@ pub struct Span {
     pub end: usize,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Position {
-    pub line: usize,
-    pub column: usize,
-}
-
-impl PartialOrd for Position {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Position {
-    fn cmp(&self, other: &Self) -> Ordering {
-        if self.line == other.line {
-            self.column.cmp(&other.column)
-        } else {
-            self.line.cmp(&other.line)
+impl From<RangeInclusive<usize>> for Span {
+    fn from(range: RangeInclusive<usize>) -> Self {
+        Self {
+            start: *range.start(),
+            end: *range.end(),
         }
     }
-}
-
-impl Position {
-    pub const START: Self = Self { line: 1, column: 1 };
 }
 
 /// Takes characters from the stream until `target` is reached.
@@ -80,7 +62,7 @@ pub fn tokenize(code: &str) -> Vec<Token> {
     let mut chars = code.chars().enumerate();
     let mut add_token = |data, start, end| {
         tokens.push(Token {
-            span: Span { start, end },
+            indices: start..=end,
             data,
         });
     };
@@ -173,22 +155,22 @@ pub fn validate_tokens(tokens: &[Token]) -> ProgResult<()> {
     Ok(())
 }
 
-/// Returns all characters of the text that the given `Span` encloses.
-/// Returns an empty string if the span is invalid (end before start or out of bounds).
-pub fn extract(text: &str, span: Span) -> Option<String> {
-    if span.start > span.end {
+/// Returns all characters of the text that the given indices enclose.
+/// Returns an empty string if the indices are invalid (end before start or out of bounds).
+pub fn extract(text: &str, indices: RangeInclusive<usize>) -> Option<String> {
+    if indices.start() > indices.end() {
         return None;
     }
     let mut extracted = String::new();
     let mut extracting = false;
     for (pos, c) in text.chars().enumerate() {
-        if pos == span.start {
+        if pos == *indices.start() {
             extracting = true;
         }
         if extracting {
             extracted.push(c);
         }
-        if pos == span.end {
+        if pos == *indices.end() {
             if extracting {
                 return Some(extracted);
             }
@@ -199,74 +181,12 @@ pub fn extract(text: &str, span: Span) -> Option<String> {
     None
 }
 
-pub fn index_to_position(text: &str, idx: usize) -> Position {
-    CharPositions::new(text).nth(idx).unwrap().0
-}
-
-pub struct CharPositions<'a> {
-    text: Chars<'a>,
-    pos: Position,
-}
-
-impl Iterator for CharPositions<'_> {
-    type Item = (Position, char);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let next = self.text.next()?;
-        let pos = self.pos;
-        if next == '\n' {
-            self.pos.line += 1;
-            self.pos.column = 1;
-        } else {
-            self.pos.column += 1;
-        }
-        Some((pos, next))
-    }
-}
-
-impl<'a> CharPositions<'a> {
-    pub fn new(text: &'a str) -> Self {
-        Self {
-            text: text.chars(),
-            pos: Position { line: 1, column: 1 },
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    const fn p(line: usize, column: usize) -> Position {
-        Position { line, column }
-    }
-
-    const fn pc(line: usize, column: usize, ch: char) -> (Position, char) {
-        (p(line, column), ch)
-    }
-
-    #[test]
-    fn span_iter() {
-        let t = "abc\nde\nf\n";
-        let i = CharPositions::new(t);
-        assert_eq!(
-            i.collect::<Vec<_>>(),
-            [
-                pc(1, 1, 'a'),
-                pc(1, 2, 'b'),
-                pc(1, 3, 'c'),
-                pc(1, 4, '\n'),
-                pc(2, 1, 'd'),
-                pc(2, 2, 'e'),
-                pc(2, 3, '\n'),
-                pc(3, 1, 'f'),
-                pc(3, 2, '\n'),
-            ]
-        );
-    }
-
-    const fn sp(start: usize, end: usize) -> Span {
-        Span { start, end }
+    const fn sp(start: usize, end: usize) -> RangeInclusive<usize> {
+        start..=end
     }
 
     #[expect(clippy::unnecessary_wraps)]
@@ -291,13 +211,5 @@ mod tests {
         assert_eq!(extract(t, sp(5, 5)), so("e"));
         assert_eq!(extract(t, sp(8, 8)), so("\n"));
         assert_eq!(extract(t, sp(9, 9)), None);
-    }
-
-    #[test]
-    fn pos_order() {
-        assert!(p(2, 4) < p(2, 5));
-        assert!(p(1, 3) > p(1, 1));
-        assert!(p(1, 4) == p(1, 4));
-        assert!(p(2, 1) > p(1, 10));
     }
 }
