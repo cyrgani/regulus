@@ -31,10 +31,10 @@ fn write_file_if_nonempty(base_path: impl AsRef<Path>, extension: &str, content:
 /// Run a test program, making sure it produces the expected stdout and stderr.
 pub fn run_test(dir_path: &str, name: &str) {
     //let mut overwrite_stream_files = env::args().any(|arg| arg == "--bless");
-    let mut overwrite_stream_files = false;
-    if let Some(var) = OVERWRITE_STREAM_FILES {
+    let mut bless_stream_files = false;
+    if let Some(var) = BLESS {
         if ["y", "yes", "true"].contains(&var) {
-            overwrite_stream_files = true;
+            bless_stream_files = true;
         }
     }
 
@@ -68,7 +68,7 @@ pub fn run_test(dir_path: &str, name: &str) {
         stderr.push_str(&e.to_string());
     }
 
-    if overwrite_stream_files {
+    if bless_stream_files {
         write_file_if_nonempty(&base_path, "stdout", stdout);
         write_file_if_nonempty(&base_path, "stderr", &stderr);
     } else {
@@ -84,6 +84,6 @@ impl Read for VecReader {
     }
 }
 
-pub const OVERWRITE_STREAM_FILES: Option<&'static str> = option_env!("OVERWRITE_STREAM_FILES");
+pub const BLESS: Option<&'static str> = option_env!("BLESS");
 
 make_tests! {}

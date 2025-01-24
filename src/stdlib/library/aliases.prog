@@ -1,8 +1,6 @@
-_(
-    =(not, !),
-    =(and, &&),
-    =(or, ||),
-    =(run, _),
-    =(assign, =),
-    =(equals, ==)
-)
+=(not, !),
+=(and, &&),
+=(or, ||),
+=(run, _),
+=(assign, =),
+=(equals, ==)
