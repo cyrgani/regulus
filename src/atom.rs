@@ -9,8 +9,18 @@ pub enum Atom {
     Null,
     List(Vec<Atom>),
     String(String),
-    Function(Function),
+    Function(Function        ),
 }
+
+
+
+
+
+
+
+
+
+
 
 impl Atom {
     pub fn try_from_str(value: &str) -> Option<Self> {
