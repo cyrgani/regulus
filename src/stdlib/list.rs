@@ -9,8 +9,9 @@ functions! {
         Ok(Atom::List(list))
     }
     push(2) => |state, args| {
-        args[0].eval(state)?.list()?.push(args[1].eval(state)?);
-        Ok(Atom::Null)
+        let mut list = args[0].eval(state)?.list()?;
+        list.push(args[1].eval(state)?);
+        Ok(Atom::List(list))
     }
     index(2) => |state, args| {
         args[0]
@@ -59,5 +60,13 @@ functions! {
                 .map(|atom| (function.callback)(state, &[Argument::Atom(atom)]))
                 .collect::<Result<_>>()?,
         ))
+    }
+    overwrite_at_index(3) => |state, args| {
+        let mut list = args[0].eval(state)?.list()?;
+        *list
+            .get_mut(args[1].eval(state)?.int()? as usize)
+            .ok_or_else(|| Exception::new("Unable to insert at index into list!", Error::Index))? =
+            args[2].eval(state)?;
+        Ok(Atom::List(list))
     }
 }
