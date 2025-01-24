@@ -1,10 +1,8 @@
-_(
-    def(random_u16, _(
-        # source: https://en.wikipedia.org/wiki/Linear_congruential_generator#Parameters_in_common_use
-        =(a, 75),
-        =(c, 74),
-        =(m, 65537),
-        =(X, now_nanos_part()),
-        %(+(*(a, X), c), m)
-    ))
-)
+def(random_u16, _(
+    # source: https://en.wikipedia.org/wiki/Linear_congruential_generator#Parameters_in_common_use
+    =(a, 75),
+    =(c, 74),
+    =(m, 65537),
+    =(X, now_nanos_part()),
+    %(+(*(a, X), c), m)
+))
