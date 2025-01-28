@@ -9,4 +9,6 @@ def(range, start, end, _(
         =(i, +(i, 1)),
     )),
     l
-))
+)),
+
+=(.., range)

@@ -49,7 +49,10 @@ functions! {
     }
     def(_) => |state, args| {
         if args.len() < 2 {
-            return Exception::new_err(format!("too few arguments passed to `def`: expected at least 2, found {}", args.len()), Error::Argument);
+            return Exception::new_err(
+                format!("too few arguments passed to `def`: expected at least 2, found {}", args.len()), 
+                Error::Argument
+            );
         }
         if let Argument::Variable(var) = &args[0] {
             if let Argument::FunctionCall(inner) = args.last().unwrap() {
@@ -67,6 +70,7 @@ functions! {
                     .collect::<Result<Vec<String>>>()?;
 
                 let function = Function {
+                    doc: String::new(),
                     argc: Some(function_arg_names.len()),
                     callback: Rc::new(move |state, args| {
                         // a function call should have its own scope and not leak variables
@@ -160,7 +164,10 @@ functions! {
         if lhs == rhs {
             Ok(Atom::Null)
         } else {
-            Exception::new_err(format!("Assertion failed: `{lhs} == {rhs}`!"), Error::Assertion)
+            Exception::new_err(
+                format!("Equality assertion failed! lhs: `{lhs}`, rhs: `{rhs}`!"), 
+                Error::Assertion
+            )
         }
     }
 }

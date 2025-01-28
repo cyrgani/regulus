@@ -49,6 +49,7 @@ type Callback = dyn Fn(&mut State, &[Argument]) -> Result<Atom>;
 
 #[derive(Clone)]
 pub struct Function {
+    pub doc: String,
     pub argc: Option<usize>,
     pub callback: Rc<Callback>,
 }
@@ -57,6 +58,7 @@ pub struct Function {
 impl fmt::Debug for Function {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Function")
+            .field("doc", &self.doc)
             .field("argc", &self.argc)
             .field("callback", &"..")
             .finish()

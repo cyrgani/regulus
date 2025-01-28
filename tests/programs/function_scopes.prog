@@ -1,9 +1,7 @@
-_(
-    def(foo, x, _(
-        =(y, 0),
-        x
-    )),
+def(foo, x, _(
+    =(y, 0),
+    x
+)),
 
-    print(foo(2)),
-    print(catch(y))
-)
+assert_eq(foo(2), 2),
+assert_eq(catch(y), "Name: No variable named `y` found!")

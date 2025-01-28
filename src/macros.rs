@@ -42,12 +42,16 @@ macro_rules! functions {
     //  ambiguity errors when matching `(`
     //  objective: fix these problems and use this everywhere eventually as it is a nicer syntax
     //  compared to putting the value into a string literal
-    ($($name: tt ($argc: tt) => $callback: expr)*) => {
+    ($(
+        /*$(#[$doc: meta])**/ $name: tt ($argc: tt) => $callback: expr)
+    *) => {
         pub fn functions() -> Vec<(&'static str, $crate::prelude::Function)> {
             vec![
                  $((
                     $crate::stringify_non_literals!($name),
                     $crate::prelude::Function {
+                        doc: String::new(),
+                        //doc: stringify!($($doc)*).to_string(),
                         argc: $crate::make_argc!($argc),
                         callback: std::rc::Rc::new($callback),
                     },

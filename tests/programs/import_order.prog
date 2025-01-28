@@ -1,0 +1,2 @@
+assert_eq(catch(range(0, 1)), "Name: No function `range` found!"),
+import("range")
