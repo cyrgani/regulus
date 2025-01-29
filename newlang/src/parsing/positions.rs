@@ -23,10 +23,6 @@ impl Ord for Position {
     }
 }
 
-impl Position {
-    pub const START: Self = Self { line: 1, column: 1 };
-}
-
 pub fn index_to_position(text: &str, idx: usize) -> Position {
     CharPositions::new(text).nth(idx).unwrap().0
 }

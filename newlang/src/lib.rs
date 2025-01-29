@@ -16,9 +16,6 @@
     clippy::wildcard_imports
 )]
 
-// TODO remove this constant
-pub const STL_DIRECTORY: &str = "../stdlib";
-
 mod argument;
 mod atom;
 mod exception;
