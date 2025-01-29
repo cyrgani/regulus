@@ -1,0 +1,10 @@
+[package]
+name = "newlang"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[features]
+display_impls = []
+default = []
