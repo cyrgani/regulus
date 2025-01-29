@@ -1,8 +1,9 @@
 use crate::prelude::{self, *};
-use crate::STL_DIRECTORY;
 use std::fs::{self, DirEntry};
 use std::path::Path;
 use std::rc::Rc;
+
+const STL_DIRECTORY: &str = "../stdlib";
 
 functions! {
     _(_) => |state, args| {
