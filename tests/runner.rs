@@ -39,6 +39,8 @@ pub fn run_test(dir_path: &str, name: &str) {
     }
 
     let base_path = PathBuf::from(dir_path).join(name);
+    
+   // panic!("{}", base_path.display());
 
     let source = fs::read_to_string(base_path.with_extension("prog"))
         .expect("fatal error: program file not found");

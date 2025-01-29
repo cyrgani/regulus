@@ -1,0 +1,12 @@
+[package]
+name = "tests"
+version = "0.0.0"
+edition = "2021"
+
+[[test]]
+name = "runner"
+path = "runner.rs"
+
+[dev-dependencies]
+newlang = { path = "../newlang" }
+tests_generator_macro = { path = "../tests_generator_macro" }
