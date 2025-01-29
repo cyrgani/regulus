@@ -1,5 +1,5 @@
-use crate::prelude::*;
 use crate::builtins::all_functions;
+use crate::prelude::*;
 use std::collections::HashMap;
 use std::io::{stderr, stdin, stdout, BufRead, BufReader, Stderr, Stdout, Write};
 use std::path::{Path, PathBuf};
