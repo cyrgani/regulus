@@ -54,11 +54,7 @@ macro_rules! functions {
                 $((
                     $name,
                     $crate::prelude::Function {
-                        // writing just `[$($doc)*].join("\n")` would cause an inference error on
-                        // the array element type when no doc comments are present
-                        // TODO: the above may be unproblematic if `compile_errors!` or extra match
-                        //  rules are added that error before this
-                        doc: <[&'static str]>::join(&[$($doc),*], "\n"),
+                        doc: [$($doc),*].join("\n"),
                         argc: $crate::make_argc!($argc),
                         callback: std::rc::Rc::new($callback),
                     },
