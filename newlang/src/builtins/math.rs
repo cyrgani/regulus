@@ -13,7 +13,6 @@ fn arithmetic_operation(
 }
 
 functions! {
-    // TODO: all after the first require quotes for some reason
     "+"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
     "-"(2) => |state, args| arithmetic_operation(state, args, "-", i64::checked_sub)
     "*"(2) => |state, args| arithmetic_operation(state, args, "*", i64::checked_mul)

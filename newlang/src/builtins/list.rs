@@ -1,19 +1,19 @@
 use crate::prelude::*;
 
 functions! {
-    list(_) => |state, args| {
+    "list"(_) => |state, args| {
         let mut list = vec![];
         for arg in args {
             list.push(arg.eval(state)?);
         }
         Ok(Atom::List(list))
     }
-    push(2) => |state, args| {
+    "push"(2) => |state, args| {
         let mut list = args[0].eval(state)?.list()?;
         list.push(args[1].eval(state)?);
         Ok(Atom::List(list))
     }
-    index(2) => |state, args| {
+    "index"(2) => |state, args| {
         args[0]
             .eval(state)?
             .list()?
@@ -21,17 +21,17 @@ functions! {
             .ok_or_else(|| Exception::new("Unable to index list!", Error::Index))
             .cloned()
     }
-    pop(1) => |state, args| {
+    "pop"(1) => |state, args| {
         args[0]
             .eval(state)?
             .list()?
             .pop()
             .ok_or_else(|| Exception::new("Unable to pop from list!", Error::Index))
     }
-    len(1) => |state, args| {
+    "len"(1) => |state, args| {
         Ok(Atom::Int(args[0].eval(state)?.list()?.len() as i64))
     }
-    for_in(3) => |state, args| {
+    "for_in"(3) => |state, args| {
         let list = args[0].eval(state)?.list()?;
         let Argument::Variable(loop_var) = &args[1] else {
             return Exception::new_err("invalid loop variable given to `for_in`", Error::Argument)
@@ -52,7 +52,7 @@ functions! {
         }
         Ok(Atom::Null)
     }
-    map(2) => |state, args| {
+    "map"(2) => |state, args| {
         let function = args[1].eval(state)?.function()?;
         let list = args[0].eval(state)?.list()?;
         Ok(Atom::List(
@@ -61,7 +61,7 @@ functions! {
                 .collect::<Result<_>>()?,
         ))
     }
-    overwrite_at_index(3) => |state, args| {
+    "overwrite_at_index"(3) => |state, args| {
         let mut list = args[0].eval(state)?.list()?;
         *list
             .get_mut(args[1].eval(state)?.int()? as usize)
