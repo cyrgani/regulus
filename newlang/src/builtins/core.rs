@@ -126,6 +126,8 @@ functions! {
             )
         }
     }
+    /// Imports a file, either from the stl or the local directory.
+    /// TODO document the exact algorithm and hierarchy more clearly, also the behavior of `=`
     "import"(1) => |state, args| {
         let name = args[0].eval(state)?.string()?;
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
@@ -176,9 +178,13 @@ functions! {
             .eval(state)
             .unwrap_or_else(|exc| Atom::String(exc.to_string())))
     }
+    /// Evaluates both arguments and returns whether they are equal.
+    /// TODO: define this behavior in edge cases and document it
     "=="(2) => |state, args| {
         Ok(Atom::Bool(args[0].eval(state)? == args[1].eval(state)?))
     }
+    /// Evaluates the argument as a boolean and returns `null` if it is true.
+    /// If it is false, raise an exception of the `Assertion` kind.
     "assert"(1) => |state, args| {
         if args[0].eval(state)?.bool()? {
             Ok(Atom::Null)
@@ -186,6 +192,8 @@ functions! {
             raise!(Error::Assertion, "Assertion failed!")
         }
     }
+    /// Evaluates both arguments and compares then, returning `null` if they are equal.
+    /// If not, raise an exception of the `Assertion` kind with a message containing both values.
     "assert_eq"(2) => |state, args| {
         let lhs = args[0].eval(state)?;
         let rhs = args[1].eval(state)?;

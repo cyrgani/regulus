@@ -5,7 +5,7 @@ def(range, start, end, _(
     =(i, start),
     =(l, list()),
     while(<(i, end), _(
-        =(l, push(l, i)),
+        =(l, append(l, i)),
         =(i, +(i, 1)),
     )),
     l

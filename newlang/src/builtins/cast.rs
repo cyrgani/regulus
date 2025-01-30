@@ -5,6 +5,8 @@ fn cast_error_builder(atom: &Atom, new_type: &str) -> Exception {
 }
 
 functions! {
+    /// Converts the given value into an integer, raising an exception if it is not possible to cast.
+    /// TODO document the exact conditions and rules
     "int"(1) => |state, args| {
         let atom = args[0].eval(state)?;
         Ok(Atom::Int(match &atom {
@@ -16,6 +18,8 @@ functions! {
             _ => return Err(cast_error_builder(&atom, "int")),
         }))
     }
+    /// Converts the given value into a string, raising an exception if it is not possible to cast.
+    /// TODO document the exact conditions and rules
     "string"(1) => |state, args| {
         let atom = args[0].eval(state)?;
         Ok(Atom::String(match &atom {
@@ -26,6 +30,8 @@ functions! {
             _ => return Err(cast_error_builder(&atom, "string")),
         }))
     }
+    /// Converts the given value into a boolean, raising an exception if it is not possible to cast.
+    /// TODO document the exact conditions and rules
     "bool"(1) => |state, args| {
         let atom = args[0].eval(state)?;
         Ok(Atom::Bool(match &atom {
