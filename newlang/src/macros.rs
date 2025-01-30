@@ -4,10 +4,12 @@
 /// ```rust
 /// use newlang::prelude::*;
 /// functions! {
+///     /// Length of a string.
 ///     "strlen"(1) => |state, args| {
 ///         let len = args[0].eval(state)?.string()?.len();
 ///         Ok(Atom::Int(len as i64))
 ///     }
+///     /// Concatenate strings.
 ///     "strconcat"(_) => |state, args| {
 ///         let mut string = String::new();
 ///         for arg in args {
@@ -15,6 +17,7 @@
 ///         }
 ///         Ok(Atom::String(string))
 ///     }
+///     /// Logical AND.
 ///     "&&"(2) => |state, args| Ok(Atom::Bool(
 ///         args[0].eval(state)?.bool()? &&
 ///         args[1].eval(state)?.bool()?
@@ -69,9 +72,7 @@ macro_rules! functions {
 #[doc(hidden)]
 macro_rules! check_nonempty_doc {
     ($name: literal) => {
-        // TODO use the `compile_error!` macro instead of `eprintln!` and remove the useless line
-        let missing_doc_warning: ();
-        eprintln!(concat!(
+        compile_error!(concat!(
             "builtin function ",
             stringify!($name),
             " has no documentation"
