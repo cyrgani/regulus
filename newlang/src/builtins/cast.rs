@@ -5,7 +5,7 @@ fn cast_error_builder(atom: &Atom, new_type: &str) -> Exception {
 }
 
 functions! {
-    int(1) => |state, args| {
+    "int"(1) => |state, args| {
         let atom = args[0].eval(state)?;
         Ok(Atom::Int(match &atom {
             Atom::Int(val) => *val,
@@ -16,7 +16,7 @@ functions! {
             _ => return Err(cast_error_builder(&atom, "int")),
         }))
     }
-    string(1) => |state, args| {
+    "string"(1) => |state, args| {
         let atom = args[0].eval(state)?;
         Ok(Atom::String(match &atom {
             Atom::Int(val) => val.to_string(),
@@ -26,7 +26,7 @@ functions! {
             _ => return Err(cast_error_builder(&atom, "string")),
         }))
     }
-    bool(1) => |state, args| {
+    "bool"(1) => |state, args| {
         let atom = args[0].eval(state)?;
         Ok(Atom::Bool(match &atom {
             Atom::Int(val) => *val != 0,

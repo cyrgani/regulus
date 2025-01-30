@@ -6,7 +6,13 @@ use std::rc::Rc;
 const STL_DIRECTORY: &str = "../stdlib";
 
 functions! {
-    _(_) => |state, args| {
+    /// Evaluates all given arguments and returns the atom the last argument evaluated to.
+    /// If no arguments are given, `null` is returned.
+    /// 
+    /// Every program is implicitly wrapped in a call to this function.
+    /// 
+    /// This function has an alias: `run`.
+    "_"(_) => |state, args| {
         if args.is_empty() {
             Ok(Atom::Null)
         } else {
@@ -16,6 +22,9 @@ functions! {
             args[args.len() - 1].eval(state)
         }
     }
+    /// Assigns the second argument to a variable named like the first argument.
+    /// 
+    /// This function has an alias: `assign`.
     "="(2) => |state, args| {
         if let Argument::Variable(var) = &args[0] {
             let val = args[1].eval(state)?;
@@ -28,27 +37,36 @@ functions! {
             )
         }
     }
-    if(2) => |state, args| {
+    /// Evaluates the first argument as a boolean.
+    /// If it evaluates to true, the second argument is evaluated and returned.
+    /// If it evaluates to false, the second argument is ignored and `null` is returned.
+    "if"(2) => |state, args| {
         Ok(if args[0].eval(state)?.bool()? {
             args[1].eval(state)?
         } else {
             Atom::Null
         })
     }
-    ifelse(3) => |state, args| {
+    /// Evaluates the first argument as a boolean.
+    /// If it evaluates to true, the second argument is evaluated and returned.
+    /// If it evaluates to false, the third argument is evaluated and returned instead.
+    "ifelse"(3) => |state, args| {
         Ok(if args[0].eval(state)?.bool()? {
             args[1].eval(state)?
         } else {
             args[2].eval(state)?
         })
     }
-    while(2) => |state, args| {
+    /// Repeatedly evaluates the first argument as a boolean.
+    /// If it evaluates to true, the second argument is evaluated and the same steps begin again.
+    /// If it evaluates to false, the loop ends and `null` is returned.
+    "while"(2) => |state, args| {
         while args[0].eval(state)?.bool()? {
             args[1].eval(state)?;
         }
         Ok(Atom::Null)
     }
-    def(_) => |state, args| {
+    "def"(_) => |state, args| {
         if args.len() < 2 {
             return Exception::new_err(
                 format!("too few arguments passed to `def`: expected at least 2, found {}", args.len()), 
@@ -103,7 +121,7 @@ functions! {
             )
         }
     }
-    import(1) => |state, args| {
+    "import"(1) => |state, args| {
         let name = args[0].eval(state)?.string()?;
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
             return Exception::new_err(
@@ -141,10 +159,10 @@ functions! {
         }
         Ok(atom)
     }
-    error(1) => |state, args| {
+    "error"(1) => |state, args| {
         Exception::new_err(args[0].eval(state)?.string()?, Error::UserRaised)
     }
-    catch(1) => |state, args| {
+    "catch"(1) => |state, args| {
         Ok(args[0]
             .eval(state)
             .unwrap_or_else(|exc| Atom::String(exc.to_string())))
@@ -152,14 +170,14 @@ functions! {
     "=="(2) => |state, args| {
         Ok(Atom::Bool(args[0].eval(state)? == args[1].eval(state)?))
     }
-    assert(1) => |state, args| {
+    "assert"(1) => |state, args| {
         if args[0].eval(state)?.bool()? {
             Ok(Atom::Null)
         } else {
             Exception::new_err("Assertion failed!", Error::Assertion)
         }
     }
-    assert_eq(2) => |state, args| {
+    "assert_eq"(2) => |state, args| {
         let lhs = args[0].eval(state)?;
         let rhs = args[1].eval(state)?;
         if lhs == rhs {

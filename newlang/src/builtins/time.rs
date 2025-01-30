@@ -8,10 +8,12 @@ fn epoch_duration() -> Duration {
 }
 
 functions! {
-    now(0) => |_, _| {
+    /// Returns the current time is seconds (Unix epoch) as an integer.
+    "now"(0) => |_, _| {
         Ok(Atom::Int(epoch_duration().as_secs() as i64))
     }
-    now_nanos_part(0) => |_, _| {
+    /// Returns the nanosecond part of the current time as an integer.
+    "now_nanos_part"(0) => |_, _| {
         Ok(Atom::Int(i64::from(epoch_duration().subsec_nanos())))
     }
 }

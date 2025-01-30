@@ -8,7 +8,6 @@ fn int_cmp(state: &mut State, args: &[Argument], f: fn(&i64, &i64) -> bool) -> R
 }
 
 functions! {
-    // TODO: all functions except `!` need quotes, `!` has them for consistency
     "||"(2) => |state, args| Ok(Atom::Bool(
         args[0].eval(state)?.bool()? ||
         args[1].eval(state)?.bool()?
