@@ -7,7 +7,7 @@ functions! {
         Ok(Atom::Int(len as i64))
     }
     /// Concatenates any number of strings into one and returns it.
-    /// Other values are not implicitly cases and cause an exception.
+    /// Other values are not implicitly casted and cause an exception.
     "strconcat"(_) => |state, args| {
         let mut string = String::new();
         for arg in args {
