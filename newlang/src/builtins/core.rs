@@ -8,9 +8,9 @@ const STL_DIRECTORY: &str = "../stdlib";
 functions! {
     /// Evaluates all given arguments and returns the atom the last argument evaluated to.
     /// If no arguments are given, `null` is returned.
-    /// 
+    ///
     /// Every program is implicitly wrapped in a call to this function.
-    /// 
+    ///
     /// This function has an alias: `run`.
     "_"(_) => |state, args| {
         if args.is_empty() {
@@ -23,7 +23,7 @@ functions! {
         }
     }
     /// Assigns the second argument to a variable named like the first argument.
-    /// 
+    ///
     /// This function has an alias: `assign`.
     "="(2) => |state, args| {
         if let Argument::Variable(var) = &args[0] {
@@ -31,9 +31,9 @@ functions! {
             state.storage.insert(var.clone(), val);
             Ok(Atom::Null)
         } else {
-            Exception::new_err(
-                "Error during assignment: no variable was given to assign to!",
+            raise!(
                 Error::Assign,
+                "Error during assignment: no variable was given to assign to!",
             )
         }
     }
@@ -66,11 +66,16 @@ functions! {
         }
         Ok(Atom::Null)
     }
+    /// Defines a new function.
+    /// The first argument is the function identifier and the last argument is the function body.
+    /// All arguments in between are the names of the function arguments that can be accessed in
+    /// the function body.
+    /// Values defined in the function are scoped and cannot be accessed outside of the function body.
     "def"(_) => |state, args| {
         if args.len() < 2 {
-            return Exception::new_err(
-                format!("too few arguments passed to `def`: expected at least 2, found {}", args.len()), 
-                Error::Argument
+            return raise!(
+                Error::Argument,
+                "too few arguments passed to `def`: expected at least 2, found {}", args.len()
             );
         }
         if let Argument::Variable(var) = &args[0] {
@@ -81,9 +86,9 @@ functions! {
                     .cloned()
                     .map(|fn_arg| match fn_arg {
                         Argument::Variable(fn_arg) => Ok(fn_arg),
-                        _ => Exception::new_err(
-                            "Error during definition: invalid args were given!",
+                        _ => raise!(
                             Error::Assign,
+                            "Error during definition: invalid args were given!",
                         ),
                     })
                     .collect::<Result<Vec<String>>>()?;
@@ -109,24 +114,24 @@ functions! {
                 state.storage.insert(var.clone(), Atom::Function(function));
                 Ok(Atom::Null)
             } else {
-                Exception::new_err(
-                    "Error during definition: no valid function body was given!",
+                raise!(
                     Error::Assign,
+                    "Error during definition: no valid function body was given!",
                 )
             }
         } else {
-            Exception::new_err(
-                "Error during definition: no valid variable was given to define to!",
+            raise!(
                 Error::Assign,
+                "Error during definition: no valid variable was given to define to!",
             )
         }
     }
     "import"(1) => |state, args| {
         let name = args[0].eval(state)?.string()?;
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
-            return Exception::new_err(
-                format!("invalid characters in import name `{name}`"),
+            return raise!(
                 Error::Import,
+                "invalid characters in import name `{name}`",
             );
         }
 
@@ -145,23 +150,27 @@ functions! {
             }
         }
         let Some(code) = source else {
-            return Exception::new_err(
-                format!("failed to find file for importing `{name}`"),
+            return raise!(
                 Error::Import,
+                "failed to find file for importing `{name}`",
             );
         };
 
         let (atom, imported_state) = prelude::run(&code, &state.file_directory, None);
         let atom = atom?;
-        
+
         for (k, v) in imported_state.storage {
             state.storage.insert(k, v);
         }
         Ok(atom)
     }
+    /// Raises an exception of the kind `UserRaised` with the given string message.
     "error"(1) => |state, args| {
-        Exception::new_err(args[0].eval(state)?.string()?, Error::UserRaised)
+        Err(Exception::new(args[0].eval(state)?.string()?, Error::UserRaised))
     }
+    /// Evaluates the given value and returns it.
+    /// If an exception occurs while evaluating the argument, the exception is converted into a
+    /// string and returned instead.
     "catch"(1) => |state, args| {
         Ok(args[0]
             .eval(state)
@@ -174,7 +183,7 @@ functions! {
         if args[0].eval(state)?.bool()? {
             Ok(Atom::Null)
         } else {
-            Exception::new_err("Assertion failed!", Error::Assertion)
+            raise!(Error::Assertion, "Assertion failed!")
         }
     }
     "assert_eq"(2) => |state, args| {
@@ -183,9 +192,9 @@ functions! {
         if lhs == rhs {
             Ok(Atom::Null)
         } else {
-            Exception::new_err(
-                format!("Equality assertion failed! lhs: `{lhs}`, rhs: `{rhs}`!"), 
-                Error::Assertion
+            raise!(
+                Error::Assertion,
+                "Equality assertion failed! lhs: `{lhs}`, rhs: `{rhs}`!"
             )
         }
     }

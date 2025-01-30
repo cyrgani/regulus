@@ -11,7 +11,7 @@ functions! {
         if let Atom::Function(f) = arg {
             Ok(Atom::String(f.doc))
         } else {
-            Exception::new_err("`help` must be called on a function", Error::Argument)
+            raise!(Error::Argument, "`help` must be called on a function")
         }
     }
 }

@@ -1,5 +1,6 @@
 use crate::atom::Atom;
 use crate::exception::{Error, Exception, Result};
+use crate::raise;
 use std::ops::RangeInclusive;
 use std::result;
 
@@ -90,7 +91,7 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
             ')' | ',' => {
                 if !current.is_empty() {
                     add_token(
-                        match Atom::try_from_str(current.as_str()) {
+                        match Atom::try_from_str(current.as_str())? {
                             Some(value) => TokenData::Atom(value),
                             None => TokenData::Name(current.clone()),
                         },
@@ -112,7 +113,7 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
             }
             '"' => {
                 let Ok((end_pos, body)) = take_until(chars.by_ref(), '"') else {
-                    return Exception::new_err("unclosed string literal", Error::Syntax);
+                    return raise!(Error::Syntax, "unclosed string literal");
                 };
                 add_token(TokenData::Atom(Atom::String(body)), char_idx, end_pos);
             }
@@ -145,17 +146,17 @@ pub fn validate_tokens(tokens: &[Token]) -> Result<()> {
             _ => (),
         }
         if right_parens > left_parens {
-            return Exception::new_err(
-                format!("More ')' ({right_parens}) than '(' ({left_parens}) at some time!"),
+            return raise!(
                 Error::Syntax,
+                "More ')' ({right_parens}) than '(' ({left_parens}) at some time!"
             );
         }
     }
 
     if left_parens != right_parens {
-        return Exception::new_err(
-            format!("Nonequal amount of '(' and ')': {left_parens} vs. {right_parens}"),
+        return raise!(
             Error::Syntax,
+            "Nonequal amount of '(' and ')': {left_parens} vs. {right_parens}",
         );
     }
 

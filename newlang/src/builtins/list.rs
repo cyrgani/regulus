@@ -34,10 +34,10 @@ functions! {
     "for_in"(3) => |state, args| {
         let list = args[0].eval(state)?.list()?;
         let Argument::Variable(loop_var) = &args[1] else {
-            return Exception::new_err("invalid loop variable given to `for_in`", Error::Argument)
+            return raise!(Error::Argument, "invalid loop variable given to `for_in`")
         };
         let Argument::FunctionCall(loop_body) = &args[2] else {
-            return Exception::new_err("invalid loop body given to `for_in`", Error::Argument)
+            return raise!(Error::Argument, "invalid loop body given to `for_in`")
         };
 
         let possibly_shadowed_value = state.storage.get(loop_var).cloned();

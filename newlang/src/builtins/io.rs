@@ -24,7 +24,7 @@ functions! {
         match state.stdin.read_line(&mut input) {
             Ok(_) => Ok(Atom::String(input)),
             Err(error) => {
-                Exception::new_err(format!("Error while reading input: {error}"), Error::Io)
+                raise!(Error::Io, "Error while reading input: {error}")
             }
         }
     }

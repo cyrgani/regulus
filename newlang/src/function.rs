@@ -31,12 +31,10 @@ impl FunctionCall {
         if let Some(argc) = function.argc {
             let arg_len = self.args.len();
             if argc != arg_len {
-                return Exception::new_err(
-                    format!(
-                        "expected `{argc}` args, found `{arg_len}` args for `{}`",
-                        self.name
-                    ),
+                return raise!(
                     Error::Argument,
+                    "expected `{argc}` args, found `{arg_len}` args for `{}`",
+                    self.name
                 );
             }
         }

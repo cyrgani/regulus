@@ -30,10 +30,10 @@ impl State {
                 if let Atom::Function(func) = atom {
                     Ok(func.clone())
                 } else {
-                    Exception::new_err(format!("`{name}` is not a function!"), Error::Name)
+                    raise!(Error::Name, "`{name}` is not a function!")
                 }
             }
-            None => Exception::new_err(format!("No function `{name}` found!"), Error::Name),
+            None => raise!(Error::Name, "No function `{name}` found!"),
         }
     }
 }

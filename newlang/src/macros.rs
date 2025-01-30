@@ -21,12 +21,12 @@
 ///     ))
 ///  }
 /// ```
-/// 
+///
 /// Here, the name before the parens is the function ident,
 /// the parens contain the argc (`_` if any number of args is allowed)
 /// and the right side is the closure body of the builtin function.
-/// 
-/// The macro invocation generates a `pub` function called `functions` that returns 
+///
+/// The macro invocation generates a `pub` function called `functions` that returns
 /// `Vec<(&'static str, Function)>`.
 #[macro_export]
 macro_rules! functions {
@@ -43,8 +43,8 @@ macro_rules! functions {
     *) => {
         pub fn functions() -> Vec<(&'static str, $crate::prelude::Function)> {
             $(
-                $crate::check_nonempty_doc! { 
-                    $(#[doc = $doc])* $name 
+                $crate::check_nonempty_doc! {
+                    $(#[doc = $doc])* $name
                 }
             )*
             vec![
@@ -71,7 +71,11 @@ macro_rules! check_nonempty_doc {
     ($name: literal) => {
         // TODO use the `compile_error!` macro instead of `eprintln!` and remove the useless line
         let missing_doc_warning: ();
-        eprintln!(concat!("builtin function ", stringify!($name), " has no documentation"));
+        eprintln!(concat!(
+            "builtin function ",
+            stringify!($name),
+            " has no documentation"
+        ));
     };
     ($(#[doc = $doc: literal])* $name: literal) => {};
 }

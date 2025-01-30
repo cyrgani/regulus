@@ -3,6 +3,6 @@ pub use crate::{
     atom::Atom,
     exception::{Error, Exception, Result},
     function::{Function, FunctionCall},
-    functions, run,
+    functions, raise, run,
     state::{initial_storage, State, WriteHandle},
 };
