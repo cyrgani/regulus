@@ -17,7 +17,7 @@ impl Argument {
             Self::Variable(var) => match state.storage.get(var) {
                 Some(value) => Ok(value.clone()),
                 None => {
-                    Exception::new_err(format!("No variable named `{var}` found!"), Error::Name)
+                    raise!(Error::Name, "No variable named `{var}` found!")
                 }
             },
         }

@@ -1,6 +1,6 @@
-use std::fmt;
-
 use crate::prelude::*;
+use std::fmt;
+use std::num::IntErrorKind;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
@@ -13,16 +13,21 @@ pub enum Atom {
 }
 
 impl Atom {
-    pub fn try_from_str(value: &str) -> Option<Self> {
-        if let Ok(int) = value.parse::<i64>() {
-            Some(Self::Int(int))
-        } else {
-            Some(match value {
-                "true" => Self::Bool(true),
-                "false" => Self::Bool(false),
-                "null" => Self::Null,
-                _ => return None,
-            })
+    pub fn try_from_str(value: &str) -> Result<Option<Self>> {
+        match value {
+            "true" => Ok(Some(Self::Bool(true))),
+            "false" => Ok(Some(Self::Bool(false))),
+            "null" => Ok(Some(Self::Null)),
+            _ => match value.parse::<i64>() {
+                Ok(int) => Ok(Some(Self::Int(int))),
+                Err(err) => match err.kind() {
+                    IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => raise!(
+                        Error::Syntax,
+                        "integer {value} cannot be parsed as an integer due to overflow",
+                    ),
+                    _ => Ok(None),
+                },
+            },
         }
     }
 }
@@ -34,9 +39,9 @@ macro_rules! atom_try_as_variant_methods {
                 pub fn $method_name(&self) -> Result<$ty> {
                     match self {
                         Self::$variant(v) => Ok(v.clone()),
-                        _ => Exception::new_err(
-                            format!("{self} is not a {}!", stringify!($variant)),
+                        _ => raise!(
                             Error::Type,
+                            "{self} is not a {}!", stringify!($variant)
                         ),
                     }
                 }
