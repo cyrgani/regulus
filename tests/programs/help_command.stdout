@@ -1,0 +1,5 @@
+ Returns the documentation string for a function.
+ TODO: implement this for non-builtin functions as well.
+ TODO: also show the argc somehow
+ TODO: consider printing directly too
+ TODO: consider removing the leading newline (should then be done in `functions!`) 
