@@ -70,7 +70,7 @@ impl fmt::Display for Atom {
                     "<function>({})",
                     match f.argc {
                         Some(argc) => argc.to_string(),
-                        None => "...".to_string(),
+                        None => "_".to_string(),
                     }
                 ),
                 Self::Int(val) => val.to_string(),

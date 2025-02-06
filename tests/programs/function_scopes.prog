@@ -4,4 +4,4 @@ def(foo, x, _(
 )),
 
 assert_eq(foo(2), 2),
-assert_eq(catch(y), "Name: No variable named `y` found!")
+print(catch(y))

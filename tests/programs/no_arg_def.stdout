@@ -1,2 +1,2 @@
 hello 
-Assign: Error during definition: no valid function body was given! 
+AssignError: Error during definition: no valid function body was given! 

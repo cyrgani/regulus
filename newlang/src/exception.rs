@@ -1,7 +1,9 @@
-/// TODO: the future of exception handling:
-///  - exceptions have spans and tracebacks
-///  - `Error` will be removed
-///  - `catch(1)`'s functionality (exception -> string) will remain but might be renamed
+//! TODO: the future of exception handling:
+//!  - exceptions have spans and tracebacks
+//!  - `Error` will be removed
+//!  - `catch(1)`'s functionality (exception -> string) will remain but might be renamed
+use crate::parsing::positions::Span;
+use std::ops::RangeInclusive;
 use std::{error, fmt, result};
 
 #[derive(Debug)]
@@ -20,18 +22,38 @@ pub enum Error {
     Unimplemented,
 }
 
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{self:?}Error")
+    }
+}
+
 #[derive(Debug)]
 pub struct Exception {
     pub msg: String,
     pub error: Error,
+    pub origin: Option<Span>,
 }
 
 impl Exception {
-    #[expect(clippy::needless_pass_by_value, reason = "unhelpful warning")]
-    pub fn new(msg: impl ToString, error: Error) -> Self {
+    pub fn new(msg: impl Into<String>, error: Error) -> Self {
         Self {
-            msg: msg.to_string(),
+            msg: msg.into(),
             error,
+            origin: None,
+        }
+    }
+
+    pub fn spanned(
+        msg: impl Into<String>,
+        error: Error,
+        indices: RangeInclusive<usize>,
+        code: &str,
+    ) -> Self {
+        Self {
+            msg: msg.into(),
+            error,
+            origin: Some(Span::from_indices(indices, code)),
         }
     }
 }
@@ -51,7 +73,15 @@ macro_rules! raise {
 
 impl fmt::Display for Exception {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}: {}", self.error, self.msg)
+        if let Some(origin) = self.origin.as_ref() {
+            write!(
+                f,
+                "{}: line {}, column {}: {}",
+                self.error, origin.start.line, origin.end.line, self.msg
+            )
+        } else {
+            write!(f, "{}: {}", self.error, self.msg)
+        }
     }
 }
 

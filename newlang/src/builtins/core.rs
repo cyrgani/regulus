@@ -26,7 +26,7 @@ functions! {
     ///
     /// This function has an alias: `assign`.
     "="(2) => |state, args| {
-        if let Argument::Variable(var) = &args[0] {
+        if let ArgumentData::Variable(var) = &args[0].data {
             let val = args[1].eval(state)?;
             state.storage.insert(var.clone(), val);
             Ok(Atom::Null)
@@ -78,14 +78,14 @@ functions! {
                 "too few arguments passed to `def`: expected at least 2, found {}", args.len()
             );
         }
-        if let Argument::Variable(var) = &args[0] {
-            if let Argument::FunctionCall(inner) = args.last().unwrap() {
+        if let ArgumentData::Variable(var) = &args[0].data {
+            if let ArgumentData::FunctionCall(inner) = &args.last().unwrap().data {
                 let body = inner.clone();
                 let function_arg_names = args[1..args.len() - 1]
                     .iter()
                     .cloned()
-                    .map(|fn_arg| match fn_arg {
-                        Argument::Variable(fn_arg) => Ok(fn_arg),
+                    .map(|fn_arg| match fn_arg.data {
+                        ArgumentData::Variable(fn_arg) => Ok(fn_arg),
                         _ => raise!(
                             Error::Assign,
                             "Error during definition: invalid args were given!",

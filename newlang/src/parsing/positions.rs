@@ -1,9 +1,32 @@
 use std::cmp::Ordering;
+use std::ops::RangeInclusive;
 use std::str::Chars;
 
+/// A region of source code.
+/// Both start and end are inclusive.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Span {
+    // TODO add this field or rather not?
+    // pub file: PathBuf,
+    /// The start position of the span, inclusive.
+    pub start: Position,
+    /// The end position of the span, inclusive.
+    pub end: Position,
+}
+
+impl Span {
+    pub fn from_indices(indices: RangeInclusive<usize>, code: &str) -> Self {
+        let mut positions = CharPositions::new(code);
+        let (start, _) = positions.nth(*indices.start()).unwrap();
+        let (end, _) = positions.nth(*indices.end() - *indices.start()).unwrap();
+        Self { start, end }
+    }
+}
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Position {
+    /// The line, starting at 1.
     pub line: usize,
+    /// The column, starting at 1.
     pub column: usize,
 }
 
@@ -95,5 +118,25 @@ mod tests {
         assert!(p(1, 3) > p(1, 1));
         assert!(p(1, 4) == p(1, 4));
         assert!(p(2, 1) > p(1, 10));
+    }
+    
+    const fn sp(l1: usize, c1: usize, l2: usize, c2: usize) -> Span {
+        Span {
+            start: p(l1, c1),
+            end: p(l2, c2),
+        }
+    }
+    
+    #[test]
+    fn span_from_indices() {
+        let s = "abc\nde\nf\n";
+        assert_eq!(Span::from_indices(0..=2, s), sp(1, 1, 1, 4));
+        assert_eq!(Span::from_indices(2..=6, s), sp(1, 3, 3, 1));
+    }
+    
+    #[test]
+    #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
+    fn span_from_indices_panic() {
+        Span::from_indices(0..=1000, "abc\nde\nf\n");
     }
 }

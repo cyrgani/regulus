@@ -1,9 +1,16 @@
 use crate::prelude::*;
 #[cfg(feature = "display_impls")]
 use std::fmt;
+use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone)]
-pub enum Argument {
+pub struct Argument {
+    pub data: ArgumentData,
+    pub indices: RangeInclusive<usize>,
+}
+
+#[derive(Debug, Clone)]
+pub enum ArgumentData {
     FunctionCall(FunctionCall),
     Atom(Atom),
     Variable(String),
@@ -11,10 +18,10 @@ pub enum Argument {
 
 impl Argument {
     pub fn eval(&self, state: &mut State) -> Result<Atom> {
-        match self {
-            Self::FunctionCall(call) => call.eval(state),
-            Self::Atom(atom) => Ok(atom.clone()),
-            Self::Variable(var) => match state.storage.get(var) {
+        match &self.data {
+            ArgumentData::FunctionCall(call) => call.eval(state),
+            ArgumentData::Atom(atom) => Ok(atom.clone()),
+            ArgumentData::Variable(var) => match state.storage.get(var) {
                 Some(value) => Ok(value.clone()),
                 None => {
                     raise!(Error::Name, "No variable named `{var}` found!")
@@ -30,10 +37,10 @@ impl fmt::Display for Argument {
         write!(
             f,
             "{}",
-            match self {
-                Self::Atom(atom) => atom.to_string(),
-                Self::FunctionCall(call) => call.to_string(),
-                Self::Variable(name) => name.to_string(),
+            match &self.data {
+                ArgumentData::Atom(atom) => atom.to_string(),
+                ArgumentData::FunctionCall(call) => call.to_string(),
+                ArgumentData::Variable(name) => name.to_string(),
             }
         )
     }

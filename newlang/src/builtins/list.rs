@@ -48,17 +48,17 @@ functions! {
         Ok(Atom::Int(args[0].eval(state)?.list()?.len() as i64))
     }
     /// Iterates over the given list elements.
-    /// The first argument is the list, the second the loop variable name for each element and the 
+    /// The first argument is the list, the second the loop variable name for each element and the
     /// third is the body that will be run for each of these elements.
     /// Afterwards, `null` is returned.
-    /// 
+    ///
     /// If the loop variable shadows an existing variable, that value can be used again after the loop.
     "for_in"(3) => |state, args| {
         let list = args[0].eval(state)?.list()?;
-        let Argument::Variable(loop_var) = &args[1] else {
+        let ArgumentData::Variable(loop_var) = &args[1].data else {
             return raise!(Error::Argument, "invalid loop variable given to `for_in`")
         };
-        let Argument::FunctionCall(loop_body) = &args[2] else {
+        let ArgumentData::FunctionCall(loop_body) = &args[2].data else {
             return raise!(Error::Argument, "invalid loop body given to `for_in`")
         };
 
@@ -76,12 +76,22 @@ functions! {
     }
     /// Applies the second argument function to each element of the first argument list and returns
     /// the updated list.
-    "map"(2) => |state, args| {
+    "map"(2) => 
+    |state, args| {
         let function = args[1].eval(state)?.function()?;
         let list = args[0].eval(state)?.list()?;
         Ok(Atom::List(
             list.into_iter()
-                .map(|atom| (function.callback)(state, &[Argument::Atom(atom)]))
+                .map(|atom| {
+                    (function.callback)(
+                        state,
+                        &[Argument {
+                            data: ArgumentData::Atom(atom),
+                            // TODO: bad indices
+                            indices: 0..=0,
+                        }],
+                    )
+                })
                 .collect::<Result<_>>()?,
         ))
     }

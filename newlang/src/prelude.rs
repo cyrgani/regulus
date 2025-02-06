@@ -1,5 +1,5 @@
 pub use crate::{
-    argument::Argument,
+    argument::{Argument, ArgumentData},
     atom::Atom,
     exception::{Error, Exception, Result},
     function::{Function, FunctionCall},

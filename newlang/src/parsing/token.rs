@@ -4,9 +4,12 @@ use crate::raise;
 use std::ops::RangeInclusive;
 use std::result;
 
+/// A token of source code with location information.
 #[derive(Debug)]
 pub struct Token {
+    /// The actual token.
     pub data: TokenData,
+    /// The start and end of the character range this token was created from.
     pub indices: RangeInclusive<usize>,
 }
 
@@ -19,27 +22,6 @@ pub enum TokenData {
     Atom(Atom),
     Name(String),
     Comment(String),
-}
-
-/// A region of source code.
-/// Both start and end are inclusive.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Span {
-    // TODO add this field or rather not?
-    // pub file: PathBuf,
-    /// The start index of the span, inclusive.
-    pub start: usize,
-    /// The end index of the span, inclusive.
-    pub end: usize,
-}
-
-impl From<RangeInclusive<usize>> for Span {
-    fn from(range: RangeInclusive<usize>) -> Self {
-        Self {
-            start: *range.start(),
-            end: *range.end(),
-        }
-    }
 }
 
 /// Takes characters from the stream until `target` is reached.

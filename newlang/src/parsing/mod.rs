@@ -1,4 +1,4 @@
-mod positions;
+pub mod positions;
 pub mod token;
 
 use crate::parsing::token::Token;
@@ -15,7 +15,10 @@ pub fn build_program(tokens: &[Token], function_name: &str) -> Result<FunctionCa
 
     while let Some((idx, token)) = iter.next() {
         match &token.data {
-            TokenData::Atom(atom) => call.args.push(Argument::Atom(atom.clone())),
+            TokenData::Atom(atom) => call.args.push(Argument {
+                data: ArgumentData::Atom(atom.clone()),
+                indices: token.indices.clone(),
+            }),
             TokenData::Comma | TokenData::LeftParen | TokenData::Comment(_) => (),
             TokenData::Function(function) => {
                 let mut required_right_parens = 1;
@@ -26,10 +29,13 @@ pub fn build_program(tokens: &[Token], function_name: &str) -> Result<FunctionCa
                         _ => (),
                     }
                     if required_right_parens == 0 {
-                        call.args.push(Argument::FunctionCall(build_program(
-                            &tokens[idx + 2..idx + 3 + i],
-                            function,
-                        )?));
+                        call.args.push(Argument {
+                            data: ArgumentData::FunctionCall(build_program(
+                                &tokens[idx + 2..idx + 3 + i],
+                                function,
+                            )?),
+                            indices: token.indices.clone(),
+                        });
                         iter.nth(1 + i);
                         break;
                     }
@@ -39,7 +45,10 @@ pub fn build_program(tokens: &[Token], function_name: &str) -> Result<FunctionCa
                     "token validation should cover this"
                 );
             }
-            TokenData::Name(name) => call.args.push(Argument::Variable(name.clone())),
+            TokenData::Name(name) => call.args.push(Argument {
+                data: ArgumentData::Variable(name.clone()),
+                indices: token.indices.clone(),
+            }),
             TokenData::RightParen => return Ok(call),
         }
     }
