@@ -1,7 +1,6 @@
 use clap::Parser;
 use colored::Colorize;
 use newlang::prelude::*;
-use newlang::STL_DIR;
 use std::fs;
 use std::path::PathBuf;
 

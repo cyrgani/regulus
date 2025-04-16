@@ -54,7 +54,7 @@ macro_rules! return_err {
     };
 }
 
-pub const STL_DIR: &str = "stdlib";
+pub(crate) const STL_DIR: &str = "stdlib";
 
 pub fn run(code: &str, dir: impl AsRef<Path>) -> (Result<Atom>, State) {
     run_with_options(code, dir, None, STL_DIR)

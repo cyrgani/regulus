@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::io::{stderr, stdin, stdout, BufRead, BufReader, Read, Stderr, Stdout, Write};
 use std::path::{Path, PathBuf};
 use std::{io, str};
-const STL_DIRECTORY: &str = "stdlib";
+use crate::STL_DIR;
 
 pub struct State {
     pub storage: HashMap<String, Atom>,
@@ -67,7 +67,7 @@ impl State {
             stdout: WriteHandle::Buffer(vec![]),
             stderr: WriteHandle::Buffer(vec![]),
             file_directory: PathBuf::from(dir_path),
-            stl_path: PathBuf::from("..").join(STL_DIRECTORY),
+            stl_path: PathBuf::from("..").join(STL_DIR),
         }
     }
 
