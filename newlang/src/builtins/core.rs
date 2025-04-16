@@ -1,4 +1,4 @@
-use crate::prelude::{self, *};
+use crate::prelude::*;
 use std::fs::{self, DirEntry};
 use std::path::Path;
 use std::rc::Rc;
@@ -134,7 +134,7 @@ functions! {
                 "invalid characters in import name `{name}`",
             );
         }
-        
+
         // lookup order:
         // 1. look inside the programs current directory
         // 2. look in the global stl directory
@@ -156,7 +156,7 @@ functions! {
             );
         };
 
-        let (atom, imported_state) = prelude::run(&code, &state.file_directory, None, &state.stl_path);
+        let (atom, imported_state) = crate::run_with_options(&code, &state.file_directory, None, &state.stl_path);
         let atom = atom?;
 
         for (k, v) in imported_state.storage {

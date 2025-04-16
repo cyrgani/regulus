@@ -56,8 +56,11 @@ macro_rules! return_err {
 
 pub const STL_DIR: &str = "stdlib";
 
-// todo: rename this, make run a simple and ergonomic interface again
-pub fn run(
+pub fn run(code: &str, dir: impl AsRef<Path>) -> (Result<Atom>, State) {
+    run_with_options(code, dir, None, STL_DIR)
+}
+
+pub fn run_with_options(
     code: &str,
     dir: impl AsRef<Path>,
     start_state: Option<State>,

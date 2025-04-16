@@ -34,7 +34,7 @@ fn main() {
             if dir == PathBuf::new() {
                 dir = PathBuf::from(".");
             }
-            let result = run(&code, dir, None, STL_DIR);
+            let result = run(&code, dir);
             match result {
                 (Ok(atom), state) => {
                     match atom {

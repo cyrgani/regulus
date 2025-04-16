@@ -1,4 +1,5 @@
-use newlang::prelude::{run, State};
+use newlang::prelude::State;
+use newlang::run_with_options;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str;
@@ -29,7 +30,7 @@ pub fn run_test(dir_path: &str, name: &str) {
     let source = fs::read_to_string(base_path.with_extension("prog"))
         .expect("fatal error: program file not found");
 
-    let (res, final_state) = run(
+    let (res, final_state) = run_with_options(
         &source,
         dir_path,
         Some(State::testing_setup(
