@@ -119,21 +119,21 @@ mod tests {
         assert!(p(1, 4) == p(1, 4));
         assert!(p(2, 1) > p(1, 10));
     }
-    
+
     const fn sp(l1: usize, c1: usize, l2: usize, c2: usize) -> Span {
         Span {
             start: p(l1, c1),
             end: p(l2, c2),
         }
     }
-    
+
     #[test]
     fn span_from_indices() {
         let s = "abc\nde\nf\n";
         assert_eq!(Span::from_indices(0..=2, s), sp(1, 1, 1, 4));
         assert_eq!(Span::from_indices(2..=6, s), sp(1, 3, 3, 1));
     }
-    
+
     #[test]
     #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
     fn span_from_indices_panic() {

@@ -26,7 +26,16 @@ mod state;
 
 mod builtins;
 
-pub mod prelude;
+pub mod prelude {
+    pub use crate::{
+        argument::{Argument, ArgumentData},
+        atom::Atom,
+        exception::{Error, Exception, Result},
+        function::{Function, FunctionCall},
+        functions, raise, run,
+        state::State,
+    };
+}
 
 use crate::{
     atom::Atom,
@@ -45,8 +54,16 @@ macro_rules! return_err {
     };
 }
 
-pub fn run(code: &str, dir: impl AsRef<Path>, start_state: Option<State>) -> (Result<Atom>, State) {
-    let mut state = start_state.unwrap_or_else(|| State::initial(dir));
+pub const STL_DIR: &str = "stdlib";
+
+// todo: rename this, make run a simple and ergonomic interface again
+pub fn run(
+    code: &str,
+    dir: impl AsRef<Path>,
+    start_state: Option<State>,
+    stl_dir: impl AsRef<Path>,
+) -> (Result<Atom>, State) {
+    let mut state = start_state.unwrap_or_else(|| State::initial(dir, stl_dir));
     let tokens = return_err!(tokenize(code), state);
 
     return_err!(validate_tokens(&tokens), state);

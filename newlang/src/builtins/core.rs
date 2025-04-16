@@ -3,8 +3,6 @@ use std::fs::{self, DirEntry};
 use std::path::Path;
 use std::rc::Rc;
 
-const STL_DIRECTORY: &str = "../stdlib";
-
 functions! {
     /// Evaluates all given arguments and returns the atom the last argument evaluated to.
     /// If no arguments are given, `null` is returned.
@@ -136,13 +134,13 @@ functions! {
                 "invalid characters in import name `{name}`",
             );
         }
-
+        
         // lookup order:
         // 1. look inside the programs current directory
         // 2. look in the global stl directory
         let mut source = None;
 
-        for item in read_dir_files(&state.file_directory).chain(read_dir_files(&STL_DIRECTORY))
+        for item in read_dir_files(&state.file_directory).chain(read_dir_files(&state.stl_path))
         {
             if *item.file_name() == *format!("{name}.prog") {
                 if let Ok(file_content) = fs::read_to_string(item.path()) {
@@ -158,7 +156,7 @@ functions! {
             );
         };
 
-        let (atom, imported_state) = prelude::run(&code, &state.file_directory, None);
+        let (atom, imported_state) = prelude::run(&code, &state.file_directory, None, &state.stl_path);
         let atom = atom?;
 
         for (k, v) in imported_state.storage {

@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 fn write_to_stdout(state: &mut State, msg: &str) {
-    state.stdout.write_all(msg.as_bytes());
+    state.stdout().write_all(msg.as_bytes()).unwrap();
 }
 
 functions! {
@@ -21,7 +21,7 @@ functions! {
     /// Returns the read input, including the newline, as a string.
     "input"(0) => |state, _| {
         let mut input = String::new();
-        match state.stdin.read_line(&mut input) {
+        match state.stdin().read_line(&mut input) {
             Ok(_) => Ok(Atom::String(input)),
             Err(error) => {
                 raise!(Error::Io, "Error while reading input: {error}")

@@ -1,6 +1,7 @@
 use clap::Parser;
 use colored::Colorize;
 use newlang::prelude::*;
+use newlang::STL_DIR;
 use std::fs;
 use std::path::PathBuf;
 
@@ -30,7 +31,10 @@ fn main() {
         Ok(code) => {
             let mut dir = PathBuf::from(&args.path);
             dir.pop();
-            let result = run(&code, dir, None);
+            if dir == PathBuf::new() {
+                dir = PathBuf::from(".");
+            }
+            let result = run(&code, dir, None, STL_DIR);
             match result {
                 (Ok(atom), state) => {
                     match atom {
