@@ -1,0 +1,7 @@
+def(map, seq, function, _(
+    =(new_list, list()),
+    for_in(seq, el, _(
+        =(new_list, append(new_list, function(el)))
+    )),
+    new_list
+)),

@@ -70,26 +70,6 @@ functions! {
         }
         Ok(Atom::Null)
     }
-    /// Applies the second argument function to each element of the first argument list and returns
-    /// the updated list.
-    "map"(2) => |state, args| {
-        let function = args[1].eval(state)?.function()?;
-        let list = args[0].eval(state)?.list()?;
-        Ok(Atom::List(
-            list.into_iter()
-                .map(|atom| {
-                    (function.callback)(
-                        state,
-                        &[Argument {
-                            data: ArgumentData::Atom(atom),
-                            // TODO: bad indices
-                            span_indices: 0..=0,
-                        }],
-                    )
-                })
-                .collect::<Result<_>>()?,
-        ))
-    }
     /// Replaces an element at a list index with another.
     /// The first argument is the list, the second the index and the third the new value.
     /// If the index is out of bounds, an exception is raised.
