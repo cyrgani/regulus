@@ -11,4 +11,16 @@ def(range, start, end, _(
     l
 )),
 
+# TODO: make a decision which syntax is better
+#=(range, fn(start, end, _(
+#    if(>(start, end), error("cannot construct range with start > end")),
+#    =(i, start),
+#    =(l, list()),
+#    while(<(i, end), _(
+#        =(l, append(l, i)),
+#        =(i, +(i, 1)),
+#    )),
+#    l
+#))),
+
 =(.., range)

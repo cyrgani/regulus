@@ -98,6 +98,42 @@ functions! {
         state.storage.insert(var, Atom::Function(function));
         Ok(Atom::Null)
     }
+    /// Creates a new function and returns it.
+    ///
+    /// The last argument is the function body.
+    /// All arguments before are the names of the function arguments that can be accessed in
+    /// the function body.
+    /// Values defined in the function are scoped and cannot be accessed outside of the function body.
+    "fn"(_) => |_, args| {
+        let Some((body, fn_args)) = args.split_last() else {
+            return raise!(Error::Argument, "`fn` invocation is missing body");
+        };
+        let body = body.function_call("Error during definition: no valid function body was given!")?;
+        let function_arg_names = fn_args
+            .iter()
+            .map(|fn_arg| fn_arg.variable("Error during definition: invalid args were given!"))
+            .collect::<Result<Vec<String>>>()?;
+
+        let function = Function {
+            doc: String::new(),
+            argc: Some(function_arg_names.len()),
+            callback: Rc::new(move |state, args| {
+                // a function call should have its own scope and not leak variables
+                let old_storage = state.storage.clone();
+
+                for (idx, arg) in function_arg_names.iter().enumerate() {
+                    let arg_result = args[idx].eval(state)?;
+                    state.storage.insert(arg.clone(), arg_result);
+                }
+
+                let function_result = body.eval(state);
+                state.storage = old_storage;
+                function_result
+            }),
+        };
+
+        Ok(Atom::Function(function))
+    }
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the behavior of `=`
     "import"(1) => |state, args| {
