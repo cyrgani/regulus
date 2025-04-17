@@ -24,16 +24,10 @@ functions! {
     ///
     /// This function has an alias: `assign`.
     "="(2) => |state, args| {
-        if let ArgumentData::Variable(var) = &args[0].data {
-            let val = args[1].eval(state)?;
-            state.storage.insert(var.clone(), val);
-            Ok(Atom::Null)
-        } else {
-            raise!(
-                Error::Assign,
-                "Error during assignment: no variable was given to assign to!",
-            )
-        }
+        let var = args[0].variable("Error during assignment: no variable was given to assign to!")?;
+        let value = args[1].eval(state)?;
+        state.storage.insert(var, value);
+        Ok(Atom::Null)
     }
     /// Evaluates the first argument as a boolean.
     /// If it evaluates to true, the second argument is evaluated and returned.
@@ -76,53 +70,33 @@ functions! {
                 "too few arguments passed to `def`: expected at least 2, found {}", args.len()
             );
         }
-        if let ArgumentData::Variable(var) = &args[0].data {
-            if let ArgumentData::FunctionCall(inner) = &args.last().unwrap().data {
-                let body = inner.clone();
-                let function_arg_names = args[1..args.len() - 1]
-                    .iter()
-                    .cloned()
-                    .map(|fn_arg| match fn_arg.data {
-                        ArgumentData::Variable(fn_arg) => Ok(fn_arg),
-                        _ => raise!(
-                            Error::Assign,
-                            "Error during definition: invalid args were given!",
-                        ),
-                    })
-                    .collect::<Result<Vec<String>>>()?;
+        let var = args[0].variable("Error during function definition: no valid variable was given to define to!")?;
+        let body = args.last().unwrap().function_call("Error during definition: no valid function body was given!")?;
+        let function_arg_names = args[1..args.len() - 1]
+            .iter()
+            .map(|fn_arg| fn_arg.variable("Error during definition: invalid args were given!"))
+            .collect::<Result<Vec<String>>>()?;
 
-                let function = Function {
-                    doc: String::new(),
-                    argc: Some(function_arg_names.len()),
-                    callback: Rc::new(move |state, args| {
-                        // a function call should have its own scope and not leak variables
-                        let old_storage = state.storage.clone();
+        let function = Function {
+            doc: String::new(),
+            argc: Some(function_arg_names.len()),
+            callback: Rc::new(move |state, args| {
+                // a function call should have its own scope and not leak variables
+                let old_storage = state.storage.clone();
 
-                        for (idx, arg) in function_arg_names.iter().enumerate() {
-                            let arg_result = args[idx].eval(state)?;
-                            state.storage.insert(arg.clone(), arg_result);
-                        }
+                for (idx, arg) in function_arg_names.iter().enumerate() {
+                    let arg_result = args[idx].eval(state)?;
+                    state.storage.insert(arg.clone(), arg_result);
+                }
 
-                        let function_result = body.eval(state);
-                        state.storage = old_storage;
-                        function_result
-                    }),
-                };
+                let function_result = body.eval(state);
+                state.storage = old_storage;
+                function_result
+            }),
+        };
 
-                state.storage.insert(var.clone(), Atom::Function(function));
-                Ok(Atom::Null)
-            } else {
-                raise!(
-                    Error::Assign,
-                    "Error during definition: no valid function body was given!",
-                )
-            }
-        } else {
-            raise!(
-                Error::Assign,
-                "Error during definition: no valid variable was given to define to!",
-            )
-        }
+        state.storage.insert(var, Atom::Function(function));
+        Ok(Atom::Null)
     }
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the behavior of `=`
@@ -238,9 +212,9 @@ functions! {
     ///
     /// The first argument is the object, the second is its name as a variable.
     /// TODO: consider allowing the second to also be an arg that evals to Atom::String?
-    /// 
+    ///
     /// If the field does not exist on the object, an exception is raised.
-    /// 
+    ///
     /// This function has an alias: `getattr`.
     "."(2) => |state, args| {
         let obj = args[0].eval(state)?.object()?;
@@ -251,10 +225,10 @@ functions! {
     ///
     /// The first argument is the object, the second is its name as a variable and the third is the new value.
     ///
-    /// If the field does not exist on the object, an exception is raised. 
+    /// If the field does not exist on the object, an exception is raised.
     /// TODO: think if it should be allowed to add fields with this that did not exist before or not
     /// TODO: consider allowing the second to also be an arg that evals to Atom::String?
-    /// 
+    ///
     /// This function has an alias: `setattr`.
     "->"(3) => |state, args| {
         let mut obj = args[0].eval(state)?.object()?;
@@ -263,7 +237,6 @@ functions! {
         *obj.get_mut(&field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value;
         Ok(Atom::Object(obj))
     }
-    
 }
 
 fn read_dir_files(path: impl AsRef<Path>) -> impl Iterator<Item = DirEntry> {

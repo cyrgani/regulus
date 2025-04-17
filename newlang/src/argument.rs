@@ -30,10 +30,21 @@ impl Argument {
         }
     }
 
-    pub fn variable(&self, msg: &str) -> Result<String> {
+    /// Returns the identifier of this variable.
+    /// If it is not a variable, it raises an exception with the given error message.
+    pub fn variable(&self, error_msg: &str) -> Result<String> {
         match &self.data {
             ArgumentData::Variable(var) => Ok(var.clone()),
-            _ => raise!(Error::Argument, "{msg}"),
+            _ => raise!(Error::Argument, "{error_msg}"),
+        }
+    }
+
+    /// If this is a function call, it is returned.
+    /// Otherwise, it raises an exception with the given error message.
+    pub fn function_call(&self, error_msg: &str) -> Result<FunctionCall> {
+        match &self.data {
+            ArgumentData::FunctionCall(call) => Ok(call.clone()),
+            _ => raise!(Error::Argument, "{error_msg}"),
         }
     }
 }

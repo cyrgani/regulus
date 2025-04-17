@@ -45,15 +45,6 @@ use crate::{
 };
 use std::path::Path;
 
-macro_rules! return_err {
-    ($val: expr, $state: expr) => {
-        match $val {
-            Ok(ok) => ok,
-            Err(err) => return (Err(err), $state),
-        }
-    };
-}
-
 pub(crate) const STL_DIR: &str = "stdlib";
 
 pub fn run(code: &str, dir: impl AsRef<Path>) -> (Result<Atom>, State) {
@@ -67,12 +58,22 @@ pub fn run_with_options(
     stl_dir: impl AsRef<Path>,
 ) -> (Result<Atom>, State) {
     let mut state = start_state.unwrap_or_else(|| State::initial(dir, stl_dir));
-    let tokens = return_err!(tokenize(code), state);
 
-    return_err!(validate_tokens(&tokens), state);
+    macro_rules! return_err {
+        ($val: expr) => {
+            match $val {
+                Ok(ok) => ok,
+                Err(err) => return (Err(err), state),
+            }
+        };
+    }
 
-    let program = return_err!(build_program(&tokens, "_"), state);
+    let tokens = return_err!(tokenize(code));
 
-    let result = return_err!(program.eval(&mut state), state);
+    return_err!(validate_tokens(&tokens));
+
+    let program = return_err!(build_program(&tokens, "_"));
+
+    let result = return_err!(program.eval(&mut state));
     (Ok(result), state)
 }

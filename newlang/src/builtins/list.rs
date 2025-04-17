@@ -55,14 +55,10 @@ functions! {
     /// If the loop variable shadows an existing variable, that value can be used again after the loop.
     "for_in"(3) => |state, args| {
         let list = args[0].eval(state)?.list()?;
-        let ArgumentData::Variable(loop_var) = &args[1].data else {
-            return raise!(Error::Argument, "invalid loop variable given to `for_in`")
-        };
-        let ArgumentData::FunctionCall(loop_body) = &args[2].data else {
-            return raise!(Error::Argument, "invalid loop body given to `for_in`")
-        };
+        let loop_var = args[1].variable("invalid loop variable given to `for_in`")?;
+        let loop_body = args[2].function_call("invalid loop body given to `for_in`")?;
 
-        let possibly_shadowed_value = state.storage.get(loop_var).cloned();
+        let possibly_shadowed_value = state.storage.get(&loop_var).cloned();
 
         for el in list {
             state.storage.insert(loop_var.clone(), el);
@@ -70,7 +66,7 @@ functions! {
         }
 
         if let Some(val) = possibly_shadowed_value {
-            state.storage.insert(loop_var.clone(), val);
+            state.storage.insert(loop_var, val);
         }
         Ok(Atom::Null)
     }
