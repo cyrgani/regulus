@@ -1,5 +1,5 @@
-use newlang::prelude::State;
-use newlang::run_with_options;
+use regulus::prelude::State;
+use regulus::run_with_options;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str;

@@ -1,10 +1,10 @@
 use clap::Parser;
 use colored::Colorize;
-use newlang::prelude::*;
+use regulus::prelude::*;
 use std::fs;
 use std::path::PathBuf;
 
-/// An interpreter for the language NAMEHERE
+/// An interpreter for the Regulus language.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {

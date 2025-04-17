@@ -2,7 +2,7 @@
 ///
 /// # Example
 /// ```rust
-/// use newlang::prelude::*;
+/// use regulus::prelude::*;
 /// functions! {
 ///     /// Length of a string.
 ///     "strlen"(1) => |state, args| {

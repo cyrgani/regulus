@@ -9,5 +9,5 @@ name = "runner"
 path = "runner.rs"
 
 [dev-dependencies]
-newlang = { path = "../newlang" }
+regulus = { path = "../regulus" }
 tests_generator_macro = { path = "../tests_generator_macro" }
