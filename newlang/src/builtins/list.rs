@@ -76,8 +76,7 @@ functions! {
     }
     /// Applies the second argument function to each element of the first argument list and returns
     /// the updated list.
-    "map"(2) => 
-    |state, args| {
+    "map"(2) => |state, args| {
         let function = args[1].eval(state)?.function()?;
         let list = args[0].eval(state)?.list()?;
         Ok(Atom::List(
@@ -88,7 +87,7 @@ functions! {
                         &[Argument {
                             data: ArgumentData::Atom(atom),
                             // TODO: bad indices
-                            indices: 0..=0,
+                            span_indices: 0..=0,
                         }],
                     )
                 })

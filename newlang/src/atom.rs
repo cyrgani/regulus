@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::collections::HashMap;
 use std::fmt;
 use std::num::IntErrorKind;
 
@@ -10,6 +11,7 @@ pub enum Atom {
     List(Vec<Atom>),
     String(String),
     Function(Function),
+    Object(HashMap<String, Atom>),
 }
 
 impl Atom {
@@ -57,6 +59,7 @@ atom_try_as_variant_methods! {
     list -> Vec<Self>: List;
     string -> String: String;
     function -> Function: Function;
+    object -> HashMap<String, Atom>: Object;
 }
 
 impl fmt::Display for Atom {
@@ -83,6 +86,8 @@ impl fmt::Display for Atom {
                 ),
                 Self::Null => "null".to_string(),
                 Self::String(val) => val.clone(),
+                // todo: investigate the proper format
+                Self::Object(obj) => format!("{obj:?}"),
             }
         )
     }

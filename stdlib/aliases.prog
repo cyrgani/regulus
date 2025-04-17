@@ -4,3 +4,5 @@
 =(run, _),
 =(assign, =),
 =(equals, ==)
+=(getattr, .),
+=(setattr, ->),

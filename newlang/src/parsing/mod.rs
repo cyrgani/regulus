@@ -17,7 +17,7 @@ pub fn build_program(tokens: &[Token], function_name: &str) -> Result<FunctionCa
         match &token.data {
             TokenData::Atom(atom) => call.args.push(Argument {
                 data: ArgumentData::Atom(atom.clone()),
-                indices: token.indices.clone(),
+                span_indices: token.indices.clone(),
             }),
             TokenData::Comma | TokenData::LeftParen | TokenData::Comment(_) => (),
             TokenData::Function(function) => {
@@ -34,7 +34,7 @@ pub fn build_program(tokens: &[Token], function_name: &str) -> Result<FunctionCa
                                 &tokens[idx + 2..idx + 3 + i],
                                 function,
                             )?),
-                            indices: token.indices.clone(),
+                            span_indices: token.indices.clone(),
                         });
                         iter.nth(1 + i);
                         break;
@@ -47,7 +47,7 @@ pub fn build_program(tokens: &[Token], function_name: &str) -> Result<FunctionCa
             }
             TokenData::Name(name) => call.args.push(Argument {
                 data: ArgumentData::Variable(name.clone()),
-                indices: token.indices.clone(),
+                span_indices: token.indices.clone(),
             }),
             TokenData::RightParen => return Ok(call),
         }

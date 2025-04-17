@@ -6,7 +6,7 @@ use std::ops::RangeInclusive;
 #[derive(Debug, Clone)]
 pub struct Argument {
     pub data: ArgumentData,
-    pub indices: RangeInclusive<usize>,
+    pub span_indices: RangeInclusive<usize>,
 }
 
 #[derive(Debug, Clone)]
@@ -27,6 +27,13 @@ impl Argument {
                     raise!(Error::Name, "No variable named `{var}` found!")
                 }
             },
+        }
+    }
+
+    pub fn variable(&self, msg: &str) -> Result<String> {
+        match &self.data {
+            ArgumentData::Variable(var) => Ok(var.clone()),
+            _ => raise!(Error::Argument, "{msg}"),
         }
     }
 }
