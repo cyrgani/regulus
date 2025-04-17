@@ -2,6 +2,7 @@ use crate::prelude::*;
 use std::fs::{self, DirEntry};
 use std::path::Path;
 use std::rc::Rc;
+use crate::FILE_EXTENSION;
 
 functions! {
     /// Evaluates all given arguments and returns the atom the last argument evaluated to.
@@ -152,7 +153,7 @@ functions! {
 
         for item in read_dir_files(&state.file_directory).chain(read_dir_files(&state.stl_path))
         {
-            if *item.file_name() == *format!("{name}.prog") {
+            if *item.file_name() == *format!("{name}.{FILE_EXTENSION}") {
                 if let Ok(file_content) = fs::read_to_string(item.path()) {
                     source = Some(file_content);
                     break;

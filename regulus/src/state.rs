@@ -1,8 +1,8 @@
+use crate::STL_DIR;
 use crate::builtins::all_functions;
 use crate::prelude::*;
-use crate::STL_DIR;
 use std::collections::HashMap;
-use std::io::{stderr, stdin, stdout, BufRead, BufReader, Read, Stderr, Stdout, Write};
+use std::io::{BufRead, BufReader, Read, Stderr, Stdout, Write, stderr, stdin, stdout};
 use std::path::{Path, PathBuf};
 use std::{io, str};
 

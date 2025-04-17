@@ -10,7 +10,7 @@ pub fn make_tests_for_dir(dir_path: PathBuf) -> TokenStream {
         let file_type = entry.file_type().unwrap();
         if file_type.is_file() {
             let name = entry.file_name().into_string().unwrap();
-            if let Some(name) = name.strip_suffix(".prog") {
+            if let Some(name) = name.strip_suffix(".re") {
                 output.extend(
                     TokenStream::from_str(&format!(
                         r##"

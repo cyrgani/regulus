@@ -45,6 +45,8 @@ use crate::{
 };
 use std::path::Path;
 
+pub const FILE_EXTENSION: &str = "re";
+
 pub(crate) const STL_DIR: &str = "stdlib";
 
 pub fn run(code: &str, dir: impl AsRef<Path>) -> (Result<Atom>, State) {

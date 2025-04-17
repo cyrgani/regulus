@@ -1,5 +1,5 @@
 use regulus::prelude::State;
-use regulus::run_with_options;
+use regulus::{FILE_EXTENSION, run_with_options};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str;
@@ -27,7 +27,7 @@ pub fn run_test(dir_path: &str, name: &str) {
     }
 
     let base_path = PathBuf::from(dir_path).join(name);
-    let source = fs::read_to_string(base_path.with_extension("prog"))
+    let source = fs::read_to_string(base_path.with_extension(FILE_EXTENSION))
         .expect("fatal error: program file not found");
 
     let (res, final_state) = run_with_options(
