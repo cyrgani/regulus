@@ -1,8 +1,36 @@
+use crate::FILE_EXTENSION;
 use crate::prelude::*;
 use std::fs::{self, DirEntry};
 use std::path::Path;
 use std::rc::Rc;
-use crate::FILE_EXTENSION;
+
+fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
+    let body = body.function_call("Error during definition: no valid function body was given!")?;
+    let function_arg_names = fn_args
+        .iter()
+        .map(|fn_arg| fn_arg.variable("Error during definition: invalid args were given!"))
+        .collect::<Result<Vec<String>>>()?;
+
+    let function = Function {
+        doc: String::new(),
+        argc: Some(function_arg_names.len()),
+        callback: Rc::new(move |state, args| {
+            // a function call should have its own scope and not leak variables
+            let old_storage = state.storage.clone();
+
+            for (idx, arg) in function_arg_names.iter().enumerate() {
+                let arg_result = args[idx].eval(state)?;
+                state.storage.insert(arg.clone(), arg_result);
+            }
+
+            let function_result = body.eval(state);
+            state.storage = old_storage;
+            function_result
+        }),
+    };
+
+    Ok(Atom::Function(function))
+}
 
 functions! {
     /// Evaluates all given arguments and returns the atom the last argument evaluated to.
@@ -65,38 +93,15 @@ functions! {
     /// the function body.
     /// Values defined in the function are scoped and cannot be accessed outside of the function body.
     "def"(_) => |state, args| {
-        if args.len() < 2 {
+        let [var, fn_args @ .., body] = args else {
             return raise!(
                 Error::Argument,
                 "too few arguments passed to `def`: expected at least 2, found {}", args.len()
             );
-        }
-        let var = args[0].variable("Error during function definition: no valid variable was given to define to!")?;
-        let body = args.last().unwrap().function_call("Error during definition: no valid function body was given!")?;
-        let function_arg_names = args[1..args.len() - 1]
-            .iter()
-            .map(|fn_arg| fn_arg.variable("Error during definition: invalid args were given!"))
-            .collect::<Result<Vec<String>>>()?;
-
-        let function = Function {
-            doc: String::new(),
-            argc: Some(function_arg_names.len()),
-            callback: Rc::new(move |state, args| {
-                // a function call should have its own scope and not leak variables
-                let old_storage = state.storage.clone();
-
-                for (idx, arg) in function_arg_names.iter().enumerate() {
-                    let arg_result = args[idx].eval(state)?;
-                    state.storage.insert(arg.clone(), arg_result);
-                }
-
-                let function_result = body.eval(state);
-                state.storage = old_storage;
-                function_result
-            }),
         };
+        let var = var.variable("Error during function definition: no valid variable was given to define to!")?;
 
-        state.storage.insert(var, Atom::Function(function));
+        state.storage.insert(var, define_function(body, fn_args)?);
         Ok(Atom::Null)
     }
     /// Creates a new function and returns it.
@@ -109,31 +114,7 @@ functions! {
         let Some((body, fn_args)) = args.split_last() else {
             return raise!(Error::Argument, "`fn` invocation is missing body");
         };
-        let body = body.function_call("Error during definition: no valid function body was given!")?;
-        let function_arg_names = fn_args
-            .iter()
-            .map(|fn_arg| fn_arg.variable("Error during definition: invalid args were given!"))
-            .collect::<Result<Vec<String>>>()?;
-
-        let function = Function {
-            doc: String::new(),
-            argc: Some(function_arg_names.len()),
-            callback: Rc::new(move |state, args| {
-                // a function call should have its own scope and not leak variables
-                let old_storage = state.storage.clone();
-
-                for (idx, arg) in function_arg_names.iter().enumerate() {
-                    let arg_result = args[idx].eval(state)?;
-                    state.storage.insert(arg.clone(), arg_result);
-                }
-
-                let function_result = body.eval(state);
-                state.storage = old_storage;
-                function_result
-            }),
-        };
-
-        Ok(Atom::Function(function))
+        define_function(body, fn_args)
     }
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the behavior of `=`
