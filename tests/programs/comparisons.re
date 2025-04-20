@@ -1,5 +1,5 @@
 _(
-    import("aliases"),
+    import(aliases),
     assert(<(-(1, 2), 0)),
 	assert(and(true, true)),
 	assert(&&(true, true)),

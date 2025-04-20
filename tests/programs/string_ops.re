@@ -1,5 +1,5 @@
 _(
-    import("collect_list_into_string"),
+    import(collect_list_into_string),
     assert_eq("asdf", strconcat("as", "d", "f")),
     assert_eq("1nullhello, world
 true", collect_list_into_string(list(1, null, "hello, world

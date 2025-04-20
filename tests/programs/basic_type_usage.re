@@ -16,7 +16,7 @@ assert_eq(.(x, field1), 2),
 assert_eq(.(x, field1), 3),
 
 
-import("aliases"),
+import(aliases),
 
 =(x, Ident(2, 5, "adsa")),
 # read x.field1, alias .

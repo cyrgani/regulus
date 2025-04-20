@@ -1,5 +1,5 @@
 _(
-    import("random"),
+    import(random),
     =(x, random_u16()),
     =(y, random_u16()),
     =(z, random_u16()),

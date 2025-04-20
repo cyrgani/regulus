@@ -1,4 +1,4 @@
-import("lists"),
+import(lists),
 =(data, list(2, 4, 5)),
 assert_eq(len(data), 3),
 assert_eq(data, list(2, 4, 5)),

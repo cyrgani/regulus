@@ -119,7 +119,7 @@ functions! {
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the behavior of `=`
     "import"(1) => |state, args| {
-        let name = args[0].eval(state)?.string()?;
+        let name = args[0].variable("`import` argument must be a variable, string syntax was removed")?;
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
             return raise!(
                 Error::Import,

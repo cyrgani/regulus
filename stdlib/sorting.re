@@ -1,4 +1,4 @@
-import("range"),
+import(range),
 
 # reference implementation:
 # fn bubblesort<T: PartialOrd + Copy>(mut seq: Vec<T>) -> Vec<T> {
