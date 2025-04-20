@@ -13,7 +13,7 @@ pub struct Token {
     pub indices: RangeInclusive<usize>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug)]
 pub enum TokenData {
     Function(String),
     LeftParen,
