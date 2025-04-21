@@ -6,6 +6,7 @@ fn arithmetic_operation(
     name: &str,
     f: fn(i64, i64) -> Option<i64>,
 ) -> Result<Atom> {
+    // TODO: this error could also be division by zero
     match f(args[0].eval(state)?.int()?, args[1].eval(state)?.int()?) {
         Some(i) => Ok(Atom::Int(i)),
         None => raise!(Error::Overflow, "overflow occured during {name}!"),
