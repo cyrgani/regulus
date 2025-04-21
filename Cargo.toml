@@ -1,3 +1,3 @@
 [workspace]
-members = ["frontend", "regulus", "tests", "tests_generator_macro"]
+members = ["frontend", "regulus", "tests"]
 resolver = "2"

@@ -8,6 +8,9 @@ publish = false
 name = "runner"
 path = "runner.rs"
 
+[lib]
+proc-macro = true
+path = "test_generator.rs"
+
 [dev-dependencies]
 regulus = { path = "../regulus" }
-tests_generator_macro = { path = "../tests_generator_macro" }

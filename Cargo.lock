@@ -178,12 +178,7 @@ name = "tests"
 version = "0.0.0"
 dependencies = [
  "regulus",
- "tests_generator_macro",
 ]
-
-[[package]]
-name = "tests_generator_macro"
-version = "0.1.0"
 
 [[package]]
 name = "unicode-ident"

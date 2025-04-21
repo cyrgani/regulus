@@ -3,7 +3,7 @@ use regulus::{FILE_EXTENSION, run_with_options};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str;
-use tests_generator_macro::make_tests;
+use tests::make_tests;
 
 fn read_file_or_empty(base_path: &Path, extension: &str) -> String {
     fs::read_to_string(base_path.with_extension(extension)).unwrap_or_default()

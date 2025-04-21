@@ -1,9 +1,16 @@
+extern crate proc_macro;
+
 use proc_macro::TokenStream;
 use std::fs::read_dir;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-pub fn make_tests_for_dir(dir_path: PathBuf) -> TokenStream {
+#[proc_macro]
+pub fn make_tests(_: TokenStream) -> TokenStream {
+    make_tests_for_dir(PathBuf::from("tests/programs"))
+}
+
+fn make_tests_for_dir(dir_path: PathBuf) -> TokenStream {
     let mut output = TokenStream::new();
     for entry in read_dir(&dir_path).unwrap() {
         let entry = entry.unwrap();
