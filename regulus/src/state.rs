@@ -16,13 +16,13 @@ pub struct State {
 }
 
 impl State {
-    pub fn initial(dir: impl AsRef<Path>, stl_dir: impl AsRef<Path>) -> Self {
+    pub fn initial(current_dir: impl AsRef<Path>, stl_dir: impl AsRef<Path>) -> Self {
         Self {
             storage: all_functions(),
             stdin: Box::new(BufReader::new(stdin())),
             stdout: WriteHandle::Regular(stdout()),
             stderr: WriteHandle::Regular(stderr()),
-            file_directory: PathBuf::from(dir.as_ref()),
+            file_directory: PathBuf::from(current_dir.as_ref()),
             stl_path: PathBuf::from(stl_dir.as_ref()),
         }
     }
