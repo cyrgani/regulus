@@ -26,6 +26,9 @@ impl fmt::Display for FunctionCall {
 
 impl FunctionCall {
     pub fn eval(&self, state: &mut State) -> Result<Atom> {
+        if state.exit_unwind_value.is_some() {
+            return Ok(Atom::Null);
+        }
         let function = state.get_function(&self.name)?;
 
         if let Some(argc) = function.argc {

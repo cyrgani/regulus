@@ -18,6 +18,9 @@ pub enum ArgumentData {
 
 impl Argument {
     pub fn eval(&self, state: &mut State) -> Result<Atom> {
+        if state.exit_unwind_value.is_some() {
+            return Ok(Atom::Null);
+        }
         match &self.data {
             ArgumentData::FunctionCall(call) => call.eval(state),
             ArgumentData::Atom(atom) => Ok(atom.clone()),

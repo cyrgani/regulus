@@ -13,6 +13,7 @@ pub struct State {
     stderr: WriteHandle<Stderr>,
     pub(crate) file_directory: PathBuf,
     pub(crate) stl_path: PathBuf,
+    pub(crate) exit_unwind_value: Option<Result<Atom>>,
 }
 
 impl State {
@@ -24,6 +25,7 @@ impl State {
             stderr: WriteHandle::Regular(stderr()),
             file_directory: PathBuf::from(current_dir.as_ref()),
             stl_path: PathBuf::from(stl_dir.as_ref()),
+            exit_unwind_value: None,
         }
     }
 
@@ -68,6 +70,7 @@ impl State {
             stderr: WriteHandle::Buffer(vec![]),
             file_directory: PathBuf::from(dir_path),
             stl_path: PathBuf::from("..").join(STL_DIR),
+            exit_unwind_value: None,
         }
     }
 

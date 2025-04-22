@@ -111,7 +111,7 @@ impl Runner {
     /// Returns the result the program returned and the final state.
     ///
     /// If `starting_state` is specified, it overrides `current_dir` and `stl_dir`.
-    /// 
+    ///
     /// # Panics
     /// Panics if the configuration is invalid.
     /// This happens if one of the following cases occurs:
@@ -135,7 +135,7 @@ impl Runner {
                 }
             };
         }
-        
+
         let tokens = return_err!(tokenize(&code));
 
         return_err!(validate_tokens(&tokens));
@@ -143,6 +143,11 @@ impl Runner {
         let program = return_err!(build_program(&tokens, "_"));
 
         let result = return_err!(program.eval(&mut state));
+        
+        if let Some(exit_unwind_value) = &state.exit_unwind_value {
+            return (exit_unwind_value.clone(), state)
+        }
+        
         (Ok(result), state)
     }
 }

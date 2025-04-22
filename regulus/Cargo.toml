@@ -1,7 +1,8 @@
 [package]
 name = "regulus"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2024"
+include = ["src/**/*", "stdlib/**/*",]
 
 [dependencies]
 

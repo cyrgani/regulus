@@ -6,7 +6,7 @@ use crate::parsing::positions::Span;
 use std::ops::RangeInclusive;
 use std::{error, fmt, result};
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum Error {
     Type,
     Overflow,
@@ -28,7 +28,7 @@ impl fmt::Display for Error {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Exception {
     pub msg: String,
     pub error: Error,

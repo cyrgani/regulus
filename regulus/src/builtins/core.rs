@@ -262,6 +262,15 @@ functions! {
         *obj.get_mut(&field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value;
         Ok(Atom::Object(obj))
     }
+    /// Evaluates the given argument and terminates the program directly.
+    /// The program will return the given value as its final result.
+    /// 
+    /// Even if the argument causes an exception, it is returned directly too.
+    "exit"(1) => |state, args| {
+        let value = args[0].eval(state);
+        state.exit_unwind_value = Some(value);
+        Ok(Atom::Null)
+    }
 }
 
 fn read_dir_files(path: impl AsRef<Path>) -> impl Iterator<Item = DirEntry> {
