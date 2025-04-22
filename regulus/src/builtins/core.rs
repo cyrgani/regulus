@@ -1,7 +1,7 @@
-use crate::FILE_EXTENSION;
+use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
-use std::fs::{self, DirEntry};
-use std::path::Path;
+use crate::{Directory, FILE_EXTENSION};
+use std::fs;
 use std::rc::Rc;
 
 fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
@@ -30,6 +30,27 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
     };
 
     Ok(Atom::Function(function))
+}
+
+fn try_resolve_import_in_dir(name: &str, dir_path: &Directory) -> Option<String> {
+    match &dir_path {
+        Directory::Regular(path) => {
+            let paths = fs::read_dir(path)
+                .unwrap_or_else(|err| {
+                    panic!("error when reading directory `{}`: {err}", path.display())
+                })
+                .flatten();
+            for item in paths {
+                if *item.file_name() == *format!("{name}.{FILE_EXTENSION}") {
+                    if let Ok(file_content) = fs::read_to_string(item.path()) {
+                        return Some(file_content);
+                    }
+                }
+            }
+            None
+        }
+        Directory::InternedSTL => INTERNED_STL.get(name).map(ToString::to_string),
+    }
 }
 
 functions! {
@@ -130,18 +151,12 @@ functions! {
         // lookup order:
         // 1. look inside the programs current directory
         // 2. look in the global stl directory
-        let mut source = None;
+        let source = if let Some(code) = try_resolve_import_in_dir(&name, &state.file_directory) {
+            Some((code, state.file_directory.clone()))
+        } else {
+            try_resolve_import_in_dir(&name, &Directory::InternedSTL).map(|code| (code, Directory::InternedSTL))
+        };
 
-        'outer: for dir_path in [&state.file_directory, &state.stl_path] {
-            for item in read_dir_files(dir_path) {
-                if *item.file_name() == *format!("{name}.{FILE_EXTENSION}") {
-                    if let Ok(file_content) = fs::read_to_string(item.path()) {
-                        source = Some((file_content, dir_path));
-                        break 'outer;
-                    }
-                }
-            }
-        }
         let Some((code, source_dir)) = source else {
             return raise!(
                 Error::Import,
@@ -150,11 +165,9 @@ functions! {
         };
 
         // TODO: consider using `.file()` here instead
-        let (atom, imported_state) = Runner::new()
-            .code(code)
-            .current_dir(source_dir)
-            .stl_dir(&state.stl_path)
-            .run();
+        let mut runner = Runner::new().code(code);
+        runner.current_dir = source_dir;
+        let (atom, imported_state) = runner.run();
 
         let atom = atom?;
 
@@ -264,22 +277,11 @@ functions! {
     }
     /// Evaluates the given argument and terminates the program directly.
     /// The program will return the given value as its final result.
-    /// 
+    ///
     /// Even if the argument causes an exception, it is returned directly too.
     "exit"(1) => |state, args| {
         let value = args[0].eval(state);
         state.exit_unwind_value = Some(value);
         Ok(Atom::Null)
     }
-}
-
-fn read_dir_files(path: impl AsRef<Path>) -> impl Iterator<Item = DirEntry> {
-    fs::read_dir(&path)
-        .unwrap_or_else(|err| {
-            panic!(
-                "error when reading directory `{}`: {err}",
-                path.as_ref().display()
-            )
-        })
-        .flatten()
 }

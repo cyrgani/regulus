@@ -20,8 +20,6 @@ struct Args {
     // /// TODO: Show colored output
     //#[arg(short, long, default_value_t = true)]
     //colored: bool,
-    #[arg(short = 'L', long)]
-    stl_path: Option<PathBuf>,
 }
 
 fn main() {
@@ -41,9 +39,6 @@ fn main() {
         }
     }
 
-    if let Some(stl_dir) = args.stl_path {
-        runner = runner.stl_dir(stl_dir);
-    }
     let result = runner.run();
     match result {
         (Ok(atom), state) => {

@@ -49,24 +49,30 @@ use std::{fs, io};
 
 pub const FILE_EXTENSION: &str = "re";
 
-pub(crate) const STL_DIR: &str = "regulus/stdlib";
-
 /// A set of options required for running a Regulus program.
 ///
-/// Only `code` and `current_dir` must be specified,
-/// `stl_dir` and `starting_state` have default values.
-#[derive(Default)]
+/// Only `code` must be specified,
+/// `current_dir` and `starting_state` have default values.
 #[must_use]
 pub struct Runner {
     code: Option<String>,
-    current_dir: Option<PathBuf>,
-    stl_dir: Option<PathBuf>,
+    current_dir: Directory,
     starting_state: Option<State>,
 }
 
+impl Default for Runner {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Runner {
-    pub fn new() -> Self {
-        Self::default()
+    pub const fn new() -> Self {
+        Self {
+            code: None,
+            current_dir: Directory::InternedSTL,
+            starting_state: None,
+        }
     }
 
     /// Sets both the code and the current directory by reading from the given file path.
@@ -82,7 +88,7 @@ impl Runner {
         if current_dir == PathBuf::new() {
             current_dir = PathBuf::from(".");
         }
-        self.current_dir = Some(current_dir);
+        self.current_dir = Directory::Regular(current_dir);
         Ok(self)
     }
 
@@ -92,12 +98,7 @@ impl Runner {
     }
 
     pub fn current_dir(mut self, dir_path: impl AsRef<Path>) -> Self {
-        self.current_dir = Some(dir_path.as_ref().to_path_buf());
-        self
-    }
-
-    pub fn stl_dir(mut self, stl_dir: impl AsRef<Path>) -> Self {
-        self.stl_dir = Some(stl_dir.as_ref().to_path_buf());
+        self.current_dir = Directory::Regular(dir_path.as_ref().to_path_buf());
         self
     }
 
@@ -110,22 +111,17 @@ impl Runner {
     ///
     /// Returns the result the program returned and the final state.
     ///
-    /// If `starting_state` is specified, it overrides `current_dir` and `stl_dir`.
+    /// If `starting_state` is specified, it overrides `current_dir`..
     ///
     /// # Panics
     /// Panics if the configuration is invalid.
     /// This happens if one of the following cases occurs:
     /// * `code` is missing
-    /// * both `current_dir` and `starting_state` are missing
     pub fn run(self) -> (Result<Atom>, State) {
         let code = self.code.expect("code is required");
-        let mut state = self.starting_state.unwrap_or_else(|| {
-            let current_dir = self
-                .current_dir
-                .expect("current_dir or starting_state are required");
-            let stl_dir = self.stl_dir.unwrap_or_else(|| PathBuf::from(STL_DIR));
-            State::initial(current_dir, stl_dir)
-        });
+        let mut state = self
+            .starting_state
+            .unwrap_or_else(|| State::initial(self.current_dir));
 
         macro_rules! return_err {
             ($val: expr) => {
@@ -152,6 +148,13 @@ impl Runner {
     }
 }
 
+#[derive(Clone)]
+pub enum Directory {
+    Regular(PathBuf),
+    /// Should only be used internally.
+    InternedSTL,
+}
+
 /// A convenient helper for directly running one file program.
 ///
 /// Returns only the result of running the program, not the final state.
@@ -163,3 +166,5 @@ impl Runner {
 pub fn run(path: impl AsRef<Path>) -> Result<Atom> {
     Runner::new().file(path).unwrap().run().0
 }
+
+mod interned_stdlib;

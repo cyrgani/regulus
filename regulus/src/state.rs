@@ -1,9 +1,8 @@
-use crate::STL_DIR;
+use crate::Directory;
 use crate::builtins::all_functions;
 use crate::prelude::*;
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Read, Stderr, Stdout, Write, stderr, stdin, stdout};
-use std::path::{Path, PathBuf};
 use std::{io, str};
 
 pub struct State {
@@ -11,20 +10,18 @@ pub struct State {
     stdin: Box<dyn BufRead>,
     stdout: WriteHandle<Stdout>,
     stderr: WriteHandle<Stderr>,
-    pub(crate) file_directory: PathBuf,
-    pub(crate) stl_path: PathBuf,
+    pub(crate) file_directory: Directory,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
 }
 
 impl State {
-    pub fn initial(current_dir: impl AsRef<Path>, stl_dir: impl AsRef<Path>) -> Self {
+    pub fn initial(current_dir: Directory) -> Self {
         Self {
             storage: all_functions(),
             stdin: Box::new(BufReader::new(stdin())),
             stdout: WriteHandle::Regular(stdout()),
             stderr: WriteHandle::Regular(stderr()),
-            file_directory: PathBuf::from(current_dir.as_ref()),
-            stl_path: PathBuf::from(stl_dir.as_ref()),
+            file_directory: current_dir,
             exit_unwind_value: None,
         }
     }
@@ -68,8 +65,7 @@ impl State {
             stdin: Box::new(BufReader::new(VecReader(stdin.as_bytes().to_vec()))),
             stdout: WriteHandle::Buffer(vec![]),
             stderr: WriteHandle::Buffer(vec![]),
-            file_directory: PathBuf::from(dir_path),
-            stl_path: PathBuf::from("..").join(STL_DIR),
+            file_directory: Directory::Regular(dir_path.into()),
             exit_unwind_value: None,
         }
     }
