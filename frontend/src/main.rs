@@ -44,7 +44,7 @@ fn main() {
     if let Some(stl_dir) = args.stl_path {
         runner = runner.stl_dir(stl_dir);
     }
-    let result = runner.run().unwrap();
+    let result = runner.run();
     match result {
         (Ok(atom), state) => {
             match atom {

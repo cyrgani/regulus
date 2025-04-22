@@ -1,5 +1,5 @@
 use regulus::prelude::State;
-use regulus::{FILE_EXTENSION, run_with_options};
+use regulus::{FILE_EXTENSION, Runner};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str;
@@ -27,18 +27,16 @@ pub fn run_test(dir_path: &str, name: &str) {
     }
 
     let base_path = PathBuf::from(dir_path).join(name);
-    let source = fs::read_to_string(base_path.with_extension(FILE_EXTENSION))
-        .expect("fatal error: program file not found");
 
-    let (res, final_state) = run_with_options(
-        &source,
-        dir_path,
-        Some(State::testing_setup(
+    let (res, final_state) = Runner::new()
+        .file(base_path.with_extension(FILE_EXTENSION))
+        .expect("fatal error: program file not found")
+        .stl_dir("../stdlib")
+        .starting_state(State::testing_setup(
             dir_path,
             &read_file_or_empty(&base_path, "stdin"),
-        )),
-        "../stdlib",
-    );
+        ))
+        .run();
 
     let stdout = final_state.testing_read_stdout();
     let mut stderr = final_state.testing_read_stderr().to_string();

@@ -108,19 +108,43 @@ impl Runner {
 
     /// Run the program specified by this configuration.
     ///
-    /// Returns `None` if the configuration is invalid (missing `code` or `current_dir`).
+    /// Returns the result the program returned and the final state.
     ///
-    /// Otherwise, returns the result the program returned and the final state.
-    pub fn run(self) -> Option<(Result<Atom>, State)> {
-        let code = self.code?;
-        let current_dir = self.current_dir?;
-        let stl_dir = self.stl_dir.unwrap_or_else(|| PathBuf::from(STL_DIR));
-        Some(run_with_options(
-            &code,
-            current_dir,
-            self.starting_state,
-            stl_dir,
-        ))
+    /// # Panics
+    /// Panics if the configuration is invalid.
+    /// This happens if one of the following cases occurs:
+    /// * `code` is missing
+    /// * both `current_dir` and `starting_state` are missing
+    pub fn run(self) -> (Result<Atom>, State) {
+        let code = self.code.expect("code is required");
+        let code1 = &code;
+        let mut state = if let Some(state) = self.starting_state {
+            state
+        } else {
+            let current_dir = self
+                .current_dir
+                .expect("current_dir or starting_state are required");
+            let stl_dir = self.stl_dir.unwrap_or_else(|| PathBuf::from(STL_DIR));
+            State::initial(current_dir, stl_dir)
+        };
+
+        macro_rules! return_err {
+            ($val: expr) => {
+                match $val {
+                    Ok(ok) => ok,
+                    Err(err) => return (Err(err), state),
+                }
+            };
+        }
+
+        let tokens = return_err!(tokenize(code1));
+
+        return_err!(validate_tokens(&tokens));
+
+        let program = return_err!(build_program(&tokens, "_"));
+
+        let result = return_err!(program.eval(&mut state));
+        (Ok(result), state)
     }
 }
 
@@ -133,37 +157,5 @@ impl Runner {
 /// # Panics
 /// Panics if the path is invalid or cannot be read from.
 pub fn run(path: impl AsRef<Path>) -> Result<Atom> {
-    Runner::new()
-        .file(path)
-        .unwrap()
-        .run()
-        .expect("unreachable")
-        .0
-}
-
-pub fn run_with_options(
-    code: &str,
-    dir: impl AsRef<Path>,
-    start_state: Option<State>,
-    stl_dir: impl AsRef<Path>,
-) -> (Result<Atom>, State) {
-    let mut state = start_state.unwrap_or_else(|| State::initial(dir, stl_dir));
-
-    macro_rules! return_err {
-        ($val: expr) => {
-            match $val {
-                Ok(ok) => ok,
-                Err(err) => return (Err(err), state),
-            }
-        };
-    }
-
-    let tokens = return_err!(tokenize(code));
-
-    return_err!(validate_tokens(&tokens));
-
-    let program = return_err!(build_program(&tokens, "_"));
-
-    let result = return_err!(program.eval(&mut state));
-    (Ok(result), state)
+    Runner::new().file(path).unwrap().run().0
 }

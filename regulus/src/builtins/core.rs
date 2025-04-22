@@ -148,7 +148,12 @@ functions! {
             );
         };
 
-        let (atom, imported_state) = crate::run_with_options(&code, &state.file_directory, None, &state.stl_path);
+        let (atom, imported_state) = Runner::new()
+            .code(code)
+            .current_dir(&state.file_directory)
+            .stl_dir(&state.stl_path)
+            .run();
+
         let atom = atom?;
 
         for (k, v) in imported_state.storage {
