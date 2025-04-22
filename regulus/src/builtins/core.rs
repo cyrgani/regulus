@@ -132,16 +132,17 @@ functions! {
         // 2. look in the global stl directory
         let mut source = None;
 
-        for item in read_dir_files(&state.file_directory).chain(read_dir_files(&state.stl_path))
-        {
-            if *item.file_name() == *format!("{name}.{FILE_EXTENSION}") {
-                if let Ok(file_content) = fs::read_to_string(item.path()) {
-                    source = Some(file_content);
-                    break;
+        'outer: for dir_path in [&state.file_directory, &state.stl_path] {
+            for item in read_dir_files(dir_path) {
+                if *item.file_name() == *format!("{name}.{FILE_EXTENSION}") {
+                    if let Ok(file_content) = fs::read_to_string(item.path()) {
+                        source = Some((file_content, dir_path));
+                        break 'outer;
+                    }
                 }
             }
         }
-        let Some(code) = source else {
+        let Some((code, source_dir)) = source else {
             return raise!(
                 Error::Import,
                 "failed to find file for importing `{name}`",
@@ -150,7 +151,7 @@ functions! {
 
         let (atom, imported_state) = Runner::new()
             .code(code)
-            .current_dir(&state.file_directory)
+            .current_dir(source_dir)
             .stl_dir(&state.stl_path)
             .run();
 
