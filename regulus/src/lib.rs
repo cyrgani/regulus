@@ -110,6 +110,8 @@ impl Runner {
     ///
     /// Returns the result the program returned and the final state.
     ///
+    /// If `starting_state` is specified, it overrides `current_dir` and `stl_dir`.
+    /// 
     /// # Panics
     /// Panics if the configuration is invalid.
     /// This happens if one of the following cases occurs:
@@ -117,16 +119,13 @@ impl Runner {
     /// * both `current_dir` and `starting_state` are missing
     pub fn run(self) -> (Result<Atom>, State) {
         let code = self.code.expect("code is required");
-        let code1 = &code;
-        let mut state = if let Some(state) = self.starting_state {
-            state
-        } else {
+        let mut state = self.starting_state.unwrap_or_else(|| {
             let current_dir = self
                 .current_dir
                 .expect("current_dir or starting_state are required");
             let stl_dir = self.stl_dir.unwrap_or_else(|| PathBuf::from(STL_DIR));
             State::initial(current_dir, stl_dir)
-        };
+        });
 
         macro_rules! return_err {
             ($val: expr) => {
@@ -136,8 +135,8 @@ impl Runner {
                 }
             };
         }
-
-        let tokens = return_err!(tokenize(code1));
+        
+        let tokens = return_err!(tokenize(&code));
 
         return_err!(validate_tokens(&tokens));
 

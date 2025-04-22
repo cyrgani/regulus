@@ -149,6 +149,7 @@ functions! {
             );
         };
 
+        // TODO: consider using `.file()` here instead
         let (atom, imported_state) = Runner::new()
             .code(code)
             .current_dir(source_dir)

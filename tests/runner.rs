@@ -31,7 +31,6 @@ pub fn run_test(dir_path: &str, name: &str) {
     let (res, final_state) = Runner::new()
         .file(base_path.with_extension(FILE_EXTENSION))
         .expect("fatal error: program file not found")
-        .stl_dir("../stdlib")
         .starting_state(State::testing_setup(
             dir_path,
             &read_file_or_empty(&base_path, "stdin"),
