@@ -143,11 +143,11 @@ impl Runner {
         let program = return_err!(build_program(&tokens, "_"));
 
         let result = return_err!(program.eval(&mut state));
-        
+
         if let Some(exit_unwind_value) = &state.exit_unwind_value {
-            return (exit_unwind_value.clone(), state)
+            return (exit_unwind_value.clone(), state);
         }
-        
+
         (Ok(result), state)
     }
 }

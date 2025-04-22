@@ -3,6 +3,12 @@ name = "regulus"
 version = "0.0.1"
 edition = "2024"
 include = ["src/**/*", "stdlib/**/*",]
+readme = "../README.md"
+repository = "https://github.com/cyrgani/regulus"
+description = "A simple, interpreted language with very simple syntax and zero dependencies"
+keywords = ["language", "interpreter"]
+license = "MIT OR Apache-2.0"
+categories = ["compilers"]
 
 [dependencies]
 
