@@ -97,6 +97,9 @@ impl Runner {
         self
     }
 
+    /// Sets the current directory to the given directory path.
+    ///
+    /// This is used to resolve imports of other local files in the same directory.
     pub fn current_dir(mut self, dir_path: impl AsRef<Path>) -> Self {
         self.current_dir = Directory::Regular(dir_path.as_ref().to_path_buf());
         self
@@ -121,7 +124,7 @@ impl Runner {
         let code = self.code.expect("code is required");
         let mut state = self
             .starting_state
-            .unwrap_or_else(|| State::initial(self.current_dir));
+            .unwrap_or_else(|| State::initial_with_dir(self.current_dir));
 
         macro_rules! return_err {
             ($val: expr) => {
@@ -149,7 +152,7 @@ impl Runner {
 }
 
 #[derive(Clone)]
-pub enum Directory {
+pub(crate) enum Directory {
     Regular(PathBuf),
     /// Should only be used internally.
     InternedSTL,

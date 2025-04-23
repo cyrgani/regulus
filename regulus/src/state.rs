@@ -3,6 +3,7 @@ use crate::builtins::all_functions;
 use crate::prelude::*;
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Read, Stderr, Stdout, Write, stderr, stdin, stdout};
+use std::path::Path;
 use std::{io, str};
 
 pub struct State {
@@ -15,7 +16,11 @@ pub struct State {
 }
 
 impl State {
-    pub fn initial(current_dir: Directory) -> Self {
+    pub fn initial(current_dir: impl AsRef<Path>) -> Self {
+        Self::initial_with_dir(Directory::Regular(current_dir.as_ref().to_path_buf()))
+    }
+
+    pub(crate) fn initial_with_dir(current_dir: Directory) -> Self {
         Self {
             storage: all_functions(),
             stdin: Box::new(BufReader::new(stdin())),
