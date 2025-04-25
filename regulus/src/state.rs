@@ -6,6 +6,7 @@ use std::io::{BufRead, BufReader, Read, Stderr, Stdout, Write, stderr, stdin, st
 use std::path::Path;
 use std::{io, str};
 
+// TODO: users should be able to set their own stderr/out/in streams too
 pub struct State {
     pub storage: HashMap<String, Atom>,
     stdin: Box<dyn BufRead>,

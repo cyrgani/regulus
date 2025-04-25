@@ -284,4 +284,14 @@ functions! {
         state.exit_unwind_value = Some(value);
         Ok(Atom::Null)
     }
+    /// Evaluates the given argument as a string, then treats this string as Regulus code and executes it.
+    /// Returns the result of that program.
+    /// 
+    /// Variables defined inside the evaluated code are not visible outside of the `eval` invocation.
+    /// 
+    /// TODO: think about imports, test them
+    "eval"(1) => |state, args| {
+        let code = args[0].eval(state)?.string()?;
+        Runner::new().code(code).run().0
+    }
 }
