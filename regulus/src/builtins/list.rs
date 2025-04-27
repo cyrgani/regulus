@@ -1,5 +1,54 @@
 use crate::prelude::*;
 
+enum StringOrVec {
+    String(String),
+    Vec(Vec<Atom>),
+}
+
+impl Atom {
+    fn string_or_list(&self) -> Result<StringOrVec> {
+        match self {
+            Self::String(s) => Ok(StringOrVec::String(s.clone())),
+            Self::List(v) => Ok(StringOrVec::Vec(v.clone())),
+            _ => raise!(Error::Type, "{self} should be a string or list"),
+        }
+    }
+}
+
+fn char_to_atom(c: char) -> Atom {
+    Atom::String(c.to_string())
+}
+
+impl StringOrVec {
+    fn len(&self) -> usize {
+        match self {
+            Self::String(s) => s.len(),
+            Self::Vec(v) => v.len(),
+        }
+    }
+
+    fn pop(&mut self) -> Option<Atom> {
+        match self {
+            Self::String(s) => s.pop().map(char_to_atom),
+            Self::Vec(v) => v.pop(),
+        }
+    }
+
+    fn get(&self, index: usize) -> Option<Atom> {
+        match self {
+            Self::String(s) => s.chars().nth(index).map(char_to_atom),
+            Self::Vec(v) => v.get(index).cloned(),
+        }
+    }
+
+    fn into_vec(self) -> Vec<Atom> {
+        match self {
+            Self::Vec(v) => v,
+            Self::String(s) => s.chars().map(char_to_atom).collect(),
+        }
+    }
+}
+
 functions! {
     /// Constructs a new list containing all the given arguments.
     "list"(_) => |state, args| {
@@ -24,43 +73,41 @@ functions! {
         }
         Ok(Atom::List(list))
     }
-    /// Returns the value in the first list argument at the second integer argument.
+    /// Returns the value in the first list or string argument at the second integer argument.
     /// Raises an exception if the index is out of bounds.
     "index"(2) => |state, args| {
         args[0]
             .eval(state)?
-            .list()?
+            .string_or_list()?
             .get(args[1].eval(state)?.int()? as usize)
             .ok_or_else(|| Exception::new("list index out of bounds", Error::Index))
-            .cloned()
     }
-    /// Returns the last element of the given list, raising an exception if it is empty.
+    /// Returns the last element of the given list or string, raising an exception if it is empty.
     "last"(1) => |state, args| {
         args[0]
             .eval(state)?
-            .list()?
+            .string_or_list()?
             .pop()
             .ok_or_else(|| Exception::new("cannot pop from empty list", Error::Index))
     }
-    /// Returns the length of the given list argument.
-    /// To get the length of a string, use `strlen`.
+    /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {
-        Ok(Atom::Int(args[0].eval(state)?.list()?.len() as i64))
+        Ok(Atom::Int(args[0].eval(state)?.string_or_list()?.len() as i64))
     }
-    /// Iterates over the given list elements.
+    /// Iterates over the given list elements or string characters.
     /// The first argument is the list, the second the loop variable name for each element and the
     /// third is the body that will be run for each of these elements.
     /// Afterwards, `null` is returned.
     ///
     /// If the loop variable shadows an existing variable, that value can be used again after the loop.
     "for_in"(3) => |state, args| {
-        let list = args[0].eval(state)?.list()?;
+        let list = args[0].eval(state)?.string_or_list()?;
         let loop_var = args[1].variable("invalid loop variable given to `for_in`")?;
         let loop_body = args[2].function_call("invalid loop body given to `for_in`")?;
 
         let possibly_shadowed_value = state.storage.get(&loop_var).cloned();
 
-        for el in list {
+        for el in list.into_vec() {
             state.storage.insert(loop_var.clone(), el);
             loop_body.eval(state)?;
         }
@@ -73,6 +120,7 @@ functions! {
     /// Replaces an element at a list index with another.
     /// The first argument is the list, the second the index and the third the new value.
     /// If the index is out of bounds, an exception is raised.
+    /// TODO: make this also work on strings
     "overwrite_at_index"(3) => |state, args| {
         let mut list = args[0].eval(state)?.list()?;
         *list

@@ -7,3 +7,5 @@ assert_eq(index(data, 1), 4),
 for_in(data, x, print(x)),
 def(halve, el, /(el, 2)),
 assert_eq(list(1, 5, 7), map(list(2, 10, 14), halve)),
+
+assert_eq(len("abc"), len(list(1, 2, 3))),

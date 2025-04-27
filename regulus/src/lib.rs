@@ -45,7 +45,7 @@ use crate::{
     state::State,
 };
 use std::path::{Path, PathBuf};
-use std::{fs, io};
+use std::{env, fs, io};
 
 pub const FILE_EXTENSION: &str = "re";
 
@@ -103,6 +103,14 @@ impl Runner {
     pub fn current_dir(mut self, dir_path: impl AsRef<Path>) -> Self {
         self.current_dir = Directory::Regular(dir_path.as_ref().to_path_buf());
         self
+    }
+
+    /// Sets the current directory to the operating systems current working directory.
+    ///
+    /// # Panics
+    /// Panics if [`env::current_dir`] returned an error.
+    pub fn with_cwd(self) -> Self {
+        self.current_dir(env::current_dir().unwrap())
     }
 
     pub fn starting_state(mut self, state: State) -> Self {
