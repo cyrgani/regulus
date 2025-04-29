@@ -47,7 +47,7 @@ fn main() {
                 _ => println!("{atom:?}"),
             };
             if args.dump_storage {
-                println!("{:?}", state.storage)
+                println!("{:?}", state.storage.data)
             }
         }
         (Err(error), _) => {

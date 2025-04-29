@@ -14,11 +14,21 @@
   * bool: `true`, `false`
   * (other non-literal atoms: lists, objects, function pointers)
 * all meaningful operations and statements are function calls
+* every program is implicitly wrapped in `_(` and `)` for convenience
 
 ### Builtins
 * are present in every program without having to import them
 * fundamental language features like `=(2)` or `def(_)` are among them
 * see `src/builtins` for a list of them
+
+#### Globals
+* constructable with `global(1)`, example `global(x)`
+* can be read and written from anywhere
+* value is shared between all imported modules and function scopes, unlike regular local variables with `=(2)`
+* there is no language mechanism to prevent name collisions at the moment
+  * naming conventions are required (see below)
+* `local(1)` can be used to make a global variable local again
+* TODO: consider if `local(1)` is necessary
 
 ### Standard library (STL)
 * still extremely minimal

@@ -16,7 +16,8 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
         argc: Some(function_arg_names.len()),
         callback: Rc::new(move |state, args| {
             // a function call should have its own scope and not leak variables
-            let old_storage = state.storage.clone();
+            // except for globals
+            let mut old_storage_data = state.storage.data.clone();
 
             for (idx, arg) in function_arg_names.iter().enumerate() {
                 let arg_result = args[idx].eval(state)?;
@@ -24,7 +25,10 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
             }
 
             let function_result = body.eval(state);
-            state.storage = old_storage;
+
+            old_storage_data.extend(state.storage.global_items());
+
+            state.storage.data = old_storage_data;
             function_result
         }),
     };
@@ -165,15 +169,17 @@ functions! {
         };
 
         // TODO: consider using `.file()` here instead
-        let mut runner = Runner::new().code(code);
-        runner.current_dir = source_dir;
-        let (atom, imported_state) = runner.run();
+        let mut import_start_state = State::initial_with_dir(source_dir);
+        import_start_state.storage.global_idents.clone_from(&state.storage.global_idents);
+        import_start_state.storage.data.extend(state.storage.global_items());
+        let (atom, imported_state) = Runner::new().code(code).starting_state(import_start_state).run();
 
         let atom = atom?;
 
-        for (k, v) in imported_state.storage {
+        for (k, v) in imported_state.storage.data {
             state.storage.insert(k, v);
         }
+        state.storage.global_idents = imported_state.storage.global_idents;
         Ok(atom)
     }
     /// Raises an exception of the kind `UserRaised` with the given string message.
@@ -286,12 +292,31 @@ functions! {
     }
     /// Evaluates the given argument as a string, then treats this string as Regulus code and executes it.
     /// Returns the result of that program.
-    /// 
+    ///
     /// Variables defined inside the evaluated code are not visible outside of the `eval` invocation.
-    /// 
+    ///
     /// TODO: think about imports, test them
     "eval"(1) => |state, args| {
         let code = args[0].eval(state)?.string()?;
         Runner::new().code(code).run().0
+    }
+    /// Mark a variable identifier as global.
+    ///
+    /// This does not require the identifier to be defined at this time.
+    "global"(1) => |state, args| {
+        let var = args[0].variable("`global(1)` expects a variable argument")?;
+        state.storage.global_idents.insert(var);
+        Ok(Atom::Null)
+    }
+    /// Mark a variable identifier as local, possibly undoing a call to `global(1)`.
+    /// 
+    /// This function is experimental and currently untested.
+    /// It is not clear how it should behave exactly.
+    ///
+    /// This does not require the identifier to be defined at this time.
+    "local"(1) => |state, args| {
+        let var = args[0].variable("`local(1)` expects a variable argument")?;
+        state.storage.global_idents.remove(&var);
+        Ok(Atom::Null)
     }
 }

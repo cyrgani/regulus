@@ -1,14 +1,45 @@
 use crate::Directory;
 use crate::builtins::all_functions;
 use crate::prelude::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io::{BufRead, BufReader, Read, Stderr, Stdout, Write, stderr, stdin, stdout};
 use std::path::Path;
 use std::{io, str};
 
+#[derive(Clone)]
+pub struct Storage {
+    // TODO: consider a HashMap<String, (bool, Atom)> instead, the bool means local / global
+    pub data: HashMap<String, Atom>,
+    pub global_idents: HashSet<String>,
+}
+
+impl Storage {
+    pub fn initial() -> Self {
+        Self {
+            data: all_functions(),
+            global_idents: HashSet::new(),
+        }
+    }
+
+    pub fn get(&self, name: impl AsRef<str>) -> Option<&Atom> {
+        self.data.get(name.as_ref())
+    }
+
+    pub fn insert(&mut self, name: impl AsRef<str>, value: Atom) {
+        self.data.insert(name.as_ref().to_owned(), value);
+    }
+
+    pub fn global_items(&self) -> impl Iterator<Item = (String, Atom)> {
+        self.data
+            .iter()
+            .filter(|(ident, _)| self.global_idents.contains(*ident))
+            .map(|(ident, atom)| (ident.clone(), atom.clone()))
+    }
+}
+
 // TODO: users should be able to set their own stderr/out/in streams too
 pub struct State {
-    pub storage: HashMap<String, Atom>,
+    pub storage: Storage,
     stdin: Box<dyn BufRead>,
     stdout: WriteHandle<Stdout>,
     stderr: WriteHandle<Stderr>,
@@ -23,7 +54,7 @@ impl State {
 
     pub(crate) fn initial_with_dir(current_dir: Directory) -> Self {
         Self {
-            storage: all_functions(),
+            storage: Storage::initial(),
             stdin: Box::new(BufReader::new(stdin())),
             stdout: WriteHandle::Regular(stdout()),
             stderr: WriteHandle::Regular(stderr()),
@@ -33,7 +64,7 @@ impl State {
     }
 
     pub fn get_function(&self, name: &str) -> Result<Function> {
-        match self.storage.get(name) {
+        match self.storage.data.get(name) {
             Some(atom) => {
                 if let Atom::Function(func) = atom {
                     Ok(func.clone())
@@ -67,7 +98,7 @@ impl State {
     #[doc(hidden)]
     pub fn testing_setup(dir_path: &str, stdin: &str) -> Self {
         Self {
-            storage: all_functions(),
+            storage: Storage::initial(),
             stdin: Box::new(BufReader::new(VecReader(stdin.as_bytes().to_vec()))),
             stdout: WriteHandle::Buffer(vec![]),
             stderr: WriteHandle::Buffer(vec![]),
