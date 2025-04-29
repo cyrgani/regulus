@@ -174,6 +174,10 @@ functions! {
         import_start_state.storage.data.extend(state.storage.global_items());
         let (atom, imported_state) = Runner::new().code(code).starting_state(import_start_state).run();
 
+        if let Some(exit_unwind_value) = imported_state.exit_unwind_value {
+            state.exit_unwind_value = Some(exit_unwind_value);
+            return Ok(Atom::Null);
+        }
         let atom = atom?;
 
         for (k, v) in imported_state.storage.data {
@@ -285,6 +289,8 @@ functions! {
     /// The program will return the given value as its final result.
     ///
     /// Even if the argument causes an exception, it is returned directly too.
+    ///
+    /// If `exit` is reached via an `import`-ed module, it will stop the main program too.
     "exit"(1) => |state, args| {
         let value = args[0].eval(state);
         state.exit_unwind_value = Some(value);
