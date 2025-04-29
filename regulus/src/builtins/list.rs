@@ -105,7 +105,7 @@ functions! {
         let loop_var = args[1].variable("invalid loop variable given to `for_in`")?;
         let loop_body = args[2].function_call("invalid loop body given to `for_in`")?;
 
-        let possibly_shadowed_value = state.storage.get(&loop_var).cloned();
+        let possibly_shadowed_value = state.storage.get(loop_var).cloned();
 
         for el in list.into_vec() {
             state.storage.insert(loop_var.clone(), el);

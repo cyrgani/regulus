@@ -35,9 +35,9 @@ impl Argument {
 
     /// Returns the identifier of this variable.
     /// If it is not a variable, it raises an exception with the given error message.
-    pub fn variable(&self, error_msg: &str) -> Result<String> {
+    pub fn variable(&self, error_msg: &str) -> Result<&String> {
         match &self.data {
-            ArgumentData::Variable(var) => Ok(var.clone()),
+            ArgumentData::Variable(var) => Ok(var),
             _ => raise!(Error::Argument, "{error_msg}"),
         }
     }

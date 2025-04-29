@@ -8,8 +8,12 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
     let body = body.function_call("Error during definition: no valid function body was given!")?;
     let function_arg_names = fn_args
         .iter()
-        .map(|fn_arg| fn_arg.variable("Error during definition: invalid args were given!"))
-        .collect::<Result<Vec<String>>>()?;
+        .map(|fn_arg| {
+            fn_arg
+                .variable("Error during definition: invalid args were given!")
+                .cloned()
+        })
+        .collect::<Result<Vec<_>>>()?;
 
     let function = Function {
         doc: String::new(),
@@ -155,10 +159,10 @@ functions! {
         // lookup order:
         // 1. look inside the programs current directory
         // 2. look in the global stl directory
-        let source = if let Some(code) = try_resolve_import_in_dir(&name, &state.file_directory) {
+        let source = if let Some(code) = try_resolve_import_in_dir(name, &state.file_directory) {
             Some((code, state.file_directory.clone()))
         } else {
-            try_resolve_import_in_dir(&name, &Directory::InternedSTL).map(|code| (code, Directory::InternedSTL))
+            try_resolve_import_in_dir(name, &Directory::InternedSTL).map(|code| (code, Directory::InternedSTL))
         };
 
         let Some((code, source_dir)) = source else {
@@ -236,7 +240,7 @@ functions! {
         let var = ident.variable("`type` must take a variable as first argument")?;
         let fields = fields
             .iter()
-            .map(|field| field.variable("`type` field arguments should be variables"))
+            .map(|field| field.variable("`type` field arguments should be variables").cloned())
             .collect::<Result<Vec<_>>>()?;
 
         let function = Function {
@@ -267,7 +271,7 @@ functions! {
     "."(2) => |state, args| {
         let obj = args[0].eval(state)?.object()?;
         let field = args[1].variable("`.` takes a field identifier as second argument")?;
-        obj.get(&field).cloned().ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))
+        obj.get(field).cloned().ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))
     }
     /// Set the value of a field of an object to a new value and returns the updated object.
     ///
@@ -282,7 +286,7 @@ functions! {
         let mut obj = args[0].eval(state)?.object()?;
         let field = args[1].variable("`.` takes a field identifier as second argument")?;
         let value = args[2].eval(state)?;
-        *obj.get_mut(&field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value;
+        *obj.get_mut(field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value;
         Ok(Atom::Object(obj))
     }
     /// Evaluates the given argument and terminates the program directly.
@@ -311,7 +315,7 @@ functions! {
     /// This does not require the identifier to be defined at this time.
     "global"(1) => |state, args| {
         let var = args[0].variable("`global(1)` expects a variable argument")?;
-        state.storage.global_idents.insert(var);
+        state.storage.global_idents.insert(var.clone());
         Ok(Atom::Null)
     }
 }
