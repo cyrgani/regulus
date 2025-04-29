@@ -178,4 +178,5 @@ pub fn run(path: impl AsRef<Path>) -> Result<Atom> {
     Runner::new().file(path).unwrap().run().0
 }
 
+#[rustfmt::skip]
 mod interned_stdlib;
