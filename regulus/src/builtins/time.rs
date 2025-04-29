@@ -8,7 +8,7 @@ fn epoch_duration() -> Duration {
 }
 
 functions! {
-    /// Returns the current time is seconds (Unix epoch) as an integer.
+    /// Returns the current time in seconds (Unix epoch) as an integer.
     "now"(0) => |_, _| {
         Ok(Atom::Int(epoch_duration().as_secs() as i64))
     }

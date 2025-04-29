@@ -1,14 +1,26 @@
 use crate::prelude::*;
 
-fn arithmetic_operation(
+fn arithmetic_operation<T>(
     state: &mut State,
     args: &[Argument],
     name: &str,
-    f: fn(i64, i64) -> Option<i64>,
-) -> Result<Atom> {
-    // TODO: this error could also be division by zero
-    match f(args[0].eval(state)?.int()?, args[1].eval(state)?.int()?) {
+    f: fn(i64, T) -> Option<i64>,
+) -> Result<Atom>
+where
+    T: TryFrom<i64>,
+    T::Error: std::fmt::Display,
+{
+    match f(
+        args[0].eval(state)?.int()?,
+        T::try_from(args[1].eval(state)?.int()?).map_err(|err| {
+            Exception::new(
+                format!("invalid arithmetic argument for `{name}`: `{err}`"),
+                Error::Argument,
+            )
+        })?,
+    ) {
         Some(i) => Ok(Atom::Int(i)),
+        // TODO: this error could also be division by zero
         None => raise!(Error::Overflow, "overflow occured during {name}!"),
     }
 }
@@ -22,7 +34,13 @@ functions! {
     "*"(2) => |state, args| arithmetic_operation(state, args, "*", i64::checked_mul)
     /// Divides the two given integers and returns the result, causing an exception in case of division by zero.
     "/"(2) => |state, args| arithmetic_operation(state, args, "/", i64::checked_div)
-    /// Calculates the remainder of the two given integers and returns the result, 
+    /// Calculates the remainder of the two given integers and returns the result,
     /// causing an exception in case of division by zero.
     "%"(2) => |state, args| arithmetic_operation(state, args, "%", i64::checked_rem)
+    /// Shifts the first integer to the left by the second amount of digits,
+    /// causing an exception in case of overflow or a negative shift amount.
+    "<<"(2) => |state, args| arithmetic_operation(state, args, "<<", i64::checked_shl)
+    /// Shifts the first integer to the right by the second amount of digits,
+    /// causing an exception in case of overflow or a negative shift amount.
+    ">>"(2) => |state, args| arithmetic_operation(state, args, ">>", i64::checked_shr)
 }
