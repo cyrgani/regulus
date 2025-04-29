@@ -308,15 +308,4 @@ functions! {
         state.storage.global_idents.insert(var);
         Ok(Atom::Null)
     }
-    /// Mark a variable identifier as local, possibly undoing a call to `global(1)`.
-    /// 
-    /// This function is experimental and currently untested.
-    /// It is not clear how it should behave exactly.
-    ///
-    /// This does not require the identifier to be defined at this time.
-    "local"(1) => |state, args| {
-        let var = args[0].variable("`local(1)` expects a variable argument")?;
-        state.storage.global_idents.remove(&var);
-        Ok(Atom::Null)
-    }
 }

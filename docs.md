@@ -27,8 +27,6 @@
 * value is shared between all imported modules and function scopes, unlike regular local variables with `=(2)`
 * there is no language mechanism to prevent name collisions at the moment
   * naming conventions are required (see below)
-* `local(1)` can be used to make a global variable local again
-* TODO: consider if `local(1)` is necessary
 
 ### Standard library (STL)
 * still extremely minimal
