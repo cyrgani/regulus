@@ -10,7 +10,10 @@ fn epoch_duration() -> Duration {
 functions! {
     /// Returns the current time in seconds (Unix epoch) as an integer.
     "now"(0) => |_, _| {
-        Ok(Atom::Int(epoch_duration().as_secs() as i64))
+        Ok(Atom::Int(
+            i64::try_from(epoch_duration().as_secs())
+                .map_err(|e| Exception::new(format!("time overflow: {e}"), Error::Overflow))?
+        ))
     }
     /// Returns the nanosecond part of the current time as an integer.
     "now_nanos_part"(0) => |_, _| {

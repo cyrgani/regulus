@@ -26,9 +26,7 @@ impl Argument {
             ArgumentData::Atom(atom) => Ok(atom.clone()),
             ArgumentData::Variable(var) => match state.storage.get(var) {
                 Some(value) => Ok(value.clone()),
-                None => {
-                    raise!(Error::Name, "No variable named `{var}` found!")
-                }
+                None => raise!(Error::Name, "No variable named `{var}` found!"),
             },
         }
     }

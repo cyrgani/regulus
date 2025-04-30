@@ -49,6 +49,11 @@ impl StringOrVec {
     }
 }
 
+fn atom_to_index(atom: &Atom) -> Result<usize> {
+    usize::try_from(atom.int()?)
+        .map_err(|e| Exception::new(format!("invalid list index: {e}"), Error::Index))
+}
+
 functions! {
     /// Constructs a new list containing all the given arguments.
     "list"(_) => |state, args| {
@@ -79,7 +84,7 @@ functions! {
         args[0]
             .eval(state)?
             .string_or_list()?
-            .get(args[1].eval(state)?.int()? as usize)
+            .get(atom_to_index(&args[1].eval(state)?)?)
             .ok_or_else(|| Exception::new("list index out of bounds", Error::Index))
     }
     /// Returns the last element of the given list or string, raising an exception if it is empty.
@@ -92,7 +97,10 @@ functions! {
     }
     /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {
-        Ok(Atom::Int(args[0].eval(state)?.string_or_list()?.len() as i64))
+        Ok(Atom::Int(
+            i64::try_from(args[0].eval(state)?.string_or_list()?.len())
+                .map_err(|e| Exception::new(format!("list is too long: {e}"), Error::Overflow))?
+        ))
     }
     /// Iterates over the given list elements or string characters.
     /// The first argument is the list, the second the loop variable name for each element and the
@@ -124,7 +132,7 @@ functions! {
     "overwrite_at_index"(3) => |state, args| {
         let mut list = args[0].eval(state)?.list()?;
         *list
-            .get_mut(args[1].eval(state)?.int()? as usize)
+            .get_mut(atom_to_index(&args[1].eval(state)?)?)
             .ok_or_else(|| Exception::new("Unable to insert at index into list!", Error::Index))? =
             args[2].eval(state)?;
         Ok(Atom::List(list))

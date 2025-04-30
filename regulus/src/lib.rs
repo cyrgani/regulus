@@ -8,12 +8,8 @@
 )]
 #![allow(
     clippy::missing_errors_doc,
-    clippy::option_if_let_else,
-    clippy::cast_possible_truncation,
-    clippy::cast_possible_wrap,
-    clippy::cast_sign_loss,
+    clippy::option_if_let_else
     clippy::must_use_candidate,
-    clippy::wildcard_imports
 )]
 
 mod argument;
@@ -122,7 +118,7 @@ impl Runner {
     ///
     /// Returns the result the program returned and the final state.
     ///
-    /// If `starting_state` is specified, it overrides `current_dir`..
+    /// If `starting_state` is specified, it overrides `current_dir`.
     ///
     /// # Panics
     /// Panics if the configuration is invalid.
