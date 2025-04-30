@@ -1,15 +1,11 @@
 use crate::prelude::*;
 
-fn arithmetic_operation<T>(
+fn arithmetic_operation<T: TryFrom<i64, Error: std::fmt::Display>>(
     state: &mut State,
     args: &[Argument],
     name: &str,
     f: fn(i64, T) -> Option<i64>,
-) -> Result<Atom>
-where
-    T: TryFrom<i64>,
-    T::Error: std::fmt::Display,
-{
+) -> Result<Atom> {
     match f(
         args[0].eval(state)?.int()?,
         T::try_from(args[1].eval(state)?.int()?).map_err(|err| {

@@ -9,7 +9,7 @@
 #![allow(
     clippy::missing_errors_doc,
     clippy::option_if_let_else,
-    clippy::must_use_candidate,
+    clippy::must_use_candidate
 )]
 
 mod argument;
@@ -21,6 +21,9 @@ mod parsing;
 mod state;
 
 mod builtins;
+
+#[rustfmt::skip]
+mod interned_stdlib;
 
 pub mod prelude {
     pub use crate::{
@@ -173,6 +176,3 @@ pub(crate) enum Directory {
 pub fn run(path: impl AsRef<Path>) -> Result<Atom> {
     Runner::new().file(path).unwrap().run().0
 }
-
-#[rustfmt::skip]
-mod interned_stdlib;
