@@ -122,7 +122,7 @@ functions! {
     /// the function body.
     /// Values defined in the function are scoped and cannot be accessed outside of the function body.
     "def"(_) => |state, args| {
-        let [var, fn_args @ .., body] = args else {
+        let [var, fn_args @ .., body] = args.iter().as_slice() else {
             return raise!(
                 Error::Argument,
                 "too few arguments passed to `def`: expected at least 2, found {}", args.len()

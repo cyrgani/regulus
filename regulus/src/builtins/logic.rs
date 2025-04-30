@@ -1,6 +1,7 @@
+use crate::holevec::HoleVec;
 use crate::prelude::*;
 
-fn int_cmp(state: &mut State, args: &[Argument], f: fn(&i64, &i64) -> bool) -> Result<Atom> {
+fn int_cmp(state: &mut State, args: HoleVec<Argument>, f: fn(&i64, &i64) -> bool) -> Result<Atom> {
     Ok(Atom::Bool(f(
         &args[0].eval(state)?.int()?,
         &args[1].eval(state)?.int()?,

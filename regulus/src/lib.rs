@@ -25,6 +25,8 @@ mod builtins;
 #[rustfmt::skip]
 mod interned_stdlib;
 
+mod holevec;
+
 pub mod prelude {
     pub use crate::{
         Runner,

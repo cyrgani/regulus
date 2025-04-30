@@ -1,6 +1,7 @@
 use crate::prelude::*;
 use std::fmt;
 use std::rc::Rc;
+use crate::holevec::HoleVec;
 
 #[derive(Debug, Clone)]
 pub struct FunctionCall {
@@ -42,11 +43,11 @@ impl FunctionCall {
             }
         }
 
-        (function.callback)(state, &self.args)
+        (function.callback)(state, HoleVec::from_vec(self.args.clone()))
     }
 }
 
-type Callback = dyn Fn(&mut State, &[Argument]) -> Result<Atom>;
+type Callback = dyn Fn(&mut State, HoleVec<Argument>) -> Result<Atom>;
 
 #[derive(Clone)]
 pub struct Function {

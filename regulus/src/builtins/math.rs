@@ -1,8 +1,9 @@
+use crate::holevec::HoleVec;
 use crate::prelude::*;
 
 fn arithmetic_operation<T: TryFrom<i64, Error: std::fmt::Display>>(
     state: &mut State,
-    args: &[Argument],
+    args: HoleVec<Argument>,
     name: &str,
     f: fn(i64, T) -> Option<i64>,
 ) -> Result<Atom> {
