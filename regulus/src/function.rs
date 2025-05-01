@@ -1,7 +1,7 @@
+use crate::holevec::HoleVec;
 use crate::prelude::*;
 use std::fmt;
 use std::rc::Rc;
-use crate::holevec::HoleVec;
 
 #[derive(Debug, Clone)]
 pub struct FunctionCall {

@@ -8,7 +8,7 @@ functions! {
     /// Converts the given value into an integer, raising an exception if it is not possible to cast.
     /// TODO document the exact conditions and rules
     "int"(1) => |state, args| {
-        let atom = args[0].eval(state)?;
+        let atom = args.at(0).eval(state)?;
         Ok(Atom::Int(match &atom {
             Atom::Int(val) => *val,
             Atom::Bool(val) => i64::from(*val),
@@ -21,7 +21,7 @@ functions! {
     /// Converts the given value into a string, raising an exception if it is not possible to cast.
     /// TODO document the exact conditions and rules
     "string"(1) => |state, args| {
-        let atom = args[0].eval(state)?;
+        let atom = args.at(0).eval(state)?;
         Ok(Atom::String(match &atom {
             Atom::Int(val) => val.to_string(),
             Atom::Bool(val) => val.to_string(),
@@ -33,7 +33,7 @@ functions! {
     /// Converts the given value into a boolean, raising an exception if it is not possible to cast.
     /// TODO document the exact conditions and rules
     "bool"(1) => |state, args| {
-        let atom = args[0].eval(state)?;
+        let atom = args.at(0).eval(state)?;
         Ok(Atom::Bool(match &atom {
             Atom::Int(val) => *val != 0,
             Atom::Bool(val) => *val,

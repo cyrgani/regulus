@@ -33,7 +33,7 @@ functions! {
     /// NOTE: the output format of this method is unstable.
     /// NOTE: this method may be removed in the future.
     "debug"(1) => |state, args| {
-        let arg_val = args[0].eval(state)?;
+        let arg_val = args.at(0).eval(state)?;
         write_to_stdout(state, &format!("{arg_val:?}\n"));
         Ok(Atom::Null)
     }

@@ -3,15 +3,15 @@ use crate::prelude::*;
 use crate::{Directory, FILE_EXTENSION};
 use std::fs;
 use std::rc::Rc;
+use crate::holevec::HoleVec;
 
-fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
+fn define_function(body: &Argument, fn_args: HoleVec<Argument>) -> Result<Atom> {
     let body = body.function_call("Error during definition: no valid function body was given!")?;
     let function_arg_names = fn_args
-        .iter()
+        .into_iter()
         .map(|fn_arg| {
             fn_arg
                 .variable("Error during definition: invalid args were given!")
-                .cloned()
         })
         .collect::<Result<Vec<_>>>()?;
 
@@ -24,7 +24,7 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
             let mut old_storage_data = state.storage.data.clone();
 
             for (idx, arg) in function_arg_names.iter().enumerate() {
-                let arg_result = args[idx].eval(state)?;
+                let arg_result = args.at(idx).eval(state)?;
                 state.storage.insert(arg.clone(), arg_result);
             }
 
@@ -72,18 +72,18 @@ functions! {
         if args.is_empty() {
             Ok(Atom::Null)
         } else {
-            for arg in &args[0..args.len() - 1] {
-                arg.eval(state)?;
+            for i in 0..args.len() - 1 {
+                args.at(i).eval(state)?;
             }
-            args[args.len() - 1].eval(state)
+            args.at(args.len() - 1).eval(state)
         }
     }
     /// Assigns the second argument to a variable named like the first argument.
     ///
     /// This function has an alias: `assign`.
     "="(2) => |state, args| {
-        let var = args[0].variable("Error during assignment: no variable was given to assign to!")?;
-        let value = args[1].eval(state)?;
+        let var = args.at(0).variable("Error during assignment: no variable was given to assign to!")?;
+        let value = args.at(1).eval(state)?;
         state.storage.insert(var, value);
         Ok(Atom::Null)
     }
@@ -91,8 +91,8 @@ functions! {
     /// If it evaluates to true, the second argument is evaluated and returned.
     /// If it evaluates to false, the second argument is ignored and `null` is returned.
     "if"(2) => |state, args| {
-        Ok(if args[0].eval(state)?.bool()? {
-            args[1].eval(state)?
+        Ok(if args.at(0).eval(state)?.bool()? {
+            args.at(1).eval(state)?
         } else {
             Atom::Null
         })
@@ -101,18 +101,18 @@ functions! {
     /// If it evaluates to true, the second argument is evaluated and returned.
     /// If it evaluates to false, the third argument is evaluated and returned instead.
     "ifelse"(3) => |state, args| {
-        Ok(if args[0].eval(state)?.bool()? {
-            args[1].eval(state)?
+        Ok(if args.at(0).eval(state)?.bool()? {
+            args.at(1).eval(state)?
         } else {
-            args[2].eval(state)?
+            args.at(2).eval(state)?
         })
     }
     /// Repeatedly evaluates the first argument as a boolean.
     /// If it evaluates to true, the second argument is evaluated and the same steps begin again.
     /// If it evaluates to false, the loop ends and `null` is returned.
     "while"(2) => |state, args| {
-        while args[0].eval(state)?.bool()? {
-            args[1].eval(state)?;
+        while args.at(0).eval(state)?.bool()? {
+            args.at(1).eval(state)?;
         }
         Ok(Atom::Null)
     }
@@ -128,9 +128,9 @@ functions! {
                 "too few arguments passed to `def`: expected at least 2, found {}", args.len()
             );
         };
-        let var = var.variable("Error during function definition: no valid variable was given to define to!")?;
+        let var = var.clone().variable("Error during function definition: no valid variable was given to define to!")?;
 
-        state.storage.insert(var, define_function(body, fn_args)?);
+        state.storage.insert(var, define_function(body, HoleVec::from_vec(fn_args.to_vec()))?);
         Ok(Atom::Null)
     }
     /// Creates a new function and returns it.
@@ -143,12 +143,18 @@ functions! {
         let Some((body, fn_args)) = args.split_last() else {
             return raise!(Error::Argument, "`fn` invocation is missing body");
         };
-        define_function(body, fn_args)
+        define_function(body, HoleVec::from_vec(fn_args.to_vec()))
     }
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the behavior of `=`
+    ///
+    /// Todo new approach: import will not add anything to the storage by default, only things marked via `export(_)`
+    /// (example: `export(rand, randrange, choose, shuffle)`) and globals
+    /// why: to prevent import leaks when one stl module (`a`) imports another (`b`) and the user does `import(a)` and has access to `b`s contents
+    /// 
+    /// todo this is probably not a good idea
     "import"(1) => |state, args| {
-        let name = args[0].variable("`import` argument must be a variable, string syntax was removed")?;
+        let name = args.at(0).variable("`import` argument must be a variable, string syntax was removed")?;
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
             return raise!(
                 Error::Import,
@@ -159,10 +165,10 @@ functions! {
         // lookup order:
         // 1. look inside the programs current directory
         // 2. look in the global stl directory
-        let source = if let Some(code) = try_resolve_import_in_dir(name, &state.file_directory) {
+        let source = if let Some(code) = try_resolve_import_in_dir(&name, &state.file_directory) {
             Some((code, state.file_directory.clone()))
         } else {
-            try_resolve_import_in_dir(name, &Directory::InternedSTL).map(|code| (code, Directory::InternedSTL))
+            try_resolve_import_in_dir(&name, &Directory::InternedSTL).map(|code| (code, Directory::InternedSTL))
         };
 
         let Some((code, source_dir)) = source else {
@@ -190,27 +196,36 @@ functions! {
         state.storage.global_idents = imported_state.storage.global_idents;
         Ok(atom)
     }
+    /// Marks all the given variables or function idents as values that should be exported by this module.
+    /// This does not require for them do be already defined, but if they are not defined until the end,
+    /// `import` will raise an exception.
+    "export"(_) => |state, args| {
+        for arg in args {
+            state.storage.exported_idents.insert(arg.variable("`export` arguments should be variables")?.clone());
+        }
+        Ok(Atom::Null)
+    }
     /// Raises an exception of the kind `UserRaised` with the given string message.
     "error"(1) => |state, args| {
-        Err(Exception::new(args[0].eval(state)?.string()?, Error::UserRaised))
+        Err(Exception::new(args.at(0).eval(state)?.string()?, Error::UserRaised))
     }
     /// Evaluates the given value and returns it.
     /// If an exception occurs while evaluating the argument, the exception is converted into a
     /// string and returned instead.
     "catch"(1) => |state, args| {
-        Ok(args[0]
+        Ok(args.at(0)
             .eval(state)
             .unwrap_or_else(|exc| Atom::String(exc.to_string())))
     }
     /// Evaluates both arguments and returns whether they are equal.
     /// TODO: define this behavior in edge cases and document it
     "=="(2) => |state, args| {
-        Ok(Atom::Bool(args[0].eval(state)? == args[1].eval(state)?))
+        Ok(Atom::Bool(args.at(0).eval(state)? == args.at(1).eval(state)?))
     }
     /// Evaluates the argument as a boolean and returns `null` if it is true.
     /// If it is false, raise an exception of the `Assertion` kind.
     "assert"(1) => |state, args| {
-        if args[0].eval(state)?.bool()? {
+        if args.at(0).eval(state)?.bool()? {
             Ok(Atom::Null)
         } else {
             raise!(Error::Assertion, "Assertion failed!")
@@ -219,8 +234,8 @@ functions! {
     /// Evaluates both arguments and compares then, returning `null` if they are equal.
     /// If not, raise an exception of the `Assertion` kind with a message containing both values.
     "assert_eq"(2) => |state, args| {
-        let lhs = args[0].eval(state)?;
-        let rhs = args[1].eval(state)?;
+        let lhs = args.at(0).eval(state)?;
+        let rhs = args.at(1).eval(state)?;
         if lhs == rhs {
             Ok(Atom::Null)
         } else {
@@ -239,8 +254,8 @@ functions! {
         };
         let var = ident.variable("`type` must take a variable as first argument")?;
         let fields = fields
-            .iter()
-            .map(|field| field.variable("`type` field arguments should be variables").cloned())
+            .into_iter()
+            .map(|field| field.variable("`type` field arguments should be variables"))
             .collect::<Result<Vec<_>>>()?;
 
         let function = Function {
@@ -269,9 +284,9 @@ functions! {
     ///
     /// This function has an alias: `getattr`.
     "."(2) => |state, args| {
-        let obj = args[0].eval(state)?.object()?;
-        let field = args[1].variable("`.` takes a field identifier as second argument")?;
-        obj.get(field).cloned().ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))
+        let obj = args.at(0).eval(state)?.object()?;
+        let field = args.at(1).variable("`.` takes a field identifier as second argument")?;
+        obj.get(&field).cloned().ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))
     }
     /// Set the value of a field of an object to a new value and returns the updated object.
     ///
@@ -283,10 +298,10 @@ functions! {
     ///
     /// This function has an alias: `setattr`.
     "->"(3) => |state, args| {
-        let mut obj = args[0].eval(state)?.object()?;
-        let field = args[1].variable("`.` takes a field identifier as second argument")?;
-        let value = args[2].eval(state)?;
-        *obj.get_mut(field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value;
+        let mut obj = args.at(0).eval(state)?.object()?;
+        let field = args.at(1).variable("`.` takes a field identifier as second argument")?;
+        let value = args.at(2).eval(state)?;
+        *obj.get_mut(&field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value;
         Ok(Atom::Object(obj))
     }
     /// Evaluates the given argument and terminates the program directly.
@@ -296,7 +311,7 @@ functions! {
     ///
     /// If `exit` is reached via an `import`-ed module, it will stop the main program too.
     "exit"(1) => |state, args| {
-        let value = args[0].eval(state);
+        let value = args.at(0).eval(state);
         state.exit_unwind_value = Some(value);
         Ok(Atom::Null)
     }
@@ -307,14 +322,14 @@ functions! {
     ///
     /// TODO: think about imports, test them
     "eval"(1) => |state, args| {
-        let code = args[0].eval(state)?.string()?;
+        let code = args.at(0).eval(state)?.string()?;
         Runner::new().code(code).run().0
     }
     /// Mark a variable identifier as global.
     ///
     /// This does not require the identifier to be defined at this time.
     "global"(1) => |state, args| {
-        let var = args[0].variable("`global(1)` expects a variable argument")?;
+        let var = args.at(0).variable("`global(1)` expects a variable argument")?;
         state.storage.global_idents.insert(var.clone());
         Ok(Atom::Null)
     }

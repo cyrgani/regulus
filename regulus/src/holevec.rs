@@ -106,6 +106,18 @@ impl<T> HoleVec<T> {
             unsafe { Some(ptr::read(self.ptr.as_ptr().add(self.len))) }
         }
     }
+
+    pub fn split_first(mut self) -> Option<(T, Self)> {
+        if self.len == 0 {
+            None
+        } else {
+            let el = self.at(0);
+            self.ptr = unsafe { self.ptr.add(1) };
+            self.len -= 1;
+            self.cap -= 1;
+            Some((el, self))
+        }
+    }
 }
 
 impl<T> Deref for HoleVec<T> {
@@ -118,7 +130,6 @@ impl<T> Deref for HoleVec<T> {
 impl<T> Drop for HoleVec<T> {
     fn drop(&mut self) {
         if self.cap != 0 {
-            while self.pop().is_some() {}
             let layout = Layout::array::<T>(self.cap).unwrap();
             unsafe {
                 alloc::dealloc(self.ptr.as_ptr().cast::<u8>(), layout);

@@ -1,58 +1,16 @@
-use clap::Parser;
-use colored::Colorize;
-use regulus::prelude::*;
-use std::path::PathBuf;
-use std::process::exit;
-
-/// An interpreter for the Regulus language.
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-    /// The path of the program
-    path: PathBuf,
-
-    // /// TODO: activate debug mode
-    //#[arg(short, long, default_value_t = false)]
-    //debug: bool,
-    /// Show the final storage
-    #[arg(short = 'S', long, default_value_t = false)]
-    dump_storage: bool,
-    // /// TODO: Show colored output
-    //#[arg(short, long, default_value_t = true)]
-    //colored: bool,
-}
+use regulus::Runner;
 
 fn main() {
-    let args = Args::parse();
+    dbg!(Runner::new().code(r#"import(lists),
+=(data, list(2, 4, 5)),
+assert_eq(len(data), 3),
+assert_eq(data, list(2, 4, 5)),
+assert(!(==(data, list(4, 2, 5)))),
+assert_eq(index(data, 1), 4),
+for_in(data, x, print(x)),
+def(halve, el, /(el, 2)),
+assert_eq(list(1, 5, 7), map(list(2, 10, 14), halve)),
 
-    let mut runner = Runner::new();
-    match runner.file(args.path) {
-        Ok(updated) => {
-            runner = updated;
-        }
-        Err(err) => {
-            eprintln!(
-                "{}",
-                format!("Reading the file caused an error: {err}").red()
-            );
-            exit(1);
-        }
-    }
-
-    let result = runner.run();
-    match result {
-        (Ok(atom), state) => {
-            match atom {
-                Atom::Null => (),
-                _ => println!("{atom:?}"),
-            };
-            if args.dump_storage {
-                println!("{:?}", state.storage.data)
-            }
-        }
-        (Err(error), _) => {
-            eprintln!("{}", format!("The program caused an error: {error}").red());
-            exit(1);
-        }
-    }
+assert_eq(len("abc"), len(list(1, 2, 3))),
+"#).run().0);
 }

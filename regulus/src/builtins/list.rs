@@ -66,8 +66,8 @@ functions! {
     /// Appends the second argument at the back of the list given as first argument and returns
     /// the new list.
     "append"(2) => |state, args| {
-        let mut list = args[0].eval(state)?.list()?;
-        list.push(args[1].eval(state)?);
+        let mut list = args.at(0).eval(state)?.list()?;
+        list.push(args.at(1).eval(state)?);
         Ok(Atom::List(list))
     }
     /// Takes any amount of lists and joins their elements together into a single list.
@@ -81,15 +81,15 @@ functions! {
     /// Returns the value in the first list or string argument at the second integer argument.
     /// Raises an exception if the index is out of bounds.
     "index"(2) => |state, args| {
-        args[0]
+        args.at(0)
             .eval(state)?
             .string_or_list()?
-            .get(atom_to_index(&args[1].eval(state)?)?)
+            .get(atom_to_index(&args.at(1).eval(state)?)?)
             .ok_or_else(|| Exception::new("list index out of bounds", Error::Index))
     }
     /// Returns the last element of the given list or string, raising an exception if it is empty.
     "last"(1) => |state, args| {
-        args[0]
+        args.at(0)
             .eval(state)?
             .string_or_list()?
             .pop()
@@ -98,7 +98,7 @@ functions! {
     /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {
         Ok(Atom::Int(
-            i64::try_from(args[0].eval(state)?.string_or_list()?.len())
+            i64::try_from(args.at(0).eval(state)?.string_or_list()?.len())
                 .map_err(|e| Exception::new(format!("list is too long: {e}"), Error::Overflow))?
         ))
     }
@@ -109,11 +109,11 @@ functions! {
     ///
     /// If the loop variable shadows an existing variable, that value can be used again after the loop.
     "for_in"(3) => |state, args| {
-        let list = args[0].eval(state)?.string_or_list()?;
-        let loop_var = args[1].variable("invalid loop variable given to `for_in`")?;
-        let loop_body = args[2].function_call("invalid loop body given to `for_in`")?;
+        let list = args.at(0).eval(state)?.string_or_list()?;
+        let loop_var = args.at(1).variable("invalid loop variable given to `for_in`")?;
+        let loop_body = args.at(2).function_call("invalid loop body given to `for_in`")?;
 
-        let possibly_shadowed_value = state.storage.get(loop_var).cloned();
+        let possibly_shadowed_value = state.storage.get(&loop_var).cloned();
 
         for el in list.into_vec() {
             state.storage.insert(loop_var.clone(), el);
@@ -130,11 +130,11 @@ functions! {
     /// If the index is out of bounds, an exception is raised.
     /// TODO: make this also work on strings
     "overwrite_at_index"(3) => |state, args| {
-        let mut list = args[0].eval(state)?.list()?;
+        let mut list = args.at(0).eval(state)?.list()?;
         *list
-            .get_mut(atom_to_index(&args[1].eval(state)?)?)
+            .get_mut(atom_to_index(&args.at(1).eval(state)?)?)
             .ok_or_else(|| Exception::new("Unable to insert at index into list!", Error::Index))? =
-            args[2].eval(state)?;
+            args.at(2).eval(state)?;
         Ok(Atom::List(list))
     }
 }

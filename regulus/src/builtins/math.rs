@@ -8,8 +8,8 @@ fn arithmetic_operation<T: TryFrom<i64, Error: std::fmt::Display>>(
     f: fn(i64, T) -> Option<i64>,
 ) -> Result<Atom> {
     match f(
-        args[0].eval(state)?.int()?,
-        T::try_from(args[1].eval(state)?.int()?).map_err(|err| {
+        args.at(0).eval(state)?.int()?,
+        T::try_from(args.at(1).eval(state)?.int()?).map_err(|err| {
             Exception::new(
                 format!("invalid arithmetic argument for `{name}`: `{err}`"),
                 Error::Argument,

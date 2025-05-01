@@ -17,14 +17,14 @@ pub enum ArgumentData {
 }
 
 impl Argument {
-    pub fn eval(&self, state: &mut State) -> Result<Atom> {
+    pub fn eval(self, state: &mut State) -> Result<Atom> {
         if state.exit_unwind_value.is_some() {
             return Ok(Atom::Null);
         }
-        match &self.data {
+        match self.data {
             ArgumentData::FunctionCall(call) => call.eval(state),
-            ArgumentData::Atom(atom) => Ok(atom.clone()),
-            ArgumentData::Variable(var) => match state.storage.get(var) {
+            ArgumentData::Atom(atom) => Ok(atom),
+            ArgumentData::Variable(var) => match state.storage.get(&var) {
                 Some(value) => Ok(value.clone()),
                 None => raise!(Error::Name, "No variable named `{var}` found!"),
             },
@@ -33,8 +33,8 @@ impl Argument {
 
     /// Returns the identifier of this variable.
     /// If it is not a variable, it raises an exception with the given error message.
-    pub fn variable(&self, error_msg: &str) -> Result<&String> {
-        match &self.data {
+    pub fn variable(self, error_msg: &str) -> Result<String> {
+        match self.data {
             ArgumentData::Variable(var) => Ok(var),
             _ => raise!(Error::Argument, "{error_msg}"),
         }

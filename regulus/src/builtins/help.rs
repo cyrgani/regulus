@@ -7,7 +7,7 @@ functions! {
     /// TODO: consider printing directly too
     /// TODO: consider removing the leading newline (should then be done in `functions!`)
     "help"(1) => |state, args| {
-        let arg = args[0].eval(state)?;
+        let arg = args.at(0).eval(state)?;
         if let Atom::Function(f) = arg {
             Ok(Atom::String(f.doc))
         } else {
