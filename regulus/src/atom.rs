@@ -64,31 +64,29 @@ atom_try_as_variant_methods! {
 
 impl fmt::Display for Atom {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Self::Bool(val) => val.to_string(),
-                Self::Function(f) => format!(
-                    "<function>({})",
-                    match f.argc {
-                        Some(argc) => argc.to_string(),
-                        None => "_".to_string(),
-                    }
-                ),
-                Self::Int(val) => val.to_string(),
-                Self::List(val) => format!(
-                    "[{}]",
-                    val.iter()
-                        .map(ToString::to_string)
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                ),
-                Self::Null => "null".to_string(),
-                Self::String(val) => val.clone(),
-                // todo: investigate the proper format
-                Self::Object(obj) => format!("{obj:?}"),
-            }
-        )
+        match self {
+            Self::Bool(val) => write!(f, "{val}"),
+            Self::Function(func) => write!(
+                f,
+                "<function>({})",
+                match func.argc {
+                    Some(argc) => argc.to_string(),
+                    None => "_".to_string(),
+                }
+            ),
+            Self::Int(val) => write!(f, "{val}"),
+            Self::List(val) => write!(
+                f,
+                "[{}]",
+                val.iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            Self::Null => write!(f, "null"),
+            Self::String(val) => write!(f, "{val}"),
+            // todo: investigate the proper format
+            Self::Object(obj) => write!(f, "{obj:?}"),
+        }
     }
 }

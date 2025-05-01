@@ -53,14 +53,10 @@ impl Argument {
 #[cfg(feature = "display_impls")]
 impl fmt::Display for Argument {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match &self.data {
-                ArgumentData::Atom(atom) => atom.to_string(),
-                ArgumentData::FunctionCall(call) => call.to_string(),
-                ArgumentData::Variable(name) => name.to_string(),
-            }
-        )
+        match &self.data {
+            ArgumentData::Atom(atom) => write!(f, "{atom}"),
+            ArgumentData::FunctionCall(call) => write!(f, "{call}"),
+            ArgumentData::Variable(name) => write!(f, "{name}"),
+        }
     }
 }
