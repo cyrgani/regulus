@@ -6,4 +6,4 @@ assert_eq(
 assert_eq(bubblesort(list()), list()),
 assert_eq(bubblesort(list(1)), list(1)),
 assert_eq(bubblesort(list(2, 1)), list(1, 2)),
-assert_eq(bubblesort(range(0, 100)), range(0, 100)),
+assert_eq(bubblesort(range(0, 400)), range(0, 400)),

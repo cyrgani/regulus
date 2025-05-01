@@ -9,7 +9,7 @@ functions! {
     /// TODO document the exact conditions and rules
     "int"(1) => |state, args| {
         let atom = args[0].eval(state)?;
-        Ok(Atom::Int(match &atom {
+        Ok(Atom::Int(match &*atom {
             Atom::Int(val) => *val,
             Atom::Bool(val) => i64::from(*val),
             Atom::String(val) => val
@@ -22,7 +22,7 @@ functions! {
     /// TODO document the exact conditions and rules
     "string"(1) => |state, args| {
         let atom = args[0].eval(state)?;
-        Ok(Atom::String(match &atom {
+        Ok(Atom::String(match &*atom {
             Atom::Int(val) => val.to_string(),
             Atom::Bool(val) => val.to_string(),
             Atom::String(val) => val.clone(),
@@ -34,7 +34,7 @@ functions! {
     /// TODO document the exact conditions and rules
     "bool"(1) => |state, args| {
         let atom = args[0].eval(state)?;
-        Ok(Atom::Bool(match &atom {
+        Ok(Atom::Bool(match &*atom {
             Atom::Int(val) => *val != 0,
             Atom::Bool(val) => *val,
             Atom::Null => false,

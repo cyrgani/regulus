@@ -59,7 +59,7 @@ functions! {
     "list"(_) => |state, args| {
         let mut list = vec![];
         for arg in args {
-            list.push(arg.eval(state)?);
+            list.push(arg.eval(state)?.into_owned());
         }
         Ok(Atom::List(list))
     }
@@ -67,7 +67,7 @@ functions! {
     /// the new list.
     "append"(2) => |state, args| {
         let mut list = args[0].eval(state)?.list()?;
-        list.push(args[1].eval(state)?);
+        list.push(args[1].eval(state)?.into_owned());
         Ok(Atom::List(list))
     }
     /// Takes any amount of lists and joins their elements together into a single list.
@@ -84,7 +84,7 @@ functions! {
         args[0]
             .eval(state)?
             .string_or_list()?
-            .get(atom_to_index(&args[1].eval(state)?)?)
+            .get(atom_to_index(&args[1].eval(state)?.into_owned())?)
             .ok_or_else(|| Exception::new("list index out of bounds", Error::Index))
     }
     /// Returns the last element of the given list or string, raising an exception if it is empty.
@@ -132,9 +132,9 @@ functions! {
     "overwrite_at_index"(3) => |state, args| {
         let mut list = args[0].eval(state)?.list()?;
         *list
-            .get_mut(atom_to_index(&args[1].eval(state)?)?)
+            .get_mut(atom_to_index(&args[1].eval(state)?.into_owned())?)
             .ok_or_else(|| Exception::new("Unable to insert at index into list!", Error::Index))? =
-            args[2].eval(state)?;
+            args[2].eval(state)?.into_owned();
         Ok(Atom::List(list))
     }
 }
