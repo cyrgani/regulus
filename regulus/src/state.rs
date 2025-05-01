@@ -11,6 +11,7 @@ pub struct Storage {
     // TODO: consider a HashMap<String, (bool, Atom)> instead, the bool means local / global
     pub data: HashMap<String, Atom>,
     pub global_idents: HashSet<String>,
+    pub exported_idents: HashSet<String>,
 }
 
 impl Storage {
@@ -18,6 +19,7 @@ impl Storage {
         Self {
             data: all_functions(),
             global_idents: HashSet::new(),
+            exported_idents: HashSet::new(),
         }
     }
 
@@ -34,6 +36,20 @@ impl Storage {
             .iter()
             .filter(|(ident, _)| self.global_idents.contains(*ident))
             .map(|(ident, atom)| (ident.clone(), atom.clone()))
+    }
+
+    pub fn exported_and_global_items(&self) -> impl Iterator<Item = (String, Atom)> {
+        self.data
+            .iter()
+            .filter(|(ident, _)| {
+                self.global_idents.contains(*ident) || self.exported_idents.contains(*ident)
+            })
+            .map(|(ident, atom)| (ident.clone(), atom.clone()))
+    }
+
+    pub fn add_global(&mut self, name: impl AsRef<str>, value: Atom) {
+        self.global_idents.insert(name.as_ref().to_owned());
+        self.data.insert(name.as_ref().to_owned(), value);
     }
 }
 

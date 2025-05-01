@@ -44,6 +44,8 @@ use crate::{
     state::State,
 };
 use std::path::{Path, PathBuf};
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering::Relaxed;
 use std::{env, fs, io};
 
 pub const FILE_EXTENSION: &str = "re";
@@ -198,5 +200,16 @@ mod tests {
                 .unwrap(),
             4
         );
+    }
+}
+
+pub static CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
+
+pub fn clone_investigate(atom: &Atom) {
+    match atom {
+        Atom::String(_) | Atom::List(_) | Atom::Function(_) | Atom::Object(_) => {
+            CLONE_COUNT.fetch_add(1, Relaxed);
+        }
+        Atom::Null | Atom::Int(_) | Atom::Bool(_) => (),
     }
 }

@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
 use crate::{Directory, FILE_EXTENSION};
@@ -24,7 +25,7 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
             let mut old_storage_data = state.storage.data.clone();
 
             for (idx, arg) in function_arg_names.iter().enumerate() {
-                let arg_result = args[idx].eval(state)?;
+                let arg_result = args[idx].eval(state)?.into_owned();
                 state.storage.insert(arg.clone(), arg_result);
             }
 
@@ -75,7 +76,7 @@ functions! {
             for arg in &args[0..args.len() - 1] {
                 arg.eval(state)?;
             }
-            args[args.len() - 1].eval(state)
+            args[args.len() - 1].eval(state).map(Cow::into_owned)
         }
     }
     /// Assigns the second argument to a variable named like the first argument.
@@ -83,7 +84,7 @@ functions! {
     /// This function has an alias: `assign`.
     "="(2) => |state, args| {
         let var = args[0].variable("Error during assignment: no variable was given to assign to!")?;
-        let value = args[1].eval(state)?;
+        let value = args[1].eval(state)?.into_owned();
         state.storage.insert(var, value);
         Ok(Atom::Null)
     }
@@ -92,7 +93,7 @@ functions! {
     /// If it evaluates to false, the second argument is ignored and `null` is returned.
     "if"(2) => |state, args| {
         Ok(if args[0].eval(state)?.bool()? {
-            args[1].eval(state)?
+            args[1].eval(state)?.into_owned()
         } else {
             Atom::Null
         })
@@ -105,7 +106,7 @@ functions! {
             args[1].eval(state)?
         } else {
             args[2].eval(state)?
-        })
+        }.into_owned())
     }
     /// Repeatedly evaluates the first argument as a boolean.
     /// If it evaluates to true, the second argument is evaluated and the same steps begin again.
@@ -147,6 +148,12 @@ functions! {
     }
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the behavior of `=`
+    ///
+    /// Todo new approach: import will not add anything to the storage by default, only things marked via `export(_)`
+    /// (example: `export(rand, randrange, choose, shuffle)`) and globals
+    /// why: to prevent import leaks when one stl module (`a`) imports another (`b`) and the user does `import(a)` and has access to `b`s contents
+    /// 
+    /// todo this is probably not a good idea
     "import"(1) => |state, args| {
         let name = args[0].variable("`import` argument must be a variable, string syntax was removed")?;
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
@@ -190,6 +197,16 @@ functions! {
         state.storage.global_idents = imported_state.storage.global_idents;
         Ok(atom)
     }
+    /// Marks all the given variables or function idents as values that should be exported by this module.
+    /// This does not require for them do be already defined, but if they are not defined until the end,
+    /// `import` will raise an exception.
+    /// TODO: that exception is currently not implemented!
+    "export"(_) => |state, args| {
+        for arg in args {
+            state.storage.exported_idents.insert(arg.variable("`export` arguments should be variables")?.clone());
+        }
+        Ok(Atom::Null)
+    }
     /// Raises an exception of the kind `UserRaised` with the given string message.
     "error"(1) => |state, args| {
         Err(Exception::new(args[0].eval(state)?.string()?, Error::UserRaised))
@@ -199,13 +216,12 @@ functions! {
     /// string and returned instead.
     "catch"(1) => |state, args| {
         Ok(args[0]
-            .eval(state)
-            .unwrap_or_else(|exc| Atom::String(exc.to_string())))
+            .eval(state).map_or_else(|exc| Atom::String(exc.to_string()), Cow::into_owned))
     }
     /// Evaluates both arguments and returns whether they are equal.
     /// TODO: define this behavior in edge cases and document it
     "=="(2) => |state, args| {
-        Ok(Atom::Bool(args[0].eval(state)? == args[1].eval(state)?))
+        Ok(Atom::Bool(args[0].eval(state)?.into_owned() == args[1].eval(state)?.into_owned()))
     }
     /// Evaluates the argument as a boolean and returns `null` if it is true.
     /// If it is false, raise an exception of the `Assertion` kind.
@@ -219,8 +235,8 @@ functions! {
     /// Evaluates both arguments and compares then, returning `null` if they are equal.
     /// If not, raise an exception of the `Assertion` kind with a message containing both values.
     "assert_eq"(2) => |state, args| {
-        let lhs = args[0].eval(state)?;
-        let rhs = args[1].eval(state)?;
+        let lhs = args[0].eval(state)?.into_owned();
+        let rhs = args[1].eval(state)?.into_owned();
         if lhs == rhs {
             Ok(Atom::Null)
         } else {
@@ -251,7 +267,7 @@ functions! {
                     fields
                         .iter()
                         .zip(args)
-                        .map(|(field, arg)| Ok((field.clone(), arg.eval(state)?)))
+                        .map(|(field, arg)| Ok((field.clone(), arg.eval(state)?.into_owned())))
                         .collect::<Result<_>>()?,
                 ))
             }),
@@ -285,7 +301,7 @@ functions! {
     "->"(3) => |state, args| {
         let mut obj = args[0].eval(state)?.object()?;
         let field = args[1].variable("`.` takes a field identifier as second argument")?;
-        let value = args[2].eval(state)?;
+        let value = args[2].eval(state)?.into_owned();
         *obj.get_mut(field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value;
         Ok(Atom::Object(obj))
     }
@@ -296,7 +312,7 @@ functions! {
     ///
     /// If `exit` is reached via an `import`-ed module, it will stop the main program too.
     "exit"(1) => |state, args| {
-        let value = args[0].eval(state);
+        let value = args[0].eval(state).map(Cow::into_owned);
         state.exit_unwind_value = Some(value);
         Ok(Atom::Null)
     }

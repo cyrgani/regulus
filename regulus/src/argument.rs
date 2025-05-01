@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+use crate::clone_investigate;
 use crate::prelude::*;
 #[cfg(feature = "display_impls")]
 use std::fmt;
@@ -17,15 +19,18 @@ pub enum ArgumentData {
 }
 
 impl Argument {
-    pub fn eval(&self, state: &mut State) -> Result<Atom> {
+    pub fn eval<'a>(&'a self, state: &'a mut State) -> Result<Cow<'a, Atom>> {
         if state.exit_unwind_value.is_some() {
-            return Ok(Atom::Null);
+            return Ok(Cow::Owned(Atom::Null));
         }
         match &self.data {
-            ArgumentData::FunctionCall(call) => call.eval(state),
-            ArgumentData::Atom(atom) => Ok(atom.clone()),
+            ArgumentData::FunctionCall(call) => call.eval(state).map(Cow::Owned),
+            ArgumentData::Atom(atom) => Ok(Cow::Borrowed(atom)),
             ArgumentData::Variable(var) => match state.storage.get(var) {
-                Some(value) => Ok(value.clone()),
+                Some(value) => {
+                    clone_investigate(value);
+                    Ok(Cow::Borrowed(value))
+                }
                 None => raise!(Error::Name, "No variable named `{var}` found!"),
             },
         }

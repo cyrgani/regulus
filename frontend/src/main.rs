@@ -1,8 +1,10 @@
 use clap::Parser;
 use colored::Colorize;
+use regulus::CLONE_COUNT;
 use regulus::prelude::*;
 use std::path::PathBuf;
 use std::process::exit;
+use std::time::Instant;
 
 /// An interpreter for the Regulus language.
 #[derive(Parser, Debug)]
@@ -25,6 +27,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
+    let t = Instant::now();
     let mut runner = Runner::new();
     match runner.file(args.path) {
         Ok(updated) => {
@@ -55,4 +58,6 @@ fn main() {
             exit(1);
         }
     }
+    dbg!(&CLONE_COUNT);
+    dbg!(t.elapsed());
 }
