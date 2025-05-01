@@ -114,6 +114,17 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
         }
     }
 
+    if !current.is_empty() {
+        add_token(
+            match Atom::try_from_str(current.as_str())? {
+                Some(value) => TokenData::Atom(value),
+                None => TokenData::Name(current.clone()),
+            },
+            current_start_idx.unwrap(),
+            code.len(),
+        );
+    }
+
     Ok(tokens)
 }
 

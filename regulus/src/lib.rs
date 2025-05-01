@@ -176,3 +176,27 @@ pub(crate) enum Directory {
 pub fn run(path: impl AsRef<Path>) -> Result<Atom> {
     Runner::new().file(path).unwrap().run().0
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bare_value_program_return() {
+        assert_eq!(
+            Runner::new().code("_(4)").run().0.unwrap().int().unwrap(),
+            4
+        );
+        assert_eq!(Runner::new().code("4").run().0.unwrap().int().unwrap(), 4);
+        assert_eq!(
+            Runner::new()
+                .code("=(x, 4), x")
+                .run()
+                .0
+                .unwrap()
+                .int()
+                .unwrap(),
+            4
+        );
+    }
+}
