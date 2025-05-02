@@ -94,7 +94,6 @@ functions! {
         Ok(if args.at(0).eval(state)?.bool()? {
             args.at(1).eval(state)?
         } else {
-            args.drop_elem(1);
             Atom::Null
         })
     }
@@ -103,10 +102,8 @@ functions! {
     /// If it evaluates to false, the third argument is evaluated and returned instead.
     "ifelse"(3) => |state, args| {
         Ok(if args.at(0).eval(state)?.bool()? {
-            args.drop_elem(2);
             args.at(1).eval(state)?
         } else {
-            args.drop_elem(1);
             args.at(2).eval(state)?
         })
     }
@@ -114,9 +111,10 @@ functions! {
     /// If it evaluates to true, the second argument is evaluated and the same steps begin again.
     /// If it evaluates to false, the loop ends and `null` is returned.
     "while"(2) => |state, args| {
-        // aaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrggggggggggggggggggghhhhhhhhhhhhhhh
-        while args.at(0).eval(state)?.bool()? {
-            args.at(1).eval(state)?;
+        let a0 = args.at(0);
+        let a1 = args.at(1);
+        while a0.clone().eval(state)?.bool()? {
+            a1.clone().eval(state)?;
         }
         Ok(Atom::Null)
     }
@@ -135,7 +133,6 @@ functions! {
         let var = var.clone().variable("Error during function definition: no valid variable was given to define to!")?;
 
         state.storage.insert(var, define_function(body, HoleVec::from_vec(fn_args.to_vec()))?);
-        args.leak_elems();
         Ok(Atom::Null)
     }
     /// Creates a new function and returns it.
@@ -338,7 +335,7 @@ functions! {
     /// This does not require the identifier to be defined at this time.
     "global"(1) => |state, args| {
         let var = args.at(0).variable("`global(1)` expects a variable argument")?;
-        state.storage.global_idents.insert(var.clone());
+        state.storage.global_idents.insert(var);
         Ok(Atom::Null)
     }
 }

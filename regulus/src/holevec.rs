@@ -1,7 +1,7 @@
 use std::alloc::{self, Layout};
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 /// An alternative to [`Vec<T>`] which allows moving elements out of it.
 /// unsafe to use!!!
@@ -9,7 +9,8 @@ pub struct HoleVec<T> {
     ptr: NonNull<T>,
     cap: usize,
     len: usize,
-    usable_elem_count: AtomicUsize,
+    // bool i describes if element i was already dropped (then true)
+    dropped_flags: Vec<AtomicBool>,
 }
 
 impl<T> Default for HoleVec<T> {
@@ -21,12 +22,11 @@ impl<T> Default for HoleVec<T> {
 impl<T> HoleVec<T> {
     pub const fn new() -> Self {
         assert!(size_of::<T>() != 0, "HoleVec does not need to support ZSTs");
-
         Self {
             ptr: NonNull::dangling(),
             cap: 0,
             len: 0,
-            usable_elem_count: AtomicUsize::new(0),
+            dropped_flags: vec![],
         }
     }
 
@@ -49,7 +49,7 @@ impl<T> HoleVec<T> {
 
         // Can't fail, we'll OOM first.
         self.len += 1;
-        self.usable_elem_count.fetch_add(1, Ordering::SeqCst);
+        self.dropped_flags.push(AtomicBool::new(false));
     }
 
     fn grow(&mut self) {
@@ -89,7 +89,9 @@ impl<T> HoleVec<T> {
     }
 
     unsafe fn read(&self, index: usize) -> T {
-        self.usable_elem_count.fetch_sub(1, Ordering::SeqCst);
+        debug_assert!(!self.dropped_flags[index].load(Ordering::SeqCst));
+        
+        self.dropped_flags.get(index).unwrap().store(true, Ordering::SeqCst);
         unsafe { ptr::read(self.ptr.as_ptr().add(index)) }
     }
 
@@ -107,17 +109,6 @@ impl<T> HoleVec<T> {
             Some(unsafe { self.read(index) })
         }
     }
-
-    /// Marks all elements in the slice as read.
-    /// If they were not actually read, their memory will be leaked.
-    pub fn leak_elems(&self) {
-        self.usable_elem_count.store(0, Ordering::SeqCst);
-    }
-    
-    /// UB to call twice on the same index!!!
-    pub fn drop_elem(&self, index: usize) {
-        self.at(index);
-    }
 }
 
 impl<T> Deref for HoleVec<T> {
@@ -129,10 +120,12 @@ impl<T> Deref for HoleVec<T> {
 
 impl<T> Drop for HoleVec<T> {
     fn drop(&mut self) {
-        assert!(
-            self.usable_elem_count.load(Ordering::SeqCst) == 0,
-            "HoleVec elements must all be moved when dropped!"
-        );
+        for i in 0..self.len {
+            if !self.dropped_flags[i].load(Ordering::SeqCst) {
+                self.at(i);
+            }
+        }
+        
         if self.cap != 0 {
             let layout = Layout::array::<T>(self.cap).unwrap();
             unsafe {
@@ -147,17 +140,6 @@ impl<T> IntoIterator for HoleVec<T> {
     type IntoIter = IntoIter<T>;
     fn into_iter(self) -> Self::IntoIter {
         IntoIter { vec: self, idx: 0 }
-    }
-}
-
-#[cfg(maybe)]
-impl<T> FromIterator<T> for HoleVec<T> {
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        let mut h = Self::new();
-        for el in iter {
-            h.push(el);
-        }
-        h
     }
 }
 
