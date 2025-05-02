@@ -1,16 +1,37 @@
+/*use std::alloc::{Layout, realloc};
+
+
+fn split_first<T>(mut v: Vec<T>) -> Option<(T, Vec<T>)> {
+    if v.is_empty() {
+        None
+    } else {
+        let len = v.len() - 1;
+        let cap = v.capacity() - 1;
+        let mut ptr = v.as_mut_ptr();
+        let el = unsafe { std::ptr::read(ptr) };
+        ptr = unsafe { ptr.add(1) };
+        ptr = unsafe { realloc(ptr.cast(), Layout::array::<T>(cap).unwrap(), cap).cast() };
+        Some((el, unsafe { Vec::from_raw_parts(ptr, len, cap) }))
+    }
+}*/
+
 use regulus::Runner;
 
 fn main() {
-    dbg!(Runner::new().code(r#"import(lists),
-=(data, list(2, 4, 5)),
-assert_eq(len(data), 3),
-assert_eq(data, list(2, 4, 5)),
-assert(!(==(data, list(4, 2, 5)))),
-assert_eq(index(data, 1), 4),
-for_in(data, x, print(x)),
-def(halve, el, /(el, 2)),
-assert_eq(list(1, 5, 7), map(list(2, 10, 14), halve)),
+    /*let h = vec![0, 1];
+    split_first(h); */
+    dbg!(
+        Runner::new()
+            .code(
+                r##"
+def(range, start, end, _(
+    while(false, _()),
+)),
 
-assert_eq(len("abc"), len(list(1, 2, 3))),
-"#).run().0);
+range(0, 4), 
+    "##
+            )
+            .run()
+            .0
+    );
 }

@@ -94,6 +94,7 @@ functions! {
         Ok(if args.at(0).eval(state)?.bool()? {
             args.at(1).eval(state)?
         } else {
+            args.drop_elem(1);
             Atom::Null
         })
     }
@@ -102,8 +103,10 @@ functions! {
     /// If it evaluates to false, the third argument is evaluated and returned instead.
     "ifelse"(3) => |state, args| {
         Ok(if args.at(0).eval(state)?.bool()? {
+            args.drop_elem(2);
             args.at(1).eval(state)?
         } else {
+            args.drop_elem(1);
             args.at(2).eval(state)?
         })
     }
@@ -111,6 +114,7 @@ functions! {
     /// If it evaluates to true, the second argument is evaluated and the same steps begin again.
     /// If it evaluates to false, the loop ends and `null` is returned.
     "while"(2) => |state, args| {
+        // aaaaaaaaaaaaaaaaaaarrrrrrrrrrrrrrrrrrrggggggggggggggggggghhhhhhhhhhhhhhh
         while args.at(0).eval(state)?.bool()? {
             args.at(1).eval(state)?;
         }
@@ -131,6 +135,7 @@ functions! {
         let var = var.clone().variable("Error during function definition: no valid variable was given to define to!")?;
 
         state.storage.insert(var, define_function(body, HoleVec::from_vec(fn_args.to_vec()))?);
+        args.leak_elems();
         Ok(Atom::Null)
     }
     /// Creates a new function and returns it.
@@ -249,15 +254,18 @@ functions! {
     /// The first argument must be given and is the ident of the type.
     /// All further arguments are its fields.
     "type"(_) => |state, args| {
-        let Some((ident, fields)) = args.split_first() else {
+        let len = args.len();
+        let mut raw_fields = args.into_iter();
+        let Some(ident) = raw_fields.next() else {
             return raise!(Error::Argument, "`type` takes at least one argument");
         };
+        
         let var = ident.variable("`type` must take a variable as first argument")?;
-        let fields = fields
-            .into_iter()
-            .map(|field| field.variable("`type` field arguments should be variables"))
-            .collect::<Result<Vec<_>>>()?;
-
+        let mut fields = Vec::with_capacity(len - 1);
+        for field in raw_fields {
+            fields.push(field.variable("`type` field arguments should be variables")?);
+        }
+        
         let function = Function {
             argc: Some(fields.len()),
             doc: String::new(),

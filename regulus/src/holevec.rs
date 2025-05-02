@@ -1,7 +1,7 @@
 use std::alloc::{self, Layout};
-use std::mem::forget;
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// An alternative to [`Vec<T>`] which allows moving elements out of it.
 /// unsafe to use!!!
@@ -9,16 +9,24 @@ pub struct HoleVec<T> {
     ptr: NonNull<T>,
     cap: usize,
     len: usize,
+    usable_elem_count: AtomicUsize,
+}
+
+impl<T> Default for HoleVec<T> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T> HoleVec<T> {
     pub const fn new() -> Self {
-        assert!(size_of::<T>() != 0, "We're not ready to handle ZSTs");
+        assert!(size_of::<T>() != 0, "HoleVec does not need to support ZSTs");
 
         Self {
             ptr: NonNull::dangling(),
             cap: 0,
             len: 0,
+            usable_elem_count: AtomicUsize::new(0),
         }
     }
 
@@ -41,6 +49,7 @@ impl<T> HoleVec<T> {
 
         // Can't fail, we'll OOM first.
         self.len += 1;
+        self.usable_elem_count.fetch_add(1, Ordering::SeqCst);
     }
 
     fn grow(&mut self) {
@@ -79,18 +88,19 @@ impl<T> HoleVec<T> {
         self.cap = new_cap;
     }
 
-    const unsafe fn read(&self, index: usize) -> T {
+    unsafe fn read(&self, index: usize) -> T {
+        self.usable_elem_count.fetch_sub(1, Ordering::SeqCst);
         unsafe { ptr::read(self.ptr.as_ptr().add(index)) }
     }
 
-    /// unsafe to call twice on the same idx!!!
-    pub const fn at(&self, index: usize) -> T {
+    /// UB to call twice on the same idx!!!
+    pub fn at(&self, index: usize) -> T {
         assert!(index < self.len);
         unsafe { self.read(index) }
     }
 
-    /// unsafe to call twice on the same idx!!!
-    pub const fn get(&self, index: usize) -> Option<T> {
+    /// UB to call twice on the same idx!!!
+    pub fn get(&self, index: usize) -> Option<T> {
         if index >= self.len {
             None
         } else {
@@ -98,25 +108,15 @@ impl<T> HoleVec<T> {
         }
     }
 
-    const fn pop(&mut self) -> Option<T> {
-        if self.len == 0 {
-            None
-        } else {
-            self.len -= 1;
-            unsafe { Some(ptr::read(self.ptr.as_ptr().add(self.len))) }
-        }
+    /// Marks all elements in the slice as read.
+    /// If they were not actually read, their memory will be leaked.
+    pub fn leak_elems(&self) {
+        self.usable_elem_count.store(0, Ordering::SeqCst);
     }
-
-    pub fn split_first(mut self) -> Option<(T, Self)> {
-        if self.len == 0 {
-            None
-        } else {
-            let el = self.at(0);
-            self.ptr = unsafe { self.ptr.add(1) };
-            self.len -= 1;
-            self.cap -= 1;
-            Some((el, self))
-        }
+    
+    /// UB to call twice on the same index!!!
+    pub fn drop_elem(&self, index: usize) {
+        self.at(index);
     }
 }
 
@@ -129,6 +129,10 @@ impl<T> Deref for HoleVec<T> {
 
 impl<T> Drop for HoleVec<T> {
     fn drop(&mut self) {
+        assert!(
+            self.usable_elem_count.load(Ordering::SeqCst) == 0,
+            "HoleVec elements must all be moved when dropped!"
+        );
         if self.cap != 0 {
             let layout = Layout::array::<T>(self.cap).unwrap();
             unsafe {
@@ -138,18 +142,35 @@ impl<T> Drop for HoleVec<T> {
     }
 }
 
-impl<T> From<HoleVec<T>> for Vec<T> {
-    fn from(value: HoleVec<T>) -> Self {
-        let v = unsafe { Self::from_raw_parts(value.ptr.as_ptr(), value.len, value.cap) };
-        forget(value);
-        v
+impl<T> IntoIterator for HoleVec<T> {
+    type Item = T;
+    type IntoIter = IntoIter<T>;
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter { vec: self, idx: 0 }
     }
 }
 
-impl<T> IntoIterator for HoleVec<T> {
+#[cfg(maybe)]
+impl<T> FromIterator<T> for HoleVec<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut h = Self::new();
+        for el in iter {
+            h.push(el);
+        }
+        h
+    }
+}
+
+pub struct IntoIter<T> {
+    vec: HoleVec<T>,
+    idx: usize,
+}
+
+impl<T> Iterator for IntoIter<T> {
     type Item = T;
-    type IntoIter = std::vec::IntoIter<T>;
-    fn into_iter(self) -> Self::IntoIter {
-        Vec::from(self).into_iter()
+    fn next(&mut self) -> Option<Self::Item> {
+        let el = self.vec.get(self.idx)?;
+        self.idx += 1;
+        Some(el)
     }
 }
