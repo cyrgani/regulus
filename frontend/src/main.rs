@@ -1,7 +1,7 @@
 use clap::Parser;
 use colored::Colorize;
-use regulus::CLONE_COUNT;
 use regulus::prelude::*;
+use regulus::{FUNCTION_CLONE_COUNT, LIST_CLONE_COUNT, OBJECT_CLONE_COUNT, STRING_CLONE_COUNT};
 use std::path::PathBuf;
 use std::process::exit;
 use std::time::Instant;
@@ -58,6 +58,9 @@ fn main() {
             exit(1);
         }
     }
-    dbg!(&CLONE_COUNT);
+    dbg!(&FUNCTION_CLONE_COUNT);
+    dbg!(&OBJECT_CLONE_COUNT);
+    dbg!(&STRING_CLONE_COUNT);
+    dbg!(&LIST_CLONE_COUNT);
     dbg!(t.elapsed());
 }

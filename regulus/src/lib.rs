@@ -203,12 +203,24 @@ mod tests {
     }
 }
 
-pub static CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
+pub static STRING_CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
+pub static LIST_CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
+pub static FUNCTION_CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
+pub static OBJECT_CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
 
 pub fn clone_investigate(atom: &Atom) {
     match atom {
-        Atom::String(_) | Atom::List(_) | Atom::Function(_) | Atom::Object(_) => {
-            CLONE_COUNT.fetch_add(1, Relaxed);
+        Atom::String(_) => {
+            STRING_CLONE_COUNT.fetch_add(1, Relaxed);
+        }
+        Atom::List(_) => {
+            LIST_CLONE_COUNT.fetch_add(1, Relaxed);
+        }
+        Atom::Function(_) => {
+            FUNCTION_CLONE_COUNT.fetch_add(1, Relaxed);
+        }
+        Atom::Object(_) => {
+            OBJECT_CLONE_COUNT.fetch_add(1, Relaxed);
         }
         Atom::Null | Atom::Int(_) | Atom::Bool(_) => (),
     }
