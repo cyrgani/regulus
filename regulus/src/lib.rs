@@ -31,7 +31,7 @@ pub mod prelude {
         argument::{Argument, ArgumentData},
         atom::Atom,
         exception::{Error, Exception, Result},
-        function::{Function, FunctionCall},
+        function::{Function, FunctionCall, FunctionInner},
         functions, raise, run,
         state::State,
     };

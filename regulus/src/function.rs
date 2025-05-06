@@ -48,15 +48,16 @@ impl FunctionCall {
 
 type Callback = dyn Fn(&mut State, &[Argument]) -> Result<Atom>;
 
-#[derive(Clone)]
-pub struct Function {
-    pub doc: Rc<String>,
+pub type Function = Rc<FunctionInner>;
+
+pub struct FunctionInner {
+    pub doc: String,
     pub argc: Option<usize>,
-    pub callback: Rc<Callback>,
+    pub callback: Box<Callback>,
 }
 
 // the callback cannot be debugged
-impl fmt::Debug for Function {
+impl fmt::Debug for FunctionInner {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Function")
             .field("doc", &self.doc)
@@ -66,7 +67,7 @@ impl fmt::Debug for Function {
     }
 }
 
-impl PartialEq for Function {
+impl PartialEq for FunctionInner {
     fn eq(&self, _other: &Self) -> bool {
         false
     }
