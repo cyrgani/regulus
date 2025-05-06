@@ -66,6 +66,9 @@ macro_rules! raise {
     ($kind: expr, $string: literal) => {
         raise!($kind, $string,)
     };
+    ($kind: expr, $msg: expr) => {
+        raise!($kind, "{}", $msg)
+    };
     ($kind: expr, $string: literal, $($fmt_args: expr),*) => {
         Err(Exception::new(format!($string, $($fmt_args),*), $kind))
     };
