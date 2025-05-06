@@ -1,5 +1,5 @@
-use std::borrow::Cow;
 use crate::prelude::*;
+use std::borrow::Cow;
 
 enum StringOrVec {
     String(String),
@@ -39,13 +39,6 @@ impl StringOrVec {
         match self {
             Self::String(s) => s.chars().nth(index).map(char_to_atom),
             Self::Vec(v) => v.get(index).cloned(),
-        }
-    }
-
-    fn into_vec(self) -> Vec<Atom> {
-        match self {
-            Self::Vec(v) => v,
-            Self::String(s) => s.chars().map(char_to_atom).collect(),
         }
     }
 }
@@ -115,11 +108,17 @@ functions! {
         let loop_var = args[1].variable("invalid loop variable given to `for_in`")?;
         let loop_body = args[2].function_call("invalid loop body given to `for_in`")?;
 
-        let possibly_shadowed_value = state.storage.get(loop_var).cloned();
+        let possibly_shadowed_value = state.storage.remove(loop_var);
 
-        for el in list.into_vec() {
-            state.storage.insert(loop_var.clone(), el);
-            loop_body.eval(state)?;
+        match list {
+            StringOrVec::Vec(v) => for el in v {
+                state.storage.insert(loop_var, el);
+                loop_body.eval(state)?;
+            }
+            StringOrVec::String(s) => for el in s.chars() {
+                state.storage.insert(loop_var, char_to_atom(el));
+                loop_body.eval(state)?;
+            }
         }
 
         if let Some(val) = possibly_shadowed_value {
