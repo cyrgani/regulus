@@ -2,8 +2,9 @@ use crate::prelude::*;
 use std::collections::HashMap;
 use std::fmt;
 use std::num::IntErrorKind;
+use crate::clone_investigate;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Atom {
     Int(i64),
     Bool(bool),
@@ -12,6 +13,21 @@ pub enum Atom {
     String(String),
     Function(Function),
     Object(HashMap<String, Atom>),
+}
+
+impl Clone for Atom {
+    fn clone(&self) -> Self {
+        clone_investigate(self);
+        match self { 
+            Self::Int(i) => Self::Int(*i),
+            Self::Bool(b) => Self::Bool(*b),
+            Self::Null => Self::Null,
+            Self::List(l) => Self::List(l.clone()),
+            Self::String(s) => Self::String(s.clone()),
+            Self::Function(f) => Self::Function(f.clone()),
+            Self::Object(o) => Self::Object(o.clone()),
+        }
+    }
 }
 
 impl Atom {

@@ -50,7 +50,7 @@ type Callback = dyn Fn(&mut State, &[Argument]) -> Result<Atom>;
 
 #[derive(Clone)]
 pub struct Function {
-    pub doc: String,
+    pub doc: Rc<String>,
     pub argc: Option<usize>,
     pub callback: Rc<Callback>,
 }

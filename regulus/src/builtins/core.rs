@@ -17,7 +17,7 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
         .collect::<Result<Vec<_>>>()?;
 
     let function = Function {
-        doc: String::new(),
+        doc: Rc::new(String::new()),
         argc: Some(function_arg_names.len()),
         callback: Rc::new(move |state, args| {
             // a function call should have its own scope and not leak variables
@@ -263,7 +263,7 @@ functions! {
 
         let function = Function {
             argc: Some(fields.len()),
-            doc: String::new(),
+            doc: Rc::new(String::new()),
             callback: Rc::new(move |state, args| {
                 Ok(Atom::Object(
                     fields
