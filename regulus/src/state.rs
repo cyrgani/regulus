@@ -25,6 +25,10 @@ impl Storage {
     pub fn get(&self, name: impl AsRef<str>) -> Option<&Atom> {
         self.data.get(name.as_ref())
     }
+    
+    pub fn remove(&mut self, name: impl AsRef<str>) -> Option<Atom> {
+        self.data.remove(name.as_ref())
+    }
 
     pub fn insert(&mut self, name: impl AsRef<str>, value: Atom) {
         self.data.insert(name.as_ref().to_owned(), value);
