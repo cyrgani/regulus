@@ -16,10 +16,10 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
         })
         .collect::<Result<Vec<_>>>()?;
 
-    let function = Function {
-        doc: Rc::new(String::new()),
+    let function = FunctionInner {
+        doc: String::new(),
         argc: Some(function_arg_names.len()),
-        callback: Rc::new(move |state, args| {
+        callback: Box::new(move |state, args| {
             // a function call should have its own scope and not leak variables
             // except for globals
             let mut old_storage_data = state.storage.data.clone();
@@ -38,7 +38,7 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
         }),
     };
 
-    Ok(Atom::Function(function))
+    Ok(Atom::Function(Rc::new(function)))
 }
 
 fn try_resolve_import_in_dir(name: &str, dir_path: &Directory) -> Option<String> {
@@ -261,10 +261,10 @@ functions! {
             .map(|field| field.variable("`type` field arguments should be variables").cloned())
             .collect::<Result<Vec<_>>>()?;
 
-        let function = Function {
+        let function = FunctionInner {
             argc: Some(fields.len()),
-            doc: Rc::new(String::new()),
-            callback: Rc::new(move |state, args| {
+            doc: String::new(),
+            callback: Box::new(move |state, args| {
                 Ok(Atom::Object(
                     fields
                         .iter()
@@ -275,7 +275,7 @@ functions! {
             }),
         };
 
-        state.storage.insert(var, Atom::Function(function));
+        state.storage.insert(var, Atom::Function(Rc::new(function)));
         Ok(Atom::Null)
     }
     /// Get the value of a field of an object.

@@ -53,11 +53,11 @@ macro_rules! functions {
             vec![
                 $((
                     $name,
-                    $crate::prelude::Function {
-                        doc: std::rc::Rc::new([$($doc),*].join("\n")),
+                    $crate::prelude::Function::new($crate::prelude::FunctionInner {
+                        doc: [$($doc),*].join("\n"),
                         argc: $crate::make_argc!($argc),
-                        callback: std::rc::Rc::new($callback),
-                    },
+                        callback: std::boxed::Box::new($callback),
+                    }),
                 )),*
             ]
         }
