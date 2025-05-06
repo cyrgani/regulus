@@ -6,7 +6,6 @@ use std::io::{BufRead, BufReader, Read, Stderr, Stdout, Write, stderr, stdin, st
 use std::path::Path;
 use std::{io, str};
 
-#[derive(Clone)]
 pub struct Storage {
     // TODO: consider a HashMap<String, (bool, Atom)> instead, the bool means local / global
     pub data: HashMap<String, Atom>,

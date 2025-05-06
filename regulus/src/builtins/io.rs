@@ -12,8 +12,8 @@ functions! {
     "print"(_) => |state, args| {
         for arg in args {
             let arg_val = arg.eval(state)?;
-            let bytes = format!("{arg_val} ");
-            write_to_stdout(state, &bytes);
+            let s = format!("{arg_val} ");
+            write_to_stdout(state, &s);
         }
         write_to_stdout(state, "\n");
         Ok(Atom::Null)

@@ -6,7 +6,7 @@ use std::fs;
 use std::rc::Rc;
 
 fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
-    let body = body.function_call("Error during definition: no valid function body was given!")?;
+    let body = body.function_call("Error during definition: no valid function body was given!")?.clone();
     let function_arg_names = fn_args
         .iter()
         .map(|fn_arg| {
