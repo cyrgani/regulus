@@ -14,7 +14,7 @@ functions! {
             Atom::Bool(val) => i64::from(*val),
             Atom::String(val) => val
                 .parse::<i64>()
-                .map_err(|_error| cast_error_builder(&atom, "int"))?,
+                .map_err(|_| cast_error_builder(&atom, "int"))?,
             _ => return Err(cast_error_builder(&atom, "int")),
         }))
     }
@@ -22,21 +22,21 @@ functions! {
     /// TODO document the exact conditions and rules
     "string"(1) => |state, args| {
         let atom = args[0].eval(state)?;
-        Ok(Atom::String(match &*atom {
-            Atom::Int(val) => val.to_string(),
-            Atom::Bool(val) => val.to_string(),
-            Atom::String(val) => val.clone(),
-            Atom::Null => "null".to_string(),
+        Ok(match *atom {
+            Atom::Int(val) => Atom::String(val.to_string()),
+            Atom::Bool(val) => Atom::String(val.to_string()),
+            Atom::String(_) => atom.into_owned(),
+            Atom::Null => Atom::String("null".to_string()),
             _ => return Err(cast_error_builder(&atom, "string")),
-        }))
+        })
     }
     /// Converts the given value into a boolean, raising an exception if it is not possible to cast.
     /// TODO document the exact conditions and rules
     "bool"(1) => |state, args| {
         let atom = args[0].eval(state)?;
-        Ok(Atom::Bool(match &*atom {
-            Atom::Int(val) => *val != 0,
-            Atom::Bool(val) => *val,
+        Ok(Atom::Bool(match *atom {
+            Atom::Int(val) => val != 0,
+            Atom::Bool(val) => val,
             Atom::Null => false,
             _ => return Err(cast_error_builder(&atom, "bool")),
         }))

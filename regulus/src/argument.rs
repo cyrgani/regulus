@@ -1,6 +1,5 @@
-use std::borrow::Cow;
-use crate::clone_investigate;
 use crate::prelude::*;
+use std::borrow::Cow;
 #[cfg(feature = "display_impls")]
 use std::fmt;
 use std::ops::RangeInclusive;
@@ -27,10 +26,7 @@ impl Argument {
             ArgumentData::FunctionCall(call) => call.eval(state).map(Cow::Owned),
             ArgumentData::Atom(atom) => Ok(Cow::Borrowed(atom)),
             ArgumentData::Variable(var) => match state.storage.get(var) {
-                Some(value) => {
-                    clone_investigate(value);
-                    Ok(Cow::Borrowed(value))
-                }
+                Some(value) => Ok(Cow::Borrowed(value)),
                 None => raise!(Error::Name, "No variable named `{var}` found!"),
             },
         }
@@ -41,7 +37,7 @@ impl Argument {
     pub fn variable(&self, error_msg: &str) -> Result<&String> {
         match &self.data {
             ArgumentData::Variable(var) => Ok(var),
-            _ => raise!(Error::Argument, "{error_msg}"),
+            _ => raise!(Error::Argument, error_msg),
         }
     }
 
@@ -50,7 +46,7 @@ impl Argument {
     pub fn function_call(&self, error_msg: &str) -> Result<FunctionCall> {
         match &self.data {
             ArgumentData::FunctionCall(call) => Ok(call.clone()),
-            _ => raise!(Error::Argument, "{error_msg}"),
+            _ => raise!(Error::Argument, error_msg),
         }
     }
 }

@@ -11,8 +11,9 @@ functions! {
     /// Returns `null`.
     "print"(_) => |state, args| {
         for arg in args {
-            let arg_val = arg.eval(state)?.into_owned();
-            write_to_stdout(state, &format!("{arg_val} "));
+            let arg_val = arg.eval(state)?;
+            let bytes = format!("{arg_val} ");
+            write_to_stdout(state, &bytes);
         }
         write_to_stdout(state, "\n");
         Ok(Atom::Null)

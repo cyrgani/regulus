@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use crate::prelude::*;
 
 enum StringOrVec {
@@ -49,7 +50,8 @@ impl StringOrVec {
     }
 }
 
-fn atom_to_index(atom: &Atom) -> Result<usize> {
+#[expect(clippy::needless_pass_by_value, reason = "helper function")]
+fn atom_to_index(atom: Cow<'_, Atom>) -> Result<usize> {
     usize::try_from(atom.int()?)
         .map_err(|e| Exception::new(format!("invalid list index: {e}"), Error::Index))
 }
@@ -84,7 +86,7 @@ functions! {
         args[0]
             .eval(state)?
             .string_or_list()?
-            .get(atom_to_index(&args[1].eval(state)?.into_owned())?)
+            .get(atom_to_index(args[1].eval(state)?)?)
             .ok_or_else(|| Exception::new("list index out of bounds", Error::Index))
     }
     /// Returns the last element of the given list or string, raising an exception if it is empty.
@@ -132,7 +134,7 @@ functions! {
     "overwrite_at_index"(3) => |state, args| {
         let mut list = args[0].eval(state)?.list()?;
         *list
-            .get_mut(atom_to_index(&args[1].eval(state)?.into_owned())?)
+            .get_mut(atom_to_index(args[1].eval(state)?)?)
             .ok_or_else(|| Exception::new("Unable to insert at index into list!", Error::Index))? =
             args[2].eval(state)?.into_owned();
         Ok(Atom::List(list))

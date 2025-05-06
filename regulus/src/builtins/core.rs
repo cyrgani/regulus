@@ -221,7 +221,7 @@ functions! {
     /// Evaluates both arguments and returns whether they are equal.
     /// TODO: define this behavior in edge cases and document it
     "=="(2) => |state, args| {
-        Ok(Atom::Bool(args[0].eval(state)?.into_owned() == args[1].eval(state)?.into_owned()))
+        Ok(Atom::Bool(args[0].eval(state)?.into_owned() == *args[1].eval(state)?))
     }
     /// Evaluates the argument as a boolean and returns `null` if it is true.
     /// If it is false, raise an exception of the `Assertion` kind.
@@ -235,9 +235,11 @@ functions! {
     /// Evaluates both arguments and compares then, returning `null` if they are equal.
     /// If not, raise an exception of the `Assertion` kind with a message containing both values.
     "assert_eq"(2) => |state, args| {
+        // FIXME: first `into_owned` is needed right now since eval is
+        //  fn eval<'a>(&'a self, state: &'a mut State) -> Result<Cow<'a, Atom>>;
         let lhs = args[0].eval(state)?.into_owned();
-        let rhs = args[1].eval(state)?.into_owned();
-        if lhs == rhs {
+        let rhs = args[1].eval(state)?;
+        if lhs == *rhs {
             Ok(Atom::Null)
         } else {
             raise!(
@@ -301,8 +303,8 @@ functions! {
     "->"(3) => |state, args| {
         let mut obj = args[0].eval(state)?.object()?;
         let field = args[1].variable("`.` takes a field identifier as second argument")?;
-        let value = args[2].eval(state)?.into_owned();
-        *obj.get_mut(field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value;
+        let value = args[2].eval(state)?;
+        *obj.get_mut(field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value.into_owned();
         Ok(Atom::Object(obj))
     }
     /// Evaluates the given argument and terminates the program directly.
