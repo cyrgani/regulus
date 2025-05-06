@@ -54,7 +54,7 @@ macro_rules! functions {
                 $((
                     $name,
                     $crate::prelude::Function {
-                        doc: [$($doc),*].join("\n"),
+                        doc: std::rc::Rc::new([$($doc),*].join("\n")),
                         argc: $crate::make_argc!($argc),
                         callback: std::rc::Rc::new($callback),
                     },
