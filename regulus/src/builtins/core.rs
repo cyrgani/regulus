@@ -156,11 +156,10 @@ functions! {
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the behavior of `=`
     ///
-    /// Todo new approach: import will not add anything to the storage by default, only things marked via `export(_)`
+    /// TODO(experimental): new approach: import will not add anything to the storage by default, only things marked via `export(_)`
     /// (example: `export(rand, randrange, choose, shuffle)`) and globals
     /// why: to prevent import leaks when one stl module (`a`) imports another (`b`) and the user does `import(a)` and has access to `b`s contents
-    /// 
-    /// todo this is probably not a good idea
+    /// this is probably not a good idea
     "import"(1) => |state, args| {
         let name = args[0].variable("`import` argument must be a variable, string syntax was removed")?;
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
@@ -204,6 +203,7 @@ functions! {
         state.storage.global_idents = imported_state.storage.global_idents;
         Ok(atom)
     }
+    /*
     /// Marks all the given variables or function idents as values that should be exported by this module.
     /// This does not require for them do be already defined, but if they are not defined until the end,
     /// `import` will raise an exception.
@@ -214,6 +214,7 @@ functions! {
         }
         Ok(Atom::Null)
     }
+    */
     /// Raises an exception of the kind `UserRaised` with the given string message.
     "error"(1) => |state, args| {
         Err(Exception::new(args[0].eval(state)?.string()?, Error::UserRaised))
