@@ -15,5 +15,5 @@ def(first, seq, _(
 
 # Returns the last element of the given list or string, raising an exception if it is empty.
 def(last, seq, _(
-    index(seq, len(seq)),
+    index(seq, -(len(seq), 1)),
 )),
