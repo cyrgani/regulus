@@ -22,6 +22,13 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
         callback: Box::new(move |state, args| {
             // a function call should have its own scope and not leak variables
             // except for globals
+            
+            // TODO: 
+            //  this cloning of the whole storage is extremely inefficient
+            //  a better idea would be a "tagged" storage (??)
+            //  or: create a new empty storage, put all redefined vars in the function into it, but 
+            //      allow reading from both new and then old in that order
+            //      problem: `body.eval(state);` can only take one state, not two
             let mut old_storage_data = state.storage.data.clone();
 
             for (idx, arg) in function_arg_names.iter().enumerate() {

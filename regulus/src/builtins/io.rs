@@ -34,8 +34,9 @@ functions! {
     /// NOTE: the output format of this method is unstable.
     /// NOTE: this method may be removed in the future.
     "debug"(1) => |state, args| {
-        let arg_val = args[0].eval(state)?.into_owned();
-        write_to_stdout(state, &format!("{arg_val:?}\n"));
+        let arg_val = args[0].eval(state)?;
+        let s = format!("{arg_val:?}\n");
+        write_to_stdout(state, &s);
         Ok(Atom::Null)
     }
 }
