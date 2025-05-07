@@ -202,7 +202,7 @@ mod tests {
         );
     }
 }
-
+/*
 pub static STRING_CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
 pub static LIST_CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
 pub static FUNCTION_CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
@@ -225,3 +225,4 @@ pub fn clone_investigate(atom: &Atom) {
         Atom::Null | Atom::Int(_) | Atom::Bool(_) => (),
     }
 }
+*/
