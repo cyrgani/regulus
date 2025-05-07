@@ -21,3 +21,17 @@ def(randrange, low, high, _(
     if(<=(diff, 0), error("called randrange with an empty range")),
     +(low, abs(%(rand(), diff)))
 ))
+
+# returns a random element of the given sequence
+def(choose, seq, _(
+    =(idx, randrange(0, len(seq))),
+    index(seq, idx)
+))
+
+def(seed, val, _(
+    =(__stl_rng_state, val)
+))
+
+# def(shuffle, seq, _(
+    # todo: problem: we do not know if seq is a string or a list
+# ))
