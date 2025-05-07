@@ -44,8 +44,6 @@ use crate::{
     state::State,
 };
 use std::path::{Path, PathBuf};
-use std::sync::atomic::AtomicUsize;
-use std::sync::atomic::Ordering::Relaxed;
 use std::{env, fs, io};
 
 pub const FILE_EXTENSION: &str = "re";
@@ -203,6 +201,9 @@ mod tests {
     }
 }
 /*
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering::Relaxed;
+
 pub static STRING_CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
 pub static LIST_CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
 pub static FUNCTION_CLONE_COUNT: AtomicUsize = AtomicUsize::new(0);
