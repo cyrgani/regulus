@@ -28,13 +28,6 @@ impl StringOrVec {
         }
     }
 
-    fn pop(&mut self) -> Option<Atom> {
-        match self {
-            Self::String(s) => s.pop().map(char_to_atom),
-            Self::Vec(v) => v.pop(),
-        }
-    }
-
     fn get(&self, index: usize) -> Option<Atom> {
         match self {
             Self::String(s) => s.chars().nth(index).map(char_to_atom),
@@ -82,14 +75,6 @@ functions! {
             .get(atom_to_index(args[1].eval(state)?)?)
             .ok_or_else(|| Exception::new("list index out of bounds", Error::Index))
     }
-    /// Returns the last element of the given list or string, raising an exception if it is empty.
-    "last"(1) => |state, args| {
-        args[0]
-            .eval(state)?
-            .string_or_list()?
-            .pop()
-            .ok_or_else(|| Exception::new("cannot pop from empty list", Error::Index))
-    }
     /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {
         Ok(Atom::Int(
@@ -129,7 +114,7 @@ functions! {
     /// Replaces an element at a list index with another.
     /// The first argument is the list, the second the index and the third the new value.
     /// If the index is out of bounds, an exception is raised.
-    /// TODO: make this also work on strings
+    /// TODO: make this also work on strings, give it a better name
     "overwrite_at_index"(3) => |state, args| {
         let mut list = args[0].eval(state)?.list()?;
         *list

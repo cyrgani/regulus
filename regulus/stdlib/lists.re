@@ -7,3 +7,13 @@ def(map, seq, function, _(
     )),
     new_list
 )),
+
+# Returns the first element of the given list or string, raising an exception if it is empty.
+def(first, seq, _(
+    index(seq, 0),
+)),
+
+# Returns the last element of the given list or string, raising an exception if it is empty.
+def(last, seq, _(
+    index(seq, len(seq)),
+)),
