@@ -6,11 +6,24 @@ enum StringOrVec {
     Vec(Vec<Atom>),
 }
 
+enum StrOrSlice<'a> {
+    Str(&'a str),
+    Slice(&'a [Atom]),
+}
+
 impl Atom {
     fn string_or_list(&self) -> Result<StringOrVec> {
         match self {
             Self::String(s) => Ok(StringOrVec::String(s.clone())),
             Self::List(v) => Ok(StringOrVec::Vec(v.clone())),
+            _ => raise!(Error::Type, "{self} should be a string or list"),
+        }
+    }
+
+    fn str_or_slice(&self) -> Result<StrOrSlice> {
+        match self {
+            Self::String(s) => Ok(StrOrSlice::Str(s)),
+            Self::List(v) => Ok(StrOrSlice::Slice(v)),
             _ => raise!(Error::Type, "{self} should be a string or list"),
         }
     }
@@ -20,18 +33,18 @@ fn char_to_atom(c: char) -> Atom {
     Atom::String(c.to_string())
 }
 
-impl StringOrVec {
-    fn len(&self) -> usize {
+impl StrOrSlice<'_> {
+    const fn len(&self) -> usize {
         match self {
-            Self::String(s) => s.len(),
-            Self::Vec(v) => v.len(),
+            Self::Str(s) => s.len(),
+            Self::Slice(v) => v.len(),
         }
     }
 
     fn get(&self, index: usize) -> Option<Atom> {
         match self {
-            Self::String(s) => s.chars().nth(index).map(char_to_atom),
-            Self::Vec(v) => v.get(index).cloned(),
+            Self::Str(s) => s.chars().nth(index).map(char_to_atom),
+            Self::Slice(v) => v.get(index).cloned(),
         }
     }
 }
@@ -68,17 +81,20 @@ functions! {
     }
     /// Returns the value in the first list or string argument at the second integer argument.
     /// Raises an exception if the index is out of bounds.
+    ///
+    /// If the index does not evalutate to an integer, the first argument will not be evaluated at all.
     "index"(2) => |state, args| {
+        let index = atom_to_index(args[1].eval(state)?)?;
         args[0]
             .eval(state)?
-            .string_or_list()?
-            .get(atom_to_index(args[1].eval(state)?)?)
+            .str_or_slice()?
+            .get(index)
             .ok_or_else(|| Exception::new("list index out of bounds", Error::Index))
     }
     /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {
         Ok(Atom::Int(
-            i64::try_from(args[0].eval(state)?.string_or_list()?.len())
+            i64::try_from(args[0].eval(state)?.str_or_slice()?.len())
                 .map_err(|e| Exception::new(format!("list is too long: {e}"), Error::Overflow))?
         ))
     }
