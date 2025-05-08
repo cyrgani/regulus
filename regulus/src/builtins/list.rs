@@ -41,6 +41,23 @@ impl StringOrVec {
         }
     }
 
+    fn overwrite_at_index(&mut self, index: usize, val: Atom) -> Result<()> {
+        match self {
+            Self::String(s) => {
+                let mut chars = s.chars().collect::<Vec<_>>();
+                *chars.get_mut(index).ok_or_else(|| {
+                    Exception::new("Unable to insert at index into list!", Error::Index)
+                })? = atom_to_char(val)?;
+            }
+            Self::Vec(v) => {
+                *v.get_mut(index).ok_or_else(|| {
+                    Exception::new("Unable to insert at index into list!", Error::Index)
+                })? = val;
+            }
+        }
+        Ok(())
+    }
+
     fn into_atom(self) -> Atom {
         match self {
             Self::String(s) => Atom::String(s),
@@ -67,6 +84,16 @@ impl StrOrSlice<'_> {
 
 fn char_to_atom(c: char) -> Atom {
     Atom::String(c.to_string())
+}
+
+#[expect(clippy::needless_pass_by_value, reason = "helper function")]
+fn atom_to_char(atom: Atom) -> Result<char> {
+    let s = atom.string()?;
+    if s.chars().count() == 1 {
+        Ok(s.chars().next().unwrap())
+    } else {
+        raise!(Error::Index, "atom is not a single character")
+    }
 }
 
 #[expect(clippy::needless_pass_by_value, reason = "helper function")]
@@ -150,14 +177,11 @@ functions! {
     /// Replaces an element at a list index with another.
     /// The first argument is the list, the second the index and the third the new value.
     /// If the index is out of bounds, an exception is raised.
-    /// TODO: make this also work on strings, give it a better name
+    /// TODO: give it a better name
     "overwrite_at_index"(3) => |state, args| {
-        let mut list = args[0].eval(state)?.list()?;
-        *list
-            .get_mut(atom_to_index(args[1].eval(state)?)?)
-            .ok_or_else(|| Exception::new("Unable to insert at index into list!", Error::Index))? =
-            args[2].eval(state)?.into_owned();
-        Ok(Atom::List(list))
+        let mut list = args[0].eval(state)?.string_or_list()?;
+        list.overwrite_at_index(atom_to_index(args[1].eval(state)?)?, args[2].eval(state)?.into_owned())?;
+        Ok(list.into_atom())
     }
     /// Swaps the values at two indices of a list or string and returns the new sequence.
     /// The arguments are: list or string, first index, second index.
