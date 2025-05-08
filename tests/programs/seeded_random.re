@@ -22,3 +22,8 @@ assert_eq(catch(randrange(-3, -5)), "UserRaisedError: called randrange with an e
 
 assert_eq(choose("Hello, world!"), "d"),
 assert_eq(choose("Hello, world!"), ","),
+
+=(shuffled_alphabet, "YLIEPKRQBFWVNHSAMCZJXTUDGO"),
+
+assert_eq(shuffle("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), shuffled_alphabet),
+assert_eq(len(shuffled_alphabet), 26),

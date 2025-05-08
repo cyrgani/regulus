@@ -32,6 +32,10 @@ def(seed, val, _(
     =(__stl_rng_state, val)
 ))
 
-# def(shuffle, seq, _(
-    # todo: problem: we do not know if seq is a string or a list
-# ))
+# returns a shuffled version of the given sequence
+def(shuffle, seq, _(
+    for_in(..(0, len(seq)), i, _(
+        =(seq, swap(seq, i, randrange(i, len(seq)))),
+    )),
+    seq
+))

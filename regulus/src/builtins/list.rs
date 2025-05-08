@@ -29,8 +29,24 @@ impl Atom {
     }
 }
 
-fn char_to_atom(c: char) -> Atom {
-    Atom::String(c.to_string())
+impl StringOrVec {
+    fn swap(&mut self, a: usize, b: usize) {
+        match self {
+            Self::String(s) => {
+                let mut chars = s.chars().collect::<Vec<_>>();
+                chars.swap(a, b);
+                *self = Self::String(chars.into_iter().collect::<String>());
+            }
+            Self::Vec(v) => v.swap(a, b),
+        }
+    }
+
+    fn into_atom(self) -> Atom {
+        match self {
+            Self::String(s) => Atom::String(s),
+            Self::Vec(v) => Atom::List(v),
+        }
+    }
 }
 
 impl StrOrSlice<'_> {
@@ -47,6 +63,10 @@ impl StrOrSlice<'_> {
             Self::Slice(v) => v.get(index).cloned(),
         }
     }
+}
+
+fn char_to_atom(c: char) -> Atom {
+    Atom::String(c.to_string())
 }
 
 #[expect(clippy::needless_pass_by_value, reason = "helper function")]
@@ -138,5 +158,15 @@ functions! {
             .ok_or_else(|| Exception::new("Unable to insert at index into list!", Error::Index))? =
             args[2].eval(state)?.into_owned();
         Ok(Atom::List(list))
+    }
+    /// Swaps the values at two indices of a list or string and returns the new sequence.
+    /// The arguments are: list or string, first index, second index.
+    ///
+    /// The indices may be equal, in which case the returned sequence will not be changed.
+    /// If the indices are out of bounds or invalid, an exception is raised.
+    "swap"(3) => |state, args| {
+        let mut seq = args[0].eval(state)?.string_or_list()?;
+        seq.swap(atom_to_index(args[1].eval(state)?)?, atom_to_index(args[2].eval(state)?)?);
+        Ok(seq.into_atom())
     }
 }
