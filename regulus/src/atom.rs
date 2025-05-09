@@ -14,7 +14,6 @@ pub enum Atom {
     Object(HashMap<String, Atom>),
 }
 
-
 impl Clone for Atom {
     fn clone(&self) -> Self {
         crate::clone_investigate(self);
@@ -29,7 +28,6 @@ impl Clone for Atom {
         }
     }
 }
-
 
 impl Atom {
     pub fn try_from_str(value: &str) -> Result<Option<Self>> {

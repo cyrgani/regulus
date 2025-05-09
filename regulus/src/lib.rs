@@ -33,7 +33,7 @@ pub mod prelude {
         exception::{Error, Exception, Result},
         function::{Function, FunctionCall, FunctionInner},
         functions, raise, run,
-        state::{State, Source, Storage},
+        state::{Source, State, Storage},
     };
 }
 
