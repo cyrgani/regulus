@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::num::IntErrorKind;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Atom {
     Int(i64),
     Bool(bool),
@@ -14,7 +14,7 @@ pub enum Atom {
     Object(HashMap<String, Atom>),
 }
 
-/*
+
 impl Clone for Atom {
     fn clone(&self) -> Self {
         crate::clone_investigate(self);
@@ -29,7 +29,7 @@ impl Clone for Atom {
         }
     }
 }
-*/
+
 
 impl Atom {
     pub fn try_from_str(value: &str) -> Result<Option<Self>> {
