@@ -6,14 +6,169 @@ use std::io::{BufRead, BufReader, Read, Stderr, Stdout, Write, stderr, stdin, st
 use std::path::Path;
 use std::{io, str};
 
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
+pub struct TaggedIdent {
+    pub ident: String,
+    pub source: Source,
+}
+
+impl TaggedIdent {
+    pub fn regular(ident: impl AsRef<str>, layer: u16) -> Self {
+        Self {
+            ident: ident.as_ref().to_string(),
+            source: Source::Regular { layer },
+        }
+    }
+}
+
+#[derive(Eq, PartialEq, Hash, Clone, Copy, Debug)]
+pub enum Source {
+    Regular {
+        /// roughly similar to one stack frame per layer, 0 is the main scope
+        layer: u16,
+    },
+    Import,
+}
+
+impl Source {
+    const fn layer(self) -> Option<u16> {
+        match self {
+            Self::Regular { layer } => Some(layer),
+            Self::Import => None,
+        }
+    }
+}
+
 pub struct Storage {
+    pub data: HashMap<TaggedIdent, Atom>,
+    pub global_idents: HashSet<String>,
+    pub current_layer: u16,
+}
+
+impl Storage {
+    pub fn initial() -> Self {
+        Self {
+            data: all_functions()
+                .into_iter()
+                .map(|(ident, function)| (TaggedIdent::regular(ident, 0), function))
+                .collect(),
+            global_idents: HashSet::new(),
+            current_layer: 0,
+        }
+    }
+
+    pub fn get(&self, name: impl AsRef<str>) -> Option<&Atom> {
+        let mut candidates = self
+            .data
+            .iter()
+            .filter_map(|(ident, val)| {
+                if ident.ident == name.as_ref() {
+                    if true {
+                        //let Source::Regular { .. } = ident.source {
+                        Some((ident.source, val))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+
+        candidates.sort_by_key(|(source, _)| source.layer());
+        candidates.last().map(|(_, val)| *val)
+    }
+
+    pub fn remove_entry(&mut self, name: impl AsRef<str>) -> Option<(TaggedIdent, Atom)> {
+        let ident = self
+            .data
+            .keys()
+            .find(|ident| ident.ident == name.as_ref())?
+            .clone();
+        self.data.remove_entry(&ident)
+    }
+
+    pub fn insert(&mut self, name: impl AsRef<str>, value: Atom) {
+        let layer = if self.global_idents.contains(name.as_ref()) {
+            0
+        } else {
+            self.current_layer
+        };
+
+        self.data.insert(
+            TaggedIdent {
+                ident: name.as_ref().to_string(),
+                source: Source::Regular { layer },
+            },
+            value,
+        );
+    }
+
+    pub fn insert_from_import(&mut self, name: impl AsRef<str>, value: Atom) {
+        self.data.insert(
+            TaggedIdent {
+                ident: name.as_ref().to_string(),
+                source: Source::Import,
+            },
+            value,
+        );
+    }
+
+    pub fn global_items(&self) -> impl Iterator<Item = (TaggedIdent, Atom)> {
+        self.data
+            .iter()
+            .filter(|(ident, _)| self.global_idents.contains(&ident.ident))
+            .map(|(ident, atom)| (ident.clone(), atom.clone()))
+    }
+
+    pub fn add_global(&mut self, name: impl AsRef<str>, value: Atom) {
+        self.global_idents.insert(name.as_ref().to_owned());
+        self.data.insert(TaggedIdent::regular(name, 0), value);
+    }
+
+    #[cfg(dead)]
+    pub fn current_layer(&self) -> u16 {
+        self.data
+            .keys()
+            .filter_map(|ident| {
+                if let Source::LocalInFunction { layer } = ident.source {
+                    Some(layer)
+                } else {
+                    None
+                }
+            })
+            .max()
+            .unwrap_or(1)
+    }
+
+    pub fn remove_top_layer(&mut self) {
+        assert!(self.current_layer > 0);
+        let layer = self.current_layer;
+        self.data
+            .retain(|ident, _| ident.source != Source::Regular { layer });
+        self.current_layer -= 1;
+    }
+
+    /// everything that is kept after `import`
+    pub fn nonlocals(&self) -> impl Iterator<Item = (String, Atom)> {
+        self.data
+            .iter()
+            .filter_map(|(ident, atom)| match ident.source {
+                Source::Regular { .. } => Some((ident.ident.clone(), atom.clone())),
+                Source::Import => None,
+            })
+    }
+}
+#[cfg(dead)]
+pub struct Storagea {
     // TODO: consider a HashMap<String, (bool, Atom)> instead, the bool means local / global
     pub data: HashMap<String, Atom>,
     pub global_idents: HashSet<String>,
     //pub exported_idents: HashSet<String>,
 }
 
-impl Storage {
+#[cfg(dead)]
+impl Storagea {
     pub fn initial() -> Self {
         Self {
             data: all_functions(),
@@ -83,7 +238,7 @@ impl State {
     }
 
     pub fn get_function(&self, name: &str) -> Result<Function> {
-        match self.storage.data.get(name) {
+        match self.storage.get(name) {
             Some(atom) => {
                 if let Atom::Function(func) = atom {
                     Ok(func.clone())

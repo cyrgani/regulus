@@ -1,12 +1,14 @@
-use std::borrow::Cow;
 use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
 use crate::{Directory, FILE_EXTENSION};
+use std::borrow::Cow;
 use std::fs;
 use std::rc::Rc;
 
 fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
-    let body = body.function_call("Error during definition: no valid function body was given!")?.clone();
+    let body = body
+        .function_call("Error during definition: no valid function body was given!")?
+        .clone();
     let function_arg_names = fn_args
         .iter()
         .map(|fn_arg| {
@@ -22,25 +24,30 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
         callback: Box::new(move |state, args| {
             // a function call should have its own scope and not leak variables
             // except for globals
-            
-            // TODO: 
+
+            // TODO:
             //  this cloning of the whole storage is extremely inefficient
             //  a better idea would be a "tagged" storage (??)
-            //  or: create a new empty storage, put all redefined vars in the function into it, but 
+            //  or: create a new empty storage, put all redefined vars in the function into it, but
             //      allow reading from both new and then old in that order
             //      problem: `body.eval(state);` can only take one state, not two
-            let mut old_storage_data = state.storage.data.clone();
+            //let mut old_storage_data = state.storage.data.clone();
+            state.storage.current_layer += 1;
 
             for (idx, arg) in function_arg_names.iter().enumerate() {
                 let arg_result = args[idx].eval(state)?.into_owned();
-                state.storage.insert(arg.clone(), arg_result);
+                state
+                    .storage
+                    .insert(arg.clone(), arg_result);
             }
 
             let function_result = body.eval(state);
 
-            old_storage_data.extend(state.storage.global_items());
+            // TODO: make sure to remove only the
+            state.storage.remove_top_layer();
+            //old_storage_data.extend(state.storage.global_items());
 
-            state.storage.data = old_storage_data;
+            //state.storage.data = old_storage_data;
             function_result
         }),
     };
@@ -197,7 +204,7 @@ functions! {
         }
         let atom = atom?;
 
-        for (k, v) in imported_state.storage.data {
+        for (k, v) in imported_state.storage.nonlocals() {
             state.storage.insert(k, v);
         }
         state.storage.global_idents = imported_state.storage.global_idents;

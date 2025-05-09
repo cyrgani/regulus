@@ -33,7 +33,7 @@ pub mod prelude {
         exception::{Error, Exception, Result},
         function::{Function, FunctionCall, FunctionInner},
         functions, raise, run,
-        state::State,
+        state::{State, Source, Storage},
     };
 }
 
@@ -200,7 +200,7 @@ mod tests {
         );
     }
 }
-/*
+
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::Relaxed;
 
@@ -226,4 +226,3 @@ pub fn clone_investigate(atom: &Atom) {
         Atom::Null | Atom::Int(_) | Atom::Bool(_) => (),
     }
 }
-*/

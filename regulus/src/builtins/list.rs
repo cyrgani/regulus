@@ -156,7 +156,7 @@ functions! {
         let loop_var = args[1].variable("invalid loop variable given to `for_in`")?;
         let loop_body = args[2].function_call("invalid loop body given to `for_in`")?;
 
-        let possibly_shadowed_value = state.storage.remove(loop_var);
+        let possibly_shadowed_value = state.storage.remove_entry(loop_var);
 
         match list {
             StringOrVec::Vec(v) => for el in v {
@@ -169,7 +169,7 @@ functions! {
             }
         }
 
-        if let Some(val) = possibly_shadowed_value {
+        if let Some((ident, val)) = possibly_shadowed_value {
             state.storage.insert(loop_var, val);
         }
         Ok(Atom::Null)
