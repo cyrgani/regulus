@@ -1,12 +1,14 @@
-use std::borrow::Cow;
 use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
 use crate::{Directory, FILE_EXTENSION};
+use std::borrow::Cow;
 use std::fs;
 use std::rc::Rc;
 
 fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
-    let body = body.function_call("Error during definition: no valid function body was given!")?.clone();
+    let body = body
+        .function_call("Error during definition: no valid function body was given!")?
+        .clone();
     let function_arg_names = fn_args
         .iter()
         .map(|fn_arg| {
@@ -22,11 +24,11 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
         callback: Box::new(move |state, args| {
             // a function call should have its own scope and not leak variables
             // except for globals
-            
-            // TODO: 
+
+            // TODO:
             //  this cloning of the whole storage is extremely inefficient
             //  a better idea would be a "tagged" storage (??)
-            //  or: create a new empty storage, put all redefined vars in the function into it, but 
+            //  or: create a new empty storage, put all redefined vars in the function into it, but
             //      allow reading from both new and then old in that order
             //      problem: `body.eval(state);` can only take one state, not two
             let mut old_storage_data = state.storage.data.clone();
@@ -154,12 +156,7 @@ functions! {
         define_function(body, fn_args)
     }
     /// Imports a file, either from the stl or the local directory.
-    /// TODO document the exact algorithm and hierarchy more clearly, also the behavior of `=`
-    ///
-    /// TODO(experimental): new approach: import will not add anything to the storage by default, only things marked via `export(_)`
-    /// (example: `export(rand, randrange, choose, shuffle)`) and globals
-    /// why: to prevent import leaks when one stl module (`a`) imports another (`b`) and the user does `import(a)` and has access to `b`s contents
-    /// this is probably not a good idea
+    /// TODO document the exact algorithm and hierarchy more clearly, also the return value of this function
     "import"(1) => |state, args| {
         let name = args[0].variable("`import` argument must be a variable, string syntax was removed")?;
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
@@ -203,18 +200,6 @@ functions! {
         state.storage.global_idents = imported_state.storage.global_idents;
         Ok(atom)
     }
-    /*
-    /// Marks all the given variables or function idents as values that should be exported by this module.
-    /// This does not require for them do be already defined, but if they are not defined until the end,
-    /// `import` will raise an exception.
-    /// TODO: that exception is currently not implemented!
-    "export"(_) => |state, args| {
-        for arg in args {
-            state.storage.exported_idents.insert(arg.variable("`export` arguments should be variables")?.clone());
-        }
-        Ok(Atom::Null)
-    }
-    */
     /// Raises an exception of the kind `UserRaised` with the given string message.
     "error"(1) => |state, args| {
         Err(Exception::new(args[0].eval(state)?.string()?, Error::UserRaised))
