@@ -16,15 +16,24 @@ fn make_tests_for_dir(dir_path: PathBuf) -> TokenStream {
         if file_type.is_file() {
             let name = entry.file_name().into_string().unwrap();
             if let Some(name) = name.strip_suffix(".re") {
+                let path_display = dir_path.components().skip(1).collect::<PathBuf>();
+                let tfn_prefix = dir_path
+                    .components()
+                    .skip(2)
+                    .collect::<PathBuf>()
+                    .display()
+                    .to_string()
+                    .replace("/", "__");
+                let sep = if tfn_prefix.is_empty() { "" } else { "__" };
                 output.extend(
                     TokenStream::from_str(&format!(
                         r##"
 #[test]
-fn {name}() {{
+fn {tfn_prefix}{sep}{name}() {{
     run_test("{}", "{name}");
 }}
 "##,
-                        dir_path.components().skip(1).collect::<PathBuf>().display()
+                        path_display.display()
                     ))
                     .unwrap(),
                 );
