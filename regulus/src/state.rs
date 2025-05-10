@@ -5,6 +5,7 @@ use std::collections::{HashMap, HashSet};
 use std::io::{BufRead, BufReader, Read, Stderr, Stdout, Write, stderr, stdin, stdout};
 use std::path::Path;
 use std::{io, str};
+use crate::parsing::positions::Position;
 
 pub struct Storage {
     // TODO: consider a HashMap<String, (bool, Atom)> instead, the bool means local / global
@@ -53,6 +54,9 @@ pub struct State {
     stderr: WriteHandle<Stderr>,
     pub(crate) file_directory: Directory,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
+    /// TODO: not updated yet
+    #[expect(dead_code, reason = "WIP")]
+    pub(crate) current_pos: Position,
 }
 
 impl State {
@@ -68,6 +72,7 @@ impl State {
             stderr: WriteHandle::Regular(stderr()),
             file_directory: current_dir,
             exit_unwind_value: None,
+            current_pos: Position::ONE,
         }
     }
 
@@ -112,6 +117,7 @@ impl State {
             stderr: WriteHandle::Buffer(vec![]),
             file_directory: Directory::Regular(dir_path.into()),
             exit_unwind_value: None,
+            current_pos: Position::ONE,
         }
     }
 

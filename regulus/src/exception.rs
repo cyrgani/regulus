@@ -2,8 +2,7 @@
 //!  - exceptions have spans and tracebacks
 //!  - `Error` will be removed
 //!  - `catch(1)`'s functionality (exception -> string) will remain but might be renamed
-use crate::parsing::positions::Span;
-use std::ops::RangeInclusive;
+use crate::parsing::positions::Position;
 use std::{error, fmt, result};
 
 #[derive(Debug, Copy, Clone)]
@@ -32,7 +31,7 @@ impl fmt::Display for Error {
 pub struct Exception {
     pub msg: String,
     pub error: Error,
-    pub origin: Option<Span>,
+    pub origin: Option<Position>,
 }
 
 impl Exception {
@@ -44,16 +43,11 @@ impl Exception {
         }
     }
 
-    pub fn spanned(
-        msg: impl Into<String>,
-        error: Error,
-        indices: RangeInclusive<usize>,
-        code: &str,
-    ) -> Self {
+    pub fn spanned(msg: impl Into<String>, error: Error, pos: Position) -> Self {
         Self {
             msg: msg.into(),
             error,
-            origin: Some(Span::from_indices(indices, code)),
+            origin: Some(pos),
         }
     }
 }
@@ -79,8 +73,8 @@ impl fmt::Display for Exception {
         if let Some(origin) = self.origin.as_ref() {
             write!(
                 f,
-                "{}: line {}, column {}: {}",
-                self.error, origin.start.line, origin.end.line, self.msg
+                "{} at {}:{}: {}",
+                self.error, origin.line, origin.column, self.msg
             )
         } else {
             write!(f, "{}: {}", self.error, self.msg)

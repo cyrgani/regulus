@@ -22,12 +22,17 @@ impl Span {
         Self { start, end }
     }
 }
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Position {
     /// The line, starting at 1.
     pub line: usize,
     /// The column, starting at 1.
     pub column: usize,
+}
+
+impl Position {
+    pub const ONE: Self = Self { line: 1, column: 1 };
 }
 
 impl PartialOrd for Position {
