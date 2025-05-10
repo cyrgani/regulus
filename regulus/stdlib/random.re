@@ -1,7 +1,7 @@
 import(math),
 
 global(__stl_rng_state),
-=(__stl_rng_state, now_nanos_part()),
+=(__stl_rng_state, __builtin_now_nanos_part()),
 
 # returns a random i64
 def(rand, _(

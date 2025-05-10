@@ -39,3 +39,4 @@
 
 ### Naming conventions
 * identifiers starting with `__stl` are reserved (this is not enforced though) for internal use in the STL, manipulating them is expected to cause panics or crashes
+* identifiers starting with `__builtin` are similarly reserved for internal APIs and may be added, changed or removed at any time
