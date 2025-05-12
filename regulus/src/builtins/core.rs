@@ -6,9 +6,7 @@ use std::fs;
 use std::rc::Rc;
 
 fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
-    let body = body
-        .function_call("Error during definition: no valid function body was given!")?
-        .clone();
+    let body = body.clone();
     let function_arg_names = fn_args
         .iter()
         .map(|fn_arg| {
@@ -38,7 +36,7 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
                 state.storage.insert(arg.clone(), arg_result);
             }
 
-            let function_result = body.eval(state);
+            let function_result = body.eval(state).map(Cow::into_owned);
 
             old_storage_data.extend(state.storage.global_items());
 

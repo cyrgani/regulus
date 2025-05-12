@@ -12,3 +12,6 @@ assert_eq(len("abc"), len(list(1, 2, 3))),
 
 assert_eq(swap("abc", 1, 2), "acb"),
 assert_eq(swap(list(1, null), 0, 0), list(1, null)),
+
+for_in(list(0, 1, 2, 3), i, print(i)),
+assert_eq(for_in(list(0, 1, 2), i, 0), null)

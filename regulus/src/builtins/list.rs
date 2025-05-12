@@ -154,7 +154,7 @@ functions! {
     "for_in"(3) => |state, args| {
         let list = args[0].eval(state)?.string_or_list()?;
         let loop_var = args[1].variable("invalid loop variable given to `for_in`")?;
-        let loop_body = args[2].function_call("invalid loop body given to `for_in`")?;
+        let loop_body = &args[2];//.function_call("invalid loop body given to `for_in`")?;
 
         let possibly_shadowed_value = state.storage.remove(loop_var);
 
