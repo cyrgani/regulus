@@ -25,6 +25,7 @@ mod builtins;
 #[rustfmt::skip]
 mod interned_stdlib;
 
+// TODO: reconsider and redesign the prelude, differentiate between internal and external usage
 pub mod prelude {
     pub use crate::{
         Runner,
@@ -32,7 +33,7 @@ pub mod prelude {
         atom::Atom,
         exception::{Error, Exception, Result},
         function::{Function, FunctionCall, FunctionInner},
-        functions, raise, run,
+        functions, raise, run, run_file,
         state::State,
     };
 }
@@ -173,8 +174,17 @@ pub(crate) enum Directory {
 ///
 /// # Panics
 /// Panics if the path is invalid or cannot be read from.
-pub fn run(path: impl AsRef<Path>) -> Result<Atom> {
+pub fn run_file(path: impl AsRef<Path>) -> Result<Atom> {
     Runner::new().file(path).unwrap().run().0
+}
+
+/// A convenient helper for directly running a program string.
+///
+/// Returns only the result of running the program, not the final state.
+///
+/// For more options, use [`Runner`] instead.
+pub fn run(code: impl AsRef<str>) -> Result<Atom> {
+    Runner::new().code(code).run().0
 }
 
 #[cfg(test)]
