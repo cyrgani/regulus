@@ -29,7 +29,7 @@ impl FunctionCall {
         if state.exit_unwind_value.is_some() {
             return Ok(Atom::Null);
         }
-        let function = state.get_function(&self.name)?;
+        let function = state.storage.get_function(&self.name)?;
 
         if let Some(argc) = function.argc {
             let arg_len = self.args.len();

@@ -44,6 +44,20 @@ impl Storage {
         self.global_idents.insert(name.as_ref().to_owned());
         self.data.insert(name.as_ref().to_owned(), value);
     }
+
+    // TODO: this function is weird
+    pub(crate) fn get_function(&self, name: &str) -> Result<Function> {
+        match self.get(name) {
+            Some(atom) => {
+                if let Atom::Function(func) = atom {
+                    Ok(func.clone())
+                } else {
+                    raise!(Error::Name, "`{name}` is not a function!")
+                }
+            }
+            None => raise!(Error::Name, "No function `{name}` found!"),
+        }
+    }
 }
 
 // TODO: users should be able to set their own stderr/out/in streams too
@@ -73,20 +87,6 @@ impl State {
             file_directory: current_dir,
             exit_unwind_value: None,
             current_pos: Position::ONE,
-        }
-    }
-
-    // TODO: this function is weird
-    pub fn get_function(&self, name: &str) -> Result<Function> {
-        match self.storage.get(name) {
-            Some(atom) => {
-                if let Atom::Function(func) = atom {
-                    Ok(func.clone())
-                } else {
-                    raise!(Error::Name, "`{name}` is not a function!")
-                }
-            }
-            None => raise!(Error::Name, "No function `{name}` found!"),
         }
     }
 

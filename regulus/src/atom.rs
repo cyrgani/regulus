@@ -102,8 +102,17 @@ impl fmt::Display for Atom {
             ),
             Self::Null => write!(f, "null"),
             Self::String(val) => write!(f, "{val}"),
-            // todo: investigate the proper format
-            Self::Object(obj) => write!(f, "{obj:?}"),
+            // TODO: format is unstable, since iteration order is no guaranteed
+            Self::Object(obj) => {
+                write!(f, "{{")?;
+                for (idx, (key, val)) in obj.iter().enumerate() {
+                    write!(f, "{key}: {val}")?;
+                    if idx != obj.len() - 1 {
+                        write!(f, ", ")?;
+                    }
+                }
+                write!(f, "}}")
+            }
         }
     }
 }
