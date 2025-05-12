@@ -1,11 +1,11 @@
 use crate::Directory;
 use crate::builtins::all_functions;
+use crate::parsing::positions::Position;
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
 use std::io::{BufRead, BufReader, Read, Stderr, Stdout, Write, stderr, stdin, stdout};
 use std::path::Path;
 use std::{io, str};
-use crate::parsing::positions::Position;
 
 pub struct Storage {
     // TODO: consider a HashMap<String, (bool, Atom)> instead, the bool means local / global
@@ -76,8 +76,9 @@ impl State {
         }
     }
 
+    // TODO: this function is weird
     pub fn get_function(&self, name: &str) -> Result<Function> {
-        match self.storage.data.get(name) {
+        match self.storage.get(name) {
             Some(atom) => {
                 if let Atom::Function(func) = atom {
                     Ok(func.clone())

@@ -40,15 +40,6 @@ impl Argument {
             _ => raise!(Error::Argument, error_msg),
         }
     }
-
-    /// If this is a function call, it is returned.
-    /// Otherwise, it raises an exception with the given error message.
-    pub fn function_call(&self, error_msg: &str) -> Result<&FunctionCall> {
-        match &self.data {
-            ArgumentData::FunctionCall(call) => Ok(call),
-            _ => raise!(Error::Argument, error_msg),
-        }
-    }
 }
 
 #[cfg(feature = "display_impls")]

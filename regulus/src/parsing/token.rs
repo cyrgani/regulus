@@ -157,29 +157,18 @@ pub fn validate_tokens(tokens: &[Token]) -> Result<()> {
 }
 
 /// Returns all characters of the text that the given indices enclose.
-/// Returns an empty string if the indices are invalid (end before start or out of bounds).
+/// Returns `None` if the indices are invalid (end before start or out of bounds).
 pub fn extract(text: &str, indices: RangeInclusive<usize>) -> Option<String> {
-    if indices.start() > indices.end() {
+    if indices.start() > indices.end() || *indices.end() >= text.chars().count() {
         return None;
     }
-    let mut extracted = String::new();
-    let mut extracting = false;
-    for (pos, c) in text.chars().enumerate() {
-        if pos == *indices.start() {
-            extracting = true;
-        }
-        if extracting {
-            extracted.push(c);
-        }
-        if pos == *indices.end() {
-            if extracting {
-                return Some(extracted);
-            }
-            return None;
-        }
-    }
 
-    None
+    Some(
+        text.chars()
+            .skip(*indices.start())
+            .take(indices.count())
+            .collect::<String>(),
+    )
 }
 
 #[cfg(test)]
