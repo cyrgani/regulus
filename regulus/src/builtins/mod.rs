@@ -1,4 +1,4 @@
-macro_rules! stl_modules {
+macro_rules! builtin_modules {
     ($($name: ident),*) => {
         $(pub mod $name;)*
 
@@ -14,6 +14,6 @@ macro_rules! stl_modules {
     };
 }
 
-stl_modules! {
+builtin_modules! {
     cast, core, help, io, list, logic, math, string, time
 }

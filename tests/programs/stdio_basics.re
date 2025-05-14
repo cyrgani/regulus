@@ -1,3 +1,3 @@
 print("hello world 1!"),
-debug(catch(error("mistake"))),
+__builtin_rust_debug(catch(error("mistake"))),
 print("hello world 2!"),

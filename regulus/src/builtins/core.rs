@@ -214,6 +214,11 @@ functions! {
     "=="(2) => |state, args| {
         Ok(Atom::Bool(args[0].eval(state)?.into_owned() == *args[1].eval(state)?))
     }
+    /// Evaluates both arguments and returns whether they are not equal.
+    /// TODO: define this behavior in edge cases and document it
+    "!="(2) => |state, args| {
+        Ok(Atom::Bool(args[0].eval(state)?.into_owned() != *args[1].eval(state)?))
+    }
     /// Evaluates the argument as a boolean and returns `null` if it is true.
     /// If it is false, raise an exception of the `Assertion` kind.
     "assert"(1) => |state, args| {
@@ -319,12 +324,24 @@ functions! {
         let code = args[0].eval(state)?.string()?;
         Runner::new().code(code).run().0
     }
-    /// Mark a variable identifier as global.
+    /// Marks a variable identifier as global.
     ///
     /// This does not require the identifier to be defined at this time.
     "global"(1) => |state, args| {
         let var = args[0].variable("`global(1)` expects a variable argument")?;
         state.storage.global_idents.insert(var.clone());
+        Ok(Atom::Null)
+    }
+    /// Executes the first argument. If it raises an uncaught exception, runs the second argument.
+    /// 
+    /// If the second argument also throws an exception, it will not be caught by this call and 
+    /// propagate further.
+    /// 
+    /// Returns `null`.
+    "try_except"(2) => |state, args| {
+        if args[0].eval(state).is_err() {
+            args[1].eval(state)?;
+        }
         Ok(Atom::Null)
     }
 }
