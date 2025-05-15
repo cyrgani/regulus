@@ -71,6 +71,8 @@ pub struct State {
     /// TODO: not updated yet
     #[expect(dead_code, reason = "WIP")]
     pub(crate) current_pos: Position,
+    // make sure this type can never be constructed from outside
+    __private: (),
 }
 
 impl State {
@@ -87,6 +89,7 @@ impl State {
             file_directory: current_dir,
             exit_unwind_value: None,
             current_pos: Position::ONE,
+            __private: (),
         }
     }
 
@@ -119,6 +122,7 @@ impl State {
             file_directory: Directory::Regular(dir_path.into()),
             exit_unwind_value: None,
             current_pos: Position::ONE,
+            __private: (),
         }
     }
 
