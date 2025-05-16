@@ -115,5 +115,3 @@ def(play_game, _(
     print("Game over, winner:", get_winner(board)),
     print_board(board)
 )),
-
-# play_game()
