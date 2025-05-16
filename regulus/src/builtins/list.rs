@@ -136,7 +136,7 @@ functions! {
             .eval(state)?
             .str_or_slice()?
             .get(index)
-            .ok_or_else(|| Exception::new("list index out of bounds", Error::Index))
+            .ok_or_else(|| Exception::new("sequence index out of bounds", Error::Index))
     }
     /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {
@@ -152,13 +152,13 @@ functions! {
     ///
     /// If the loop variable shadows an existing variable, that value can be used again after the loop.
     "for_in"(3) => |state, args| {
-        let list = args[0].eval(state)?.string_or_list()?;
+        let seq = args[0].eval(state)?.string_or_list()?;
         let loop_var = args[1].variable("invalid loop variable given to `for_in`")?;
         let loop_body = &args[2];//.function_call("invalid loop body given to `for_in`")?;
 
         let possibly_shadowed_value = state.storage.remove(loop_var);
 
-        match list {
+        match seq {
             StringOrVec::Vec(v) => for el in v {
                 state.storage.insert(loop_var, el);
                 loop_body.eval(state)?;
@@ -179,9 +179,9 @@ functions! {
     /// If the index is out of bounds, an exception is raised.
     /// TODO: give it a better name
     "overwrite_at_index"(3) => |state, args| {
-        let mut list = args[0].eval(state)?.string_or_list()?;
-        list.overwrite_at_index(atom_to_index(args[1].eval(state)?)?, args[2].eval(state)?.into_owned())?;
-        Ok(list.into_atom())
+        let mut seq = args[0].eval(state)?.string_or_list()?;
+        seq.overwrite_at_index(atom_to_index(args[1].eval(state)?)?, args[2].eval(state)?.into_owned())?;
+        Ok(seq.into_atom())
     }
     /// Swaps the values at two indices of a list or string and returns the new sequence.
     /// The arguments are: list or string, first index, second index.

@@ -15,3 +15,5 @@ assert_eq(swap(list(1, null), 0, 0), list(1, null)),
 
 for_in(list(0, 1, 2, 3), i, print(i)),
 assert_eq(for_in(list(0, 1, 2), i, 0), null)
+
+assert_eq(list(2, 4, 6), filter(list(1, 2, 3, 4, 6), fn(el, ==(%(el, 2), 0))))
