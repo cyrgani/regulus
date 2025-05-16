@@ -1,3 +1,8 @@
 print("hello world 1!"),
 __builtin_rust_debug(catch(error("mistake"))),
 print("hello world 2!"),
+write("foo"),
+write(" "),
+write(""),
+write("bar"),
+write(list(1, 2)),

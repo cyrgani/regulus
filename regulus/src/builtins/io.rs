@@ -40,4 +40,10 @@ functions! {
         write_to_stdout(state, &s);
         Ok(Atom::Null)
     }
+    /// Evaluates the given argument and prints it to stdout, without any additional spaces or newline.
+    "write"(1) => |state, args| {
+        let s = args[0].eval(state)?.to_string();
+        write_to_stdout(state, &s);
+        Ok(Atom::Null)
+    }
 }
