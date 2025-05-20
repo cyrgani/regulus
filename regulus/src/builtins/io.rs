@@ -9,6 +9,8 @@ functions! {
     /// All arguments are separated with a single space.
     /// After all arguments have been printed, a newline is also printed.
     /// Returns `null`.
+    /// 
+    /// If you need more precise control over the output, use `write` instead.
     "print"(_) => |state, args| {
         for arg in args {
             let arg_val = arg.eval(state)?;
