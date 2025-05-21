@@ -6,6 +6,7 @@ use std::result;
 
 /// A token of source code with location information.
 #[derive(Debug)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct Token {
     /// The actual token.
     pub data: TokenData,
@@ -14,6 +15,7 @@ pub struct Token {
 }
 
 #[derive(Debug)]
+#[cfg_attr(test, derive(PartialEq))]
 pub enum TokenData {
     Function(String),
     LeftParen,
@@ -70,7 +72,7 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
                 }
                 add_token(TokenData::LeftParen, char_idx, char_idx);
             }
-            ')' | ',' => {
+            ')' | ',' | ' ' | '\n' | '\t' => {
                 if !current.is_empty() {
                     add_token(
                         match Atom::try_from_str(current.as_str())? {
@@ -87,7 +89,7 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
                     match c {
                         ')' => TokenData::RightParen,
                         ',' => TokenData::Comma,
-                        _ => unreachable!(),
+                        _ => continue,
                     },
                     char_idx,
                     char_idx,
@@ -99,7 +101,6 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
                 };
                 add_token(TokenData::Atom(Atom::String(body)), char_idx, end_pos);
             }
-            ' ' | '\n' | '\t' => (),
             '#' => {
                 let (end_pos, body) =
                     take_until(chars.by_ref(), '\n').unwrap_or_else(|body| (code.len() - 1, body));
@@ -244,5 +245,170 @@ mod tests {
         );
 
         assert_eq!(parts.join(""), code.replace(['\n', '\t', ' '], ""));
+    }
+
+    use TokenData::*;
+
+    #[expect(non_snake_case)]
+    fn Function(name: &str) -> TokenData {
+        TokenData::Function(name.to_string())
+    }
+
+    #[expect(non_snake_case)]
+    fn Int(val: i64) -> crate::atom::Atom {
+        crate::atom::Atom::Int(val)
+    }
+
+    #[expect(non_snake_case)]
+    fn Name(name: &str) -> TokenData {
+        TokenData::Name(name.to_string())
+    }
+
+    #[test]
+    fn extra_parens() {
+        assert_eq!(
+            tokenize("_((2))"),
+            Ok(vec![
+                Token {
+                    data: Function("_"),
+                    indices: 0..=0
+                },
+                Token {
+                    data: LeftParen,
+                    indices: 1..=1
+                },
+                Token {
+                    data: LeftParen,
+                    indices: 2..=2
+                },
+                Token {
+                    data: Atom(Int(2)),
+                    indices: 3..=3
+                },
+                Token {
+                    data: RightParen,
+                    indices: 4..=4
+                },
+                Token {
+                    data: RightParen,
+                    indices: 5..=5
+                }
+            ])
+        );
+    }
+
+    #[test]
+    fn inline_whitespace() {
+        assert_eq!(
+            tokenize("_(2 3)"),
+            Ok(vec![
+                Token {
+                    data: Function("_"),
+                    indices: 0..=0
+                },
+                Token {
+                    data: LeftParen,
+                    indices: 1..=1
+                },
+                Token {
+                    data: Atom(Int(2)),
+                    indices: 2..=2
+                },
+                Token {
+                    data: Atom(Int(3)),
+                    indices: 4..=4
+                },
+                Token {
+                    data: RightParen,
+                    indices: 5..=5
+                }
+            ])
+        );
+        assert_eq!(
+            tokenize("=(a a, 3)"),
+            Ok(vec![
+                Token {
+                    data: Function("="),
+                    indices: 0..=0
+                },
+                Token {
+                    data: LeftParen,
+                    indices: 1..=1
+                },
+                Token {
+                    data: Name("a"),
+                    indices: 2..=2
+                },
+                Token {
+                    data: Name("a"),
+                    indices: 4..=4
+                },
+                Token {
+                    data: Comma,
+                    indices: 5..=5
+                },
+                Token {
+                    data: Atom(Int(3)),
+                    indices: 7..=7
+                },
+                Token {
+                    data: RightParen,
+                    indices: 8..=8
+                }
+            ])
+        );
+    }
+
+    #[test]
+    fn extra_parens_2() {
+        assert_eq!(
+            tokenize("(print(2)), print(3)"),
+            Ok(vec![
+                Token {
+                    data: LeftParen,
+                    indices: 0..=0
+                },
+                Token {
+                    data: Function("print"),
+                    indices: 1..=5
+                },
+                Token {
+                    data: LeftParen,
+                    indices: 6..=6
+                },
+                Token {
+                    data: Atom(Int(2)),
+                    indices: 7..=7
+                },
+                Token {
+                    data: RightParen,
+                    indices: 8..=8
+                },
+                Token {
+                    data: RightParen,
+                    indices: 9..=9
+                },
+                Token {
+                    data: Comma,
+                    indices: 10..=10
+                },
+                Token {
+                    data: Function("print"),
+                    indices: 12..=16
+                },
+                Token {
+                    data: LeftParen,
+                    indices: 17..=17
+                },
+                Token {
+                    data: Atom(Int(3)),
+                    indices: 18..=18
+                },
+                Token {
+                    data: RightParen,
+                    indices: 19..=19
+                }
+            ])
+        );
     }
 }

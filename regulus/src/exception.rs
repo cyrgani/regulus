@@ -5,7 +5,7 @@
 use crate::parsing::positions::Position;
 use std::{error, fmt, result};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Error {
     Type,
     Overflow,
@@ -28,6 +28,7 @@ impl fmt::Display for Error {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
 pub struct Exception {
     pub msg: String,
     pub error: Error,

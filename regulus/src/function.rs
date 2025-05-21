@@ -3,6 +3,7 @@ use std::fmt;
 use std::rc::Rc;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct FunctionCall {
     pub args: Vec<Argument>,
     pub name: String,

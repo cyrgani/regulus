@@ -5,12 +5,14 @@ use std::fmt;
 use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct Argument {
     pub data: ArgumentData,
     pub span_indices: RangeInclusive<usize>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 pub enum ArgumentData {
     FunctionCall(FunctionCall),
     Atom(Atom),

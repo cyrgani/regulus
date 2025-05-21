@@ -55,3 +55,54 @@ pub fn build_program(tokens: &[Token], function_name: &str) -> Result<FunctionCa
 
     Ok(call)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extra_parens() {
+        let prog = build_program(&tokenize("_((2))").unwrap(), "_");
+
+        // TODO: should be a syntax error
+        assert_eq!(
+            prog,
+            Ok(FunctionCall {
+                args: vec![Argument {
+                    data: ArgumentData::FunctionCall(FunctionCall {
+                        args: vec![Argument {
+                            data: ArgumentData::Atom(Atom::Int(2)),
+                            span_indices: 3..=3
+                        }],
+                        name: "_".to_string()
+                    }),
+                    span_indices: 0..=0
+                }],
+                name: "_".to_string()
+            })
+        );
+    }
+
+    #[test]
+    fn extra_parens2() {
+        let prog = build_program(&tokenize("(print(2)), print(3)").unwrap(), "_");
+
+        // TODO: should be a syntax error
+        assert_eq!(
+            prog,
+            Ok(FunctionCall {
+                args: vec![Argument {
+                    data: ArgumentData::FunctionCall(FunctionCall {
+                        args: vec![Argument {
+                            data: ArgumentData::Atom(Atom::Int(2)),
+                            span_indices: 7..=7
+                        }],
+                        name: "print".to_string()
+                    }),
+                    span_indices: 1..=5
+                }],
+                name: "_".to_string()
+            })
+        );
+    }
+}

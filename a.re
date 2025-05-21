@@ -1,4 +1,5 @@
 import(range),
+import(time),
 print(..(0, 5)),
 print(now()),
 import(random),
