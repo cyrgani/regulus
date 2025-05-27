@@ -29,7 +29,7 @@ impl Token {
     }
 
     pub(crate) fn to_name(&self) -> Option<Argument> {
-        if let TokenData::Name(name) | TokenData::Function(name) = &self.data {
+        if let TokenData::Name(name) = &self.data {
             Some(Argument {
                 data: ArgumentData::Variable(name.to_string()),
                 span_indices: self.indices.clone(),
@@ -40,19 +40,11 @@ impl Token {
     }
 
     pub(crate) fn name(&self) -> Option<String> {
-        if let TokenData::Name(name) | TokenData::Function(name) = &self.data {
+        if let TokenData::Name(name) = &self.data {
             Some(name.to_string())
         } else {
             None
         }
-    }
-
-    pub(crate) const fn is_left_paren(&self) -> bool {
-        matches!(self.data, TokenData::LeftParen)
-    }
-
-    pub(crate) const fn is_right_paren(&self) -> bool {
-        matches!(self.data, TokenData::RightParen)
     }
 
     pub(crate) const fn is_comma(&self) -> bool {
@@ -63,8 +55,6 @@ impl Token {
 #[derive(Debug)]
 #[cfg_attr(test, derive(PartialEq))]
 pub enum TokenData {
-    #[deprecated]
-    Function(String),
     LeftParen,
     Comma,
     RightParen,
@@ -110,7 +100,7 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
             '(' => {
                 if !current.is_empty() {
                     add_token(
-                        TokenData::Function(current.clone()),
+                        TokenData::Name(current.clone()),
                         current_start_idx.unwrap(),
                         char_idx - 1,
                     );
@@ -297,11 +287,6 @@ mod tests {
     use TokenData::*;
 
     #[expect(non_snake_case)]
-    fn Function(name: &str) -> TokenData {
-        TokenData::Function(name.to_string())
-    }
-
-    #[expect(non_snake_case)]
     fn Int(val: i64) -> crate::atom::Atom {
         crate::atom::Atom::Int(val)
     }
@@ -317,7 +302,7 @@ mod tests {
             tokenize("_((2))"),
             Ok(vec![
                 Token {
-                    data: Function("_"),
+                    data: Name("_"),
                     indices: 0..=0
                 },
                 Token {
@@ -350,7 +335,7 @@ mod tests {
             tokenize("_(2 3)"),
             Ok(vec![
                 Token {
-                    data: Function("_"),
+                    data: Name("_"),
                     indices: 0..=0
                 },
                 Token {
@@ -375,7 +360,7 @@ mod tests {
             tokenize("=(a a, 3)"),
             Ok(vec![
                 Token {
-                    data: Function("="),
+                    data: Name("="),
                     indices: 0..=0
                 },
                 Token {
@@ -416,7 +401,7 @@ mod tests {
                     indices: 0..=0
                 },
                 Token {
-                    data: Function("print"),
+                    data: Name("print"),
                     indices: 1..=5
                 },
                 Token {
@@ -440,7 +425,7 @@ mod tests {
                     indices: 10..=10
                 },
                 Token {
-                    data: Function("print"),
+                    data: Name("print"),
                     indices: 12..=16
                 },
                 Token {
