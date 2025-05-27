@@ -38,6 +38,7 @@ pub mod prelude {
     };
 }
 
+use crate::parsing::build_program_v3;
 use crate::{
     atom::Atom,
     exception::Result,
@@ -143,13 +144,17 @@ impl Runner {
             };
         }
 
-        let tokens = return_err!(tokenize(&code));
+        // newlines are needed to avoid interaction with comments
+        // might also help with calculating the actual spans (just do line - 1)
+        let wrapped_code = format!("_(\n{code}\n)");
+
+        let tokens = return_err!(tokenize(&wrapped_code));
 
         return_err!(validate_tokens(&tokens));
 
-        let program = return_err!(build_program(&tokens, "_"));
+        let program = return_err!(build_program_v3(tokens));
 
-        let result = return_err!(program.eval(&mut state));
+        let result = return_err!(program.eval(&mut state)).into_owned();
 
         if let Some(exit_unwind_value) = &state.exit_unwind_value {
             return (exit_unwind_value.clone(), state);
