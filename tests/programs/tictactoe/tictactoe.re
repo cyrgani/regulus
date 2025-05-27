@@ -13,7 +13,7 @@ def(index_or_num, board, idx, _(
         string(+(idx, 1)),
         val
     )
-))
+)),
 
 def(print_board, board, _(
     print("+-------+-------+-------+
@@ -111,7 +111,7 @@ def(play_game, _(
             =(board, set_random(board, O)),
             =(current_player, X),
         )
-    ))
+    )),
     print("Game over, winner:", get_winner(board)),
     print_board(board)
 )),

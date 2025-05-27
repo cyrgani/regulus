@@ -3,6 +3,6 @@
 =(or, ||),
 =(run, _),
 =(assign, =),
-=(equals, ==)
+=(equals, ==),
 =(getattr, .),
 =(setattr, ->),

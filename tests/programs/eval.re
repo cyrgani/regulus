@@ -1,5 +1,5 @@
 assert_eq(eval("+(2,2)"), 4),
-assert_eq(catch(eval("(")), "SyntaxError: Nonequal amount of '(' and ')': 1 vs. 0"),
+assert_eq(catch(eval("(")), "SyntaxError: Nonequal amount of '(' and ')': 2 vs. 1"),
 =(x, "_("),
 =(y, strconcat(x, "/(1, 0))")),
 assert_eq(catch(eval(y)), "OverflowError: overflow occured during /!"),

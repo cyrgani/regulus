@@ -4,8 +4,7 @@ def(f, _(
 
 def(e, _(
     =(G, 2),
-))
-
+)),
 
 assert_eq(catch(G), "NameError: No variable named `G` found!"),
 e(),

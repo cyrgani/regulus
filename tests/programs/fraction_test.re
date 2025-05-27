@@ -15,7 +15,7 @@ assert_eq(catch(frac_to_int(Fraction(0, 0))), "OverflowError: overflow occured d
 def(frac_assert_eq, f1, f2, _(
     # TODO: frac_compare is not yet implemented
     assert_eq(frac_compare(f1, f2), 0)
-))
+)),
 
 assert_eq(frac_neg(a), Fraction(-2, 3)),
 assert_eq(frac_add(a, b), Fraction(26, 21)),
