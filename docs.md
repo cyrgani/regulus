@@ -5,7 +5,6 @@
 * everything else is either a function call, an atom or a variable
 * function call syntax: `FUNCTION_NAME(ARG_1, ARG_2, ...)`
   * functions are commonly called `FUNCTION_NAME(ARGC)`, e.g. `+(2)` or `print(_)` (variable number of arguments allowed) 
-  * note: commas are currently not enforced, but that might change in the future
 * variable: any identifier that does not contain forbidden characters (including, but not limited to `(`, `)`, `#`, `,`)
 * atom: one of:
   * integer: `1`, `-5`, ...
