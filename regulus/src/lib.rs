@@ -38,7 +38,6 @@ pub mod prelude {
     };
 }
 
-use crate::parsing::build_program_v3;
 use crate::{
     atom::Atom,
     exception::Result,
@@ -152,7 +151,7 @@ impl Runner {
 
         return_err!(validate_tokens(&tokens));
 
-        let program = return_err!(build_program_v3(tokens));
+        let program = return_err!(build_program(tokens));
 
         let result = return_err!(program.eval(&mut state)).into_owned();
 
