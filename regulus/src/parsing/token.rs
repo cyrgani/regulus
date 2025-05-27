@@ -1,5 +1,7 @@
 use crate::atom::Atom;
 use crate::exception::{Error, Exception, Result};
+use crate::prelude::Argument;
+use crate::prelude::ArgumentData;
 use crate::raise;
 use std::ops::RangeInclusive;
 use std::result;
@@ -14,9 +16,54 @@ pub struct Token {
     pub indices: RangeInclusive<usize>,
 }
 
+impl Token {
+    pub(crate) fn to_atom(&self) -> Option<Argument> {
+        if let TokenData::Atom(atom) = &self.data {
+            Some(Argument {
+                data: ArgumentData::Atom(atom.clone()),
+                span_indices: self.indices.clone(),
+            })
+        } else {
+            None
+        }
+    }
+
+    pub(crate) fn to_name(&self) -> Option<Argument> {
+        if let TokenData::Name(name) | TokenData::Function(name) = &self.data {
+            Some(Argument {
+                data: ArgumentData::Variable(name.to_string()),
+                span_indices: self.indices.clone(),
+            })
+        } else {
+            None
+        }
+    }
+
+    pub(crate) fn name(&self) -> Option<String> {
+        if let TokenData::Name(name) | TokenData::Function(name) = &self.data {
+            Some(name.to_string())
+        } else {
+            None
+        }
+    }
+
+    pub(crate) const fn is_left_paren(&self) -> bool {
+        matches!(self.data, TokenData::LeftParen)
+    }
+
+    pub(crate) const fn is_right_paren(&self) -> bool {
+        matches!(self.data, TokenData::RightParen)
+    }
+
+    pub(crate) const fn is_comma(&self) -> bool {
+        matches!(self.data, TokenData::Comma)
+    }
+}
+
 #[derive(Debug)]
 #[cfg_attr(test, derive(PartialEq))]
 pub enum TokenData {
+    #[deprecated]
     Function(String),
     LeftParen,
     Comma,
