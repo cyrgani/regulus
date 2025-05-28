@@ -146,8 +146,9 @@ impl Runner {
         // newlines are needed to avoid interaction with comments
         // might also help with calculating the actual spans (just do line - 1)
         let wrapped_code = format!("_(\n{code}\n)");
+        state.code = wrapped_code;
 
-        let tokens = return_err!(tokenize(&wrapped_code));
+        let tokens = return_err!(tokenize(&state.code));
 
         let program = return_err!(build_program(tokens));
 

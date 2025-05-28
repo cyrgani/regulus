@@ -205,8 +205,10 @@ functions! {
     /// If an exception occurs while evaluating the argument, the exception is converted into a
     /// string and returned instead.
     "catch"(1) => |state, args| {
-        Ok(args[0]
-            .eval(state).map_or_else(|exc| Atom::String(exc.to_string()), Cow::into_owned))
+        Ok(match args[0].eval(state) {
+            Ok(atom) => Cow::into_owned(atom),
+            Err(exc) => Atom::String(exc.display(state).to_string())
+        })
     }
     /// Evaluates both arguments and returns whether they are equal.
     /// TODO: define this behavior in edge cases and document it

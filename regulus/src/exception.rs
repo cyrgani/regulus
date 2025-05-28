@@ -3,6 +3,7 @@
 //!  - `Error` will be removed
 //!  - `catch(1)`'s functionality (exception -> string) will remain but might be renamed
 use crate::parsing::positions::Position;
+use crate::prelude::State;
 use std::{error, fmt, result};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -51,6 +52,10 @@ impl Exception {
             origin: Some(pos),
         }
     }
+
+    pub fn display(&self, state: &State) -> ExceptionDisplay<'_> {
+        ExceptionDisplay(self)
+    }
 }
 
 /// Creates an exception wrapped in an `Err`.
@@ -69,21 +74,24 @@ macro_rules! raise {
     };
 }
 
-impl fmt::Display for Exception {
+impl fmt::Display for ExceptionDisplay<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(origin) = self.origin.as_ref() {
+        if let Some(origin) = self.0.origin.as_ref() {
             write!(
                 f,
                 "{} at {}:{}: {}",
-                self.error, origin.line, origin.column, self.msg
+                self.0.error, origin.line, origin.column, self.0.msg
             )
         } else {
-            write!(f, "{}: {}", self.error, self.msg)
+            write!(f, "{}: {}", self.0.error, self.0.msg)
         }
     }
 }
 
-impl error::Error for Exception {}
+impl error::Error for ExceptionDisplay<'_> {}
 
 /// A shorthand alias for `Result<T, Exception>`.
 pub type Result<T> = result::Result<T, Exception>;
+
+#[derive(Debug)]
+pub struct ExceptionDisplay<'a>(&'a Exception);

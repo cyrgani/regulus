@@ -53,8 +53,8 @@ fn main() {
                 println!("{:?}", state.storage.data)
             }
         }
-        (Err(error), _) => {
-            eprintln!("{}", format!("The program caused an error: {error}").red());
+        (Err(error), state) => {
+            eprintln!("{}", format!("The program caused an error: {}", error.display(&state)).red());
             exit(1);
         }
     }

@@ -41,7 +41,7 @@ pub fn run_test(dir_path: &str, name: &str) {
     let mut stderr = final_state.testing_read_stderr().to_string();
     if let Err(e) = res {
         stderr.push('\n');
-        stderr.push_str(&e.to_string());
+        stderr.push_str(&e.display(&final_state).to_string());
     }
 
     if bless_stream_files {

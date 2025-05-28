@@ -61,6 +61,7 @@ impl Storage {
 }
 
 // TODO: users should be able to set their own stderr/out/in streams too
+// TODO: state should become private and only constructible via `Runner`.
 pub struct State {
     pub storage: Storage,
     stdin: Box<dyn BufRead>,
@@ -71,6 +72,7 @@ pub struct State {
     /// TODO: not updated yet
     #[expect(dead_code, reason = "WIP")]
     pub(crate) current_pos: Position,
+    pub(crate) code: String,
     // make sure this type can never be constructed from outside
     __private: (),
 }
@@ -89,6 +91,7 @@ impl State {
             file_directory: current_dir,
             exit_unwind_value: None,
             current_pos: Position::ONE,
+            code: String::new(),
             __private: (),
         }
     }
@@ -122,6 +125,7 @@ impl State {
             file_directory: Directory::Regular(dir_path.into()),
             exit_unwind_value: None,
             current_pos: Position::ONE,
+            code: String::new(),
             __private: (),
         }
     }
