@@ -166,34 +166,6 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
     Ok(tokens)
 }
 
-pub fn validate_tokens(tokens: &[Token]) -> Result<()> {
-    let mut left_parens = 0;
-    let mut right_parens = 0;
-
-    for token in tokens {
-        match token.data {
-            TokenData::LeftParen => left_parens += 1,
-            TokenData::RightParen => right_parens += 1,
-            _ => (),
-        }
-        if right_parens > left_parens {
-            return raise!(
-                Error::Syntax,
-                "More ')' ({right_parens}) than '(' ({left_parens}) at some time!"
-            );
-        }
-    }
-
-    if left_parens != right_parens {
-        return raise!(
-            Error::Syntax,
-            "Nonequal amount of '(' and ')': {left_parens} vs. {right_parens}",
-        );
-    }
-
-    Ok(())
-}
-
 /// Returns all characters of the text that the given indices enclose.
 /// Returns `None` if the indices are invalid (end before start or out of bounds).
 pub fn extract(text: &str, indices: RangeInclusive<usize>) -> Option<String> {

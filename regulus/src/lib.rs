@@ -41,7 +41,7 @@ pub mod prelude {
 use crate::{
     atom::Atom,
     exception::Result,
-    parsing::{build_program, tokenize, validate_tokens},
+    parsing::{build_program, tokenize},
     state::State,
 };
 use std::path::{Path, PathBuf};
@@ -148,8 +148,6 @@ impl Runner {
         let wrapped_code = format!("_(\n{code}\n)");
 
         let tokens = return_err!(tokenize(&wrapped_code));
-
-        return_err!(validate_tokens(&tokens));
 
         let program = return_err!(build_program(tokens));
 

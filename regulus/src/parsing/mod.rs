@@ -10,7 +10,7 @@ pub mod token;
 
 use crate::parsing::token::Token;
 use crate::prelude::*;
-pub use token::{TokenData, tokenize, validate_tokens};
+pub use token::{TokenData, tokenize};
 
 pub fn build_program(mut tokens: Vec<Token>) -> Result<Argument> {
     tokens.retain(|t| !matches!(t.data, TokenData::Comment(_)));
