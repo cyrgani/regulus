@@ -109,9 +109,10 @@ fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
         return Ok(args);
     }
     if !remaining[0].is_comma() {
-        return Err(Exception::new(
+        return Err(Exception::spanned(
             "missing comma in argument list",
             Error::Syntax,
+            remaining[0].indices.clone(),
         ));
     }
     if remaining.len() > 1 {

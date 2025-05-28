@@ -97,7 +97,7 @@ impl fmt::Display for ExceptionDisplay<'_> {
             write!(
                 f,
                 "{} at {}:{}: {}",
-                self.error, origin.start.line, origin.start.column, self.msg
+                self.error, origin.start.line - 1, origin.start.column, self.msg
             )
         } else {
             write!(f, "{}: {}", self.error, self.msg)
