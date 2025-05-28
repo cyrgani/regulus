@@ -53,11 +53,11 @@ pub type FunctionBody = dyn Fn(&mut State, &[Argument]) -> Result<Atom>;
 pub struct Function(Rc<FunctionInner>);
 
 impl Function {
-    pub fn new(doc: impl Into<String>, argc: Option<usize>, callback: Box<FunctionBody>) -> Self {
+    pub fn new(doc: impl Into<String>, argc: Option<usize>, body: Box<FunctionBody>) -> Self {
         Self(Rc::new(FunctionInner {
             doc: doc.into(),
             argc,
-            callback,
+            body,
         }))
     }
 
@@ -70,14 +70,14 @@ impl Function {
     }
 
     pub fn body(&self) -> &FunctionBody {
-        &self.0.callback
+        &self.0.body
     }
 }
 
 struct FunctionInner {
     doc: String,
     argc: Option<usize>,
-    callback: Box<FunctionBody>,
+    body: Box<FunctionBody>,
 }
 
 // the callback cannot be debugged
@@ -86,7 +86,7 @@ impl fmt::Debug for Function {
         f.debug_struct("Function")
             .field("doc", &self.0.doc)
             .field("argc", &self.0.argc)
-            .field("callback", &"..")
+            .field("body", &"..")
             .finish()
     }
 }
