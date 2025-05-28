@@ -3,7 +3,6 @@ use crate::prelude::*;
 use crate::{Directory, FILE_EXTENSION};
 use std::borrow::Cow;
 use std::fs;
-use std::rc::Rc;
 
 fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
     let body = body.clone();
@@ -16,10 +15,10 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
         })
         .collect::<Result<Vec<_>>>()?;
 
-    let function = FunctionInner {
-        doc: String::new(),
-        argc: Some(function_arg_names.len()),
-        callback: Box::new(move |state, args| {
+    let function = Function::new(
+        String::new(),
+        Some(function_arg_names.len()),
+        Box::new(move |state, args| {
             // a function call should have its own scope and not leak variables
             // except for globals
 
@@ -43,9 +42,9 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
             state.storage.data = old_storage_data;
             function_result
         }),
-    };
+    );
 
-    Ok(Atom::Function(Rc::new(function)))
+    Ok(Atom::Function(function))
 }
 
 fn try_resolve_import_in_dir(name: &str, dir_path: &Directory) -> Option<String> {
@@ -274,10 +273,10 @@ functions! {
         Ok(Atom::Null)
     }
     /// Executes the first argument. If it raises an uncaught exception, runs the second argument.
-    /// 
-    /// If the second argument also throws an exception, it will not be caught by this call and 
+    ///
+    /// If the second argument also throws an exception, it will not be caught by this call and
     /// propagate further.
-    /// 
+    ///
     /// Returns `null`.
     "try_except"(2) => |state, args| {
         if args[0].eval(state).is_err() {

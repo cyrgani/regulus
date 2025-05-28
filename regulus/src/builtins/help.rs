@@ -9,7 +9,7 @@ functions! {
     "help"(1) => |state, args| {
         let arg = args[0].eval(state)?;
         if let Atom::Function(f) = &*arg {
-            Ok(Atom::String(f.doc.to_string()))
+            Ok(Atom::String(f.doc().to_string()))
         } else {
             raise!(Error::Argument, "`help` must be called on a function")
         }

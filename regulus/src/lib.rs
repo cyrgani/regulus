@@ -32,7 +32,7 @@ pub mod prelude {
         argument::{Argument, ArgumentData},
         atom::Atom,
         exception::{Error, Exception, Result},
-        function::{Function, FunctionCall, FunctionInner},
+        function::{Function, FunctionCall},
         functions, raise, run, run_file,
         state::State,
     };

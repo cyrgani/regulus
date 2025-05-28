@@ -18,7 +18,6 @@ def(fictional_main, _(
 ))
 */
 
-use std::rc::Rc;
 use crate::prelude::*;
 
 functions! {
@@ -35,10 +34,10 @@ functions! {
             .map(|field| field.variable("`type` field arguments should be variables").cloned())
             .collect::<Result<Vec<_>>>()?;
 
-        let function = FunctionInner {
-            argc: Some(fields.len()),
-            doc: String::new(),
-            callback: Box::new(move |state, args| {
+        let function = Function::new(
+            String::new(),
+            Some(fields.len()),
+            Box::new(move |state, args| {
                 Ok(Atom::Object(
                     fields
                         .iter()
@@ -47,9 +46,9 @@ functions! {
                         .collect::<Result<_>>()?,
                 ))
             }),
-        };
+        );
 
-        state.storage.insert(var, Atom::Function(Rc::new(function)));
+        state.storage.insert(var, Atom::Function(function));
         Ok(Atom::Null)
     }
     /// Get the value of a field of an object.

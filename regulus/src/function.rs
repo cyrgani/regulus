@@ -32,7 +32,7 @@ impl FunctionCall {
         }
         let function = state.storage.get_function(&self.name)?;
 
-        if let Some(argc) = function.argc {
+        if let Some(argc) = function.argc() {
             let arg_len = self.args.len();
             if argc != arg_len {
                 return raise!(
@@ -43,32 +43,55 @@ impl FunctionCall {
             }
         }
 
-        (function.callback)(state, &self.args)
+        (function.callback())(state, &self.args)
     }
 }
 
 type Callback = dyn Fn(&mut State, &[Argument]) -> Result<Atom>;
 
-pub type Function = Rc<FunctionInner>;
+#[derive(Clone)]
+pub struct Function(Rc<FunctionInner>);
 
-pub struct FunctionInner {
-    pub doc: String,
-    pub argc: Option<usize>,
-    pub callback: Box<Callback>,
+impl Function {
+    pub fn new(doc: impl Into<String>, argc: Option<usize>, callback: Box<Callback>) -> Self {
+        Self(Rc::new(FunctionInner {
+            doc: doc.into(),
+            argc,
+            callback,
+        }))
+    }
+
+    pub fn doc(&self) -> &str {
+        self.0.doc.as_str()
+    }
+
+    pub fn argc(&self) -> Option<usize> {
+        self.0.argc
+    }
+
+    pub fn callback(&self) -> &Callback {
+        &self.0.callback
+    }
+}
+
+struct FunctionInner {
+    doc: String,
+    argc: Option<usize>,
+    callback: Box<Callback>,
 }
 
 // the callback cannot be debugged
-impl fmt::Debug for FunctionInner {
+impl fmt::Debug for Function {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Function")
-            .field("doc", &self.doc)
-            .field("argc", &self.argc)
+            .field("doc", &self.0.doc)
+            .field("argc", &self.0.argc)
             .field("callback", &"..")
             .finish()
     }
 }
 
-impl PartialEq for FunctionInner {
+impl PartialEq for Function {
     fn eq(&self, _other: &Self) -> bool {
         false
     }

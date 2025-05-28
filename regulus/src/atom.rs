@@ -86,7 +86,7 @@ impl fmt::Display for Atom {
             Self::Function(func) => write!(
                 f,
                 "<function>({})",
-                match func.argc {
+                match func.argc() {
                     Some(argc) => argc.to_string(),
                     None => "_".to_string(),
                 }
