@@ -10,16 +10,23 @@ pub mod token;
 
 use crate::parsing::token::Token;
 use crate::prelude::*;
+use std::ops::RangeInclusive;
 pub use token::{TokenData, tokenize};
+
+pub type SpanIndices = RangeInclusive<usize>;
 
 pub fn build_program(mut tokens: Vec<Token>) -> Result<Argument> {
     tokens.retain(|t| !matches!(t.data, TokenData::Comment(_)));
-    let (arg, []) = next_s_step(&tokens)? else {
-        return Err(Exception::new(
+    let (arg, rest) = next_s_step(&tokens)?;
+
+    if !rest.is_empty() {
+        return Err(Exception::spanned(
             "trailing unparsed tokens detected",
             Error::Syntax,
+            rest[0].indices.clone(),
         ));
-    };
+    }
+
     Ok(arg)
 }
 
@@ -53,13 +60,9 @@ fn find_within_parens(tokens: &[Token]) -> Option<(&[Token], &[Token])> {
 /// returns the constructed argument and all remaining tokens
 fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
     if let Some(atom) = get_token(tokens, 0)?.to_atom() {
-        // TODO: check appears to be wrong
-        /*if tokens.len() > 1 {
-            return Err(Exception::new("tokens found after atom", Error::Syntax));
-        }*/
         return Ok((atom, &tokens[1..]));
     }
-    if let Some(name) = get_token(tokens, 0)?.to_name() {
+    if let Some((name_arg, name_str)) = get_token(tokens, 0)?.to_name() {
         // we may not use `?` on the result of `get_token_data`, since that is valid in the `a` or `n` case
         if matches!(
             get_token(tokens, 1).map(|t| &t.data),
@@ -72,12 +75,12 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
                     next_x_step(body)?
                 };
 
-                // todo: would be better to reuse the name already extracted above
-                let name = tokens[0].name().unwrap();
-
                 return Ok((
                     Argument {
-                        data: ArgumentData::FunctionCall(FunctionCall { args, name }),
+                        data: ArgumentData::FunctionCall(FunctionCall {
+                            args,
+                            name: name_str,
+                        }),
                         span_indices: *tokens[1].indices.start()
                             ..=*tokens.last().unwrap().indices.end(),
                     },
@@ -85,7 +88,7 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
                 ));
             }
         } else {
-            return Ok((name, &tokens[1..]));
+            return Ok((name_arg, &tokens[1..]));
         }
     }
     // TODO: better error message

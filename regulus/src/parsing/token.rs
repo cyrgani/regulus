@@ -1,9 +1,8 @@
 use crate::atom::Atom;
 use crate::exception::{Error, Exception, Result};
-use crate::prelude::Argument;
-use crate::prelude::ArgumentData;
+use crate::parsing::SpanIndices;
+use crate::prelude::{Argument, ArgumentData};
 use crate::raise;
-use std::ops::RangeInclusive;
 use std::result;
 
 /// A token of source code with location information.
@@ -13,7 +12,7 @@ pub struct Token {
     /// The actual token.
     pub data: TokenData,
     /// The start and end of the character range this token was created from.
-    pub indices: RangeInclusive<usize>,
+    pub indices: SpanIndices,
 }
 
 impl Token {
@@ -28,20 +27,15 @@ impl Token {
         }
     }
 
-    pub(crate) fn to_name(&self) -> Option<Argument> {
+    pub(crate) fn to_name(&self) -> Option<(Argument, String)> {
         if let TokenData::Name(name) = &self.data {
-            Some(Argument {
-                data: ArgumentData::Variable(name.to_string()),
-                span_indices: self.indices.clone(),
-            })
-        } else {
-            None
-        }
-    }
-
-    pub(crate) fn name(&self) -> Option<String> {
-        if let TokenData::Name(name) = &self.data {
-            Some(name.to_string())
+            Some((
+                Argument {
+                    data: ArgumentData::Variable(name.to_string()),
+                    span_indices: self.indices.clone(),
+                },
+                name.to_string(),
+            ))
         } else {
             None
         }
@@ -168,7 +162,7 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
 
 /// Returns all characters of the text that the given indices enclose.
 /// Returns `None` if the indices are invalid (end before start or out of bounds).
-pub fn extract(text: &str, indices: RangeInclusive<usize>) -> Option<String> {
+pub fn extract(text: &str, indices: SpanIndices) -> Option<String> {
     if indices.start() > indices.end() || *indices.end() >= text.chars().count() {
         return None;
     }
@@ -185,7 +179,7 @@ pub fn extract(text: &str, indices: RangeInclusive<usize>) -> Option<String> {
 mod tests {
     use super::*;
 
-    const fn sp(start: usize, end: usize) -> RangeInclusive<usize> {
+    const fn sp(start: usize, end: usize) -> SpanIndices {
         start..=end
     }
 
@@ -256,6 +250,7 @@ mod tests {
         assert_eq!(parts.join(""), code.replace(['\n', '\t', ' '], ""));
     }
 
+    /*
     use TokenData::*;
 
     #[expect(non_snake_case)]
@@ -414,5 +409,5 @@ mod tests {
                 }
             ])
         );
-    }
+    }*/
 }

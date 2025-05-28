@@ -2,7 +2,8 @@
 //!  - exceptions have spans and tracebacks
 //!  - `Error` will be removed
 //!  - `catch(1)`'s functionality (exception -> string) will remain but might be renamed
-use crate::parsing::positions::Position;
+use crate::parsing::SpanIndices;
+use crate::parsing::positions::Span;
 use crate::prelude::State;
 use std::{error, fmt, result};
 
@@ -33,7 +34,8 @@ impl fmt::Display for Error {
 pub struct Exception {
     pub msg: String,
     pub error: Error,
-    pub origin: Option<Position>,
+    // todo: this will eventually stop being optional
+    pub origin: Option<SpanIndices>,
 }
 
 impl Exception {
@@ -45,16 +47,23 @@ impl Exception {
         }
     }
 
-    pub fn spanned(msg: impl Into<String>, error: Error, pos: Position) -> Self {
+    pub fn spanned(msg: impl Into<String>, error: Error, indices: SpanIndices) -> Self {
         Self {
             msg: msg.into(),
             error,
-            origin: Some(pos),
+            origin: Some(indices),
         }
     }
 
     pub fn display(&self, state: &State) -> ExceptionDisplay<'_> {
-        ExceptionDisplay(self)
+        ExceptionDisplay {
+            msg: &self.msg,
+            error: &self.error,
+            origin: self
+                .origin
+                .as_ref()
+                .map(|indices| Span::from_indices(indices.clone(), &state.code)),
+        }
     }
 }
 
@@ -74,16 +83,24 @@ macro_rules! raise {
     };
 }
 
+#[derive(Debug)]
+pub struct ExceptionDisplay<'a> {
+    msg: &'a String,
+    error: &'a Error,
+    // todo: will stop being optional soon
+    origin: Option<Span>,
+}
+
 impl fmt::Display for ExceptionDisplay<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(origin) = self.0.origin.as_ref() {
+        if let Some(origin) = self.origin.as_ref() {
             write!(
                 f,
                 "{} at {}:{}: {}",
-                self.0.error, origin.line, origin.column, self.0.msg
+                self.error, origin.start.line, origin.start.column, self.msg
             )
         } else {
-            write!(f, "{}: {}", self.0.error, self.0.msg)
+            write!(f, "{}: {}", self.error, self.msg)
         }
     }
 }
@@ -92,6 +109,3 @@ impl error::Error for ExceptionDisplay<'_> {}
 
 /// A shorthand alias for `Result<T, Exception>`.
 pub type Result<T> = result::Result<T, Exception>;
-
-#[derive(Debug)]
-pub struct ExceptionDisplay<'a>(&'a Exception);

@@ -1,5 +1,5 @@
+use crate::parsing::SpanIndices;
 use std::cmp::Ordering;
-use std::ops::RangeInclusive;
 use std::str::Chars;
 
 /// A region of source code.
@@ -15,9 +15,14 @@ pub struct Span {
 }
 
 impl Span {
-    pub fn from_indices(indices: RangeInclusive<usize>, code: &str) -> Self {
+    pub fn from_indices(indices: SpanIndices, code: &str) -> Self {
+        // TODO: horribly inefficient to redo the iteration for each span,
+        //  better: just do the iteration once, collect and then pass the slice to this function
         let mut positions = CharPositions::new(code);
         let (start, _) = positions.nth(*indices.start()).unwrap();
+        if indices.start() == indices.end() {
+            return Self { start, end: start };
+        }
         let (end, _) = positions.nth(*indices.end() - *indices.start()).unwrap();
         Self { start, end }
     }
