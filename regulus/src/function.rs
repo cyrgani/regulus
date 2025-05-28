@@ -43,17 +43,17 @@ impl FunctionCall {
             }
         }
 
-        (function.callback())(state, &self.args)
+        (function.body())(state, &self.args)
     }
 }
 
-type Callback = dyn Fn(&mut State, &[Argument]) -> Result<Atom>;
+pub type FunctionBody = dyn Fn(&mut State, &[Argument]) -> Result<Atom>;
 
 #[derive(Clone)]
 pub struct Function(Rc<FunctionInner>);
 
 impl Function {
-    pub fn new(doc: impl Into<String>, argc: Option<usize>, callback: Box<Callback>) -> Self {
+    pub fn new(doc: impl Into<String>, argc: Option<usize>, callback: Box<FunctionBody>) -> Self {
         Self(Rc::new(FunctionInner {
             doc: doc.into(),
             argc,
@@ -69,7 +69,7 @@ impl Function {
         self.0.argc
     }
 
-    pub fn callback(&self) -> &Callback {
+    pub fn body(&self) -> &FunctionBody {
         &self.0.callback
     }
 }
@@ -77,7 +77,7 @@ impl Function {
 struct FunctionInner {
     doc: String,
     argc: Option<usize>,
-    callback: Box<Callback>,
+    callback: Box<FunctionBody>,
 }
 
 // the callback cannot be debugged

@@ -88,6 +88,7 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
             return Ok((name, &tokens[1..]));
         }
     }
+    // TODO: better error message
     Err(Exception::new(
         "missing or invalid tokens for s_step",
         Error::Syntax,
@@ -96,6 +97,7 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
 
 fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
     if tokens.is_empty() {
+        // TODO: better error message
         return Err(Exception::new("missing tokens for x_step", Error::Syntax));
     }
     let (first_arg, remaining) = next_s_step(tokens)?;
