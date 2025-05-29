@@ -147,44 +147,31 @@ impl State {
 
     /// Run the program specified by this configuration.
     ///
-    /// Returns the result the program returned and the final state.
-    ///
-    /// If `starting_state` is specified, it overrides `current_dir`.
+    /// Returns the result the program returned.
     ///
     /// # Panics
-    /// Panics if the configuration is invalid.
-    /// This happens if one of the following cases occurs:
-    /// * `code` is missing
-    pub fn run(mut self) -> (Result<Atom>, Self) {
+    /// Panics if `code` was not set.
+    pub fn run(&mut self) -> Result<Atom> {
         assert!(
             self.code_was_initialized,
             "setting the source code is required"
         );
 
-        macro_rules! return_err {
-            ($val: expr) => {
-                match $val {
-                    Ok(ok) => ok,
-                    Err(err) => return (Err(err), self),
-                }
-            };
-        }
-
         // newlines are needed to avoid interaction with comments
         // might also help with calculating the actual spans (just do line - 1)
         self.code = format!("_(\n{}\n)", self.code);
 
-        let tokens = return_err!(tokenize(&self.code));
+        let tokens = tokenize(&self.code)?;
 
-        let program = return_err!(build_program(tokens));
+        let program = build_program(tokens)?;
 
-        let result = return_err!(program.eval(&mut self)).into_owned();
+        let result = program.eval(self)?.into_owned();
 
         if let Some(exit_unwind_value) = &self.exit_unwind_value {
-            return (exit_unwind_value.clone(), self);
+            return exit_unwind_value.clone();
         }
 
-        (Ok(result), self)
+        Ok(result)
     }
 
     pub fn stdin(&mut self) -> &mut Box<dyn BufRead> {

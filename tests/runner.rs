@@ -28,23 +28,23 @@ pub fn run_test(dir_path: &str, name: &str) {
     }
 
     let base_path = PathBuf::from(dir_path).join(name);
-    let mut starting_state = State::new()
+    let mut state = State::new()
         .with_source_file(base_path.with_extension(FILE_EXTENSION))
         .expect("fatal error: program file not found");
-    *starting_state.stdin() = Box::new(BufReader::new(VecReader(
+    *state.stdin() = Box::new(BufReader::new(VecReader(
         read_file_or_empty(&base_path, "stdin").into_bytes(),
     )));
-    *starting_state.stdout() = WriteHandle::Buffer(vec![]);
-    *starting_state.stderr() = WriteHandle::Buffer(vec![]);
+    *state.stdout() = WriteHandle::Buffer(vec![]);
+    *state.stderr() = WriteHandle::Buffer(vec![]);
 
-    let (res, mut final_state) = starting_state.run();
+    let res = state.run();
 
-    let stdout = final_state.stdout().read_buffer().to_owned();
-    let mut stderr = final_state.stderr().read_buffer().to_owned();
+    let stdout = state.stdout().read_buffer().to_owned();
+    let mut stderr = state.stderr().read_buffer().to_owned();
 
     if let Err(e) = res {
         stderr.push('\n');
-        stderr.push_str(&e.display(&final_state).to_string());
+        stderr.push_str(&e.display(&state).to_string());
     }
 
     if bless_stream_files {

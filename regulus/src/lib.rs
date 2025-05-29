@@ -64,7 +64,7 @@ pub(crate) enum Directory {
 /// # Panics
 /// Panics if the path is invalid or cannot be read from.
 pub fn run_file(path: impl AsRef<Path>) -> Result<Atom> {
-    State::new().with_source_file(path).unwrap().run().0
+    State::new().with_source_file(path).unwrap().run()
 }
 
 /// A convenient helper for directly running a program string.
@@ -73,7 +73,7 @@ pub fn run_file(path: impl AsRef<Path>) -> Result<Atom> {
 ///
 /// For more options, use [`State`] instead.
 pub fn run(code: impl AsRef<str>) -> Result<Atom> {
-    State::new().with_code(code).run().0
+    State::new().with_code(code).run()
 }
 
 #[cfg(test)]
@@ -83,24 +83,14 @@ mod tests {
     #[test]
     fn bare_value_program_return() {
         assert_eq!(
-            State::new()
-                .with_code("_(4)")
-                .run()
-                .0
-                .unwrap()
-                .int()
-                .unwrap(),
+            State::new().with_code("_(4)").run().unwrap().int().unwrap(),
             4
         );
-        assert_eq!(
-            State::new().with_code("4").run().0.unwrap().int().unwrap(),
-            4
-        );
+        assert_eq!(State::new().with_code("4").run().unwrap().int().unwrap(), 4);
         assert_eq!(
             State::new()
                 .with_code("=(x, 4), x")
                 .run()
-                .0
                 .unwrap()
                 .int()
                 .unwrap(),
