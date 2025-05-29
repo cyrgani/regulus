@@ -1,2 +1,2 @@
 
-SyntaxError at 2:14: missing comma in argument list
+<file>:2:14: SyntaxError: missing comma in argument list

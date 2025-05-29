@@ -5,6 +5,7 @@
 use crate::parsing::positions::{ExpandedSpan, Span};
 use crate::prelude::State;
 use std::{error, fmt, result};
+use std::path::PathBuf;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Error {
@@ -58,9 +59,7 @@ impl Exception {
         ExceptionDisplay {
             msg: &self.msg,
             error: &self.error,
-            origin: self
-                .origin
-                .map(|span| ExpandedSpan::from_span(span, state.code())),
+            origin: self.origin.map(|span| span.expand(state)),
         }
     }
 }
@@ -94,10 +93,16 @@ impl fmt::Display for ExceptionDisplay<'_> {
         if let Some(origin) = self.origin.as_ref() {
             write!(
                 f,
-                "{} at {}:{}: {}",
-                self.error,
+                "{}:{}:{}: {}: {}",
+                // TODO: this check might be temporary
+                if origin.file == PathBuf::new() {
+                    "<file>".to_string()
+                } else {
+                    origin.file.display().to_string()
+                },
                 origin.start.line - 1,
                 origin.start.column,
+                self.error,
                 self.msg
             )
         } else {

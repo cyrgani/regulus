@@ -81,6 +81,7 @@ pub struct State {
     pub(crate) current_pos: Position,
     code: String,
     code_was_initialized: bool,
+    file_path_indices: Vec<PathBuf>,
     // make sure this type can never be constructed from outside
     __private: (),
 }
@@ -107,6 +108,7 @@ impl State {
             current_pos: Position::ONE,
             code: String::new(),
             code_was_initialized: false,
+            file_path_indices: vec![],
             __private: (),
         }
     }
@@ -204,9 +206,33 @@ impl State {
         &mut self.stderr
     }
 
+    /// Returns an immutable reference to the source code.
+    /// 
+    /// # Panics
+    /// Panics if the source code was not yet initialized.
     pub(crate) fn code(&self) -> &str {
         self.assert_code_init();
         &self.code
+    }
+    
+    /// Adds the given file path to the index of file paths.
+    /// Returns the index this path has now.
+    pub(crate) fn add_file_to_index(&mut self, path: impl AsRef<Path>) -> usize {
+        self.file_path_indices.push(path.as_ref().to_path_buf());
+        self.file_path_indices.len() - 1
+    }
+    
+    /// Resolves a file path index to a [`PathBuf`].
+    /// 
+    /// TODO: as a temporary measure, this returns an empty [`PathBuf`] when [`usize::MAX`] is passed. 
+    /// 
+    /// # Panics
+    /// Panics if the index is out of bounds.
+    pub(crate) fn resolve_file_index(&self, index: usize) -> PathBuf {
+        if index == usize::MAX {
+            return PathBuf::new();
+        }
+        self.file_path_indices[index].clone()
     }
 }
 

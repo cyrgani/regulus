@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::cmp::Ordering;
 use std::str::Chars;
 use crate::state::State;
@@ -31,12 +32,13 @@ impl Span {
         // TODO: horribly inefficient to redo the iteration for each span,
         //  better: just do the iteration once, collect and then pass the slice to this function
         let mut positions = CharPositions::new(state.code());
+        let file = state.resolve_file_index(self.file_index);
         let (start, _) = positions.nth(self.start).unwrap();
         if self.start == self.end {
-            return ExpandedSpan { start, end: start };
+            return ExpandedSpan { file, start, end: start };
         }
         let (end, _) = positions.nth(self.end - self.start).unwrap();
-        ExpandedSpan { start, end }
+        ExpandedSpan { file, start, end }
     }
 }
 
@@ -44,8 +46,8 @@ impl Span {
 /// Both start and end are inclusive.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExpandedSpan {
-    // TODO add this field or rather not?
-    // pub file: PathBuf,
+    /// The file path this span points to.
+    pub file: PathBuf,
     /// The start position of the span, inclusive.
     pub start: Position,
     /// The end position of the span, inclusive.
@@ -59,11 +61,12 @@ impl ExpandedSpan {
         //  better: just do the iteration once, collect and then pass the slice to this function
         let mut positions = CharPositions::new(code);
         let (start, _) = positions.nth(span.start).unwrap();
+        let file = PathBuf::new();
         if span.start == span.end {
-            return Self { start, end: start };
+            return Self { start, end: start, file };
         }
         let (end, _) = positions.nth(span.end - span.start).unwrap();
-        Self { start, end }
+        Self { file, start, end }
     }
 }
 
@@ -169,8 +172,9 @@ mod tests {
         assert!(p(2, 1) > p(1, 10));
     }
 
-    const fn sp(l1: usize, c1: usize, l2: usize, c2: usize) -> ExpandedSpan {
+    fn sp(l1: usize, c1: usize, l2: usize, c2: usize) -> ExpandedSpan {
         ExpandedSpan {
+            file: PathBuf::new(),
             start: p(l1, c1),
             end: p(l2, c2),
         }
