@@ -180,22 +180,22 @@ functions! {
         };
 
         // TODO: consider using `.with_file()` here instead
-        let mut import_start_state = State::new().with_code(code);
-        import_start_state.file_directory = source_dir;
-        import_start_state.storage.global_idents.clone_from(&state.storage.global_idents);
-        import_start_state.storage.data.extend(state.storage.global_items());
-        let (atom, imported_state) = import_start_state.run();
+        let mut import_state = State::new().with_code(code);
+        import_state.file_directory = source_dir;
+        import_state.storage.global_idents.clone_from(&state.storage.global_idents);
+        import_state.storage.data.extend(state.storage.global_items());
+        let atom = import_state.run();
 
-        if let Some(exit_unwind_value) = imported_state.exit_unwind_value {
+        if let Some(exit_unwind_value) = import_state.exit_unwind_value {
             state.exit_unwind_value = Some(exit_unwind_value);
             return Ok(Atom::Null);
         }
         let atom = atom?;
 
-        for (k, v) in imported_state.storage.data {
+        for (k, v) in import_state.storage.data {
             state.storage.insert(k, v);
         }
-        state.storage.global_idents = imported_state.storage.global_idents;
+        state.storage.global_idents = import_state.storage.global_idents;
         Ok(atom)
     }
     /// Raises an exception of the kind `UserRaised` with the given string message.
@@ -265,7 +265,7 @@ functions! {
     /// TODO: think about imports, test them
     "eval"(1) => |state, args| {
         let code = args[0].eval(state)?.string()?;
-        State::new().with_code(code).run().0
+        State::new().with_code(code).run()
     }
     /// Marks a variable identifier as global.
     ///

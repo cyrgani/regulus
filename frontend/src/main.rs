@@ -42,9 +42,8 @@ fn main() {
         }
     }
 
-    let result = state.run();
-    match result {
-        (Ok(atom), state) => {
+    match state.run() {
+        Ok(atom) => {
             match atom {
                 Atom::Null => (),
                 _ => println!("{atom:?}"),
@@ -53,7 +52,7 @@ fn main() {
                 println!("{:?}", state.storage.data)
             }
         }
-        (Err(error), state) => {
+        Err(error) => {
             eprintln!(
                 "{}",
                 format!("The program caused an error: {}", error.display(&state)).red()
