@@ -55,7 +55,7 @@ impl Exception {
         }
     }
 
-    pub fn display(&self, state: &State) -> ExceptionDisplay<'_> {
+    pub fn display(&self, state: &State) -> impl error::Error {
         ExceptionDisplay {
             msg: &self.msg,
             error: &self.error,
@@ -84,7 +84,7 @@ macro_rules! raise {
 }
 
 #[derive(Debug)]
-pub struct ExceptionDisplay<'a> {
+struct ExceptionDisplay<'a> {
     msg: &'a String,
     error: &'a Error,
     // todo: will stop being optional soon

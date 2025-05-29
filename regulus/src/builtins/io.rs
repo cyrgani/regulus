@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::io::Write;
 
 fn write_to_stdout(state: &mut State, msg: &str) {
     state.stdout().write_all(msg.as_bytes()).unwrap();

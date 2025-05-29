@@ -179,11 +179,12 @@ functions! {
             );
         };
 
-        // TODO: consider using `.file()` here instead
-        let mut import_start_state = State::initial_with_dir(source_dir);
+        // TODO: consider using `.with_file()` here instead
+        let mut import_start_state = State::new().with_code(code);
+        import_start_state.file_directory = source_dir;
         import_start_state.storage.global_idents.clone_from(&state.storage.global_idents);
         import_start_state.storage.data.extend(state.storage.global_items());
-        let (atom, imported_state) = Runner::new().code(code).starting_state(import_start_state).run();
+        let (atom, imported_state) = import_start_state.run();
 
         if let Some(exit_unwind_value) = imported_state.exit_unwind_value {
             state.exit_unwind_value = Some(exit_unwind_value);
@@ -264,7 +265,7 @@ functions! {
     /// TODO: think about imports, test them
     "eval"(1) => |state, args| {
         let code = args[0].eval(state)?.string()?;
-        Runner::new().code(code).run().0
+        State::new().with_code(code).run().0
     }
     /// Marks a variable identifier as global.
     ///
