@@ -1,11 +1,21 @@
 use crate::parsing::SpanIndices;
 use std::cmp::Ordering;
+use std::ops::RangeInclusive;
 use std::str::Chars;
+
+/// A memory-efficient version of [`ExpandedSpan`].
+/// Using a [`State`](crate::prelude::State), this can be converted into an [`ExpandedSpan`] 
+/// for display purposes.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Span {
+    pub indices: RangeInclusive<usize>,
+    pub file_index: usize,
+}
 
 /// A region of source code.
 /// Both start and end are inclusive.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Span {
+pub struct ExpandedSpan {
     // TODO add this field or rather not?
     // pub file: PathBuf,
     /// The start position of the span, inclusive.
@@ -14,7 +24,7 @@ pub struct Span {
     pub end: Position,
 }
 
-impl Span {
+impl ExpandedSpan {
     pub fn from_indices(indices: SpanIndices, code: &str) -> Self {
         // TODO: horribly inefficient to redo the iteration for each span,
         //  better: just do the iteration once, collect and then pass the slice to this function
@@ -130,8 +140,8 @@ mod tests {
         assert!(p(2, 1) > p(1, 10));
     }
 
-    const fn sp(l1: usize, c1: usize, l2: usize, c2: usize) -> Span {
-        Span {
+    const fn sp(l1: usize, c1: usize, l2: usize, c2: usize) -> ExpandedSpan {
+        ExpandedSpan {
             start: p(l1, c1),
             end: p(l2, c2),
         }
@@ -140,13 +150,13 @@ mod tests {
     #[test]
     fn span_from_indices() {
         let s = "abc\nde\nf\n";
-        assert_eq!(Span::from_indices(0..=2, s), sp(1, 1, 1, 4));
-        assert_eq!(Span::from_indices(2..=6, s), sp(1, 3, 3, 1));
+        assert_eq!(ExpandedSpan::from_indices(0..=2, s), sp(1, 1, 1, 4));
+        assert_eq!(ExpandedSpan::from_indices(2..=6, s), sp(1, 3, 3, 1));
     }
 
     #[test]
     #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
     fn span_from_indices_panic() {
-        Span::from_indices(0..=1000, "abc\nde\nf\n");
+        ExpandedSpan::from_indices(0..=1000, "abc\nde\nf\n");
     }
 }

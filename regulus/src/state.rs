@@ -225,7 +225,7 @@ impl<T: Write> WriteHandle<T> {
     /// Panics if it is not a buffer or if it does not contain valid UTF-8.
     pub fn read_buffer(&self) -> &str {
         let Self::Buffer(buf) = self else {
-            unreachable!()
+            panic!("read_buffer() expected a buffer")
         };
         str::from_utf8(buf).unwrap()
     }

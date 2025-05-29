@@ -42,7 +42,7 @@ macro_rules! functions {
     ($(
         $(#[doc = $doc: literal])* $name: literal ($argc: tt) => $callback: expr)
     *) => {
-        pub fn functions() -> Vec<(&'static str, $crate::prelude::Function)> {
+        pub fn functions() -> std::vec::Vec<(&'static str, $crate::prelude::Function)> {
             $(
                 $crate::check_nonempty_doc! {
                     $(#[doc = $doc])* $name

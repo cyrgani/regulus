@@ -3,7 +3,7 @@
 //!  - `Error` will be removed
 //!  - `catch(1)`'s functionality (exception -> string) will remain but might be renamed
 use crate::parsing::SpanIndices;
-use crate::parsing::positions::Span;
+use crate::parsing::positions::ExpandedSpan;
 use crate::prelude::State;
 use std::{error, fmt, result};
 
@@ -62,7 +62,7 @@ impl Exception {
             origin: self
                 .origin
                 .as_ref()
-                .map(|indices| Span::from_indices(indices.clone(), state.code())),
+                .map(|indices| ExpandedSpan::from_indices(indices.clone(), state.code())),
         }
     }
 }
@@ -88,7 +88,7 @@ struct ExceptionDisplay<'a> {
     msg: &'a String,
     error: &'a Error,
     // todo: will stop being optional soon
-    origin: Option<Span>,
+    origin: Option<ExpandedSpan>,
 }
 
 impl fmt::Display for ExceptionDisplay<'_> {
