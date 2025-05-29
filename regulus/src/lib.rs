@@ -28,16 +28,16 @@ mod interned_stdlib;
 // TODO: reconsider and redesign the prelude, differentiate between internal and external usage
 pub mod prelude {
     pub use crate::{
-        Runner,
         argument::{Argument, ArgumentData},
         atom::Atom,
         exception::{Error, Exception, Result},
         function::{Function, FunctionBody, FunctionCall},
         functions, raise, run, run_file,
-        state::State,
+        state::{State, WriteHandle},
     };
 }
 
+use crate::state::Storage;
 use crate::{
     atom::Atom,
     exception::Result,
@@ -49,15 +49,19 @@ use std::{env, fs, io};
 
 pub const FILE_EXTENSION: &str = "re";
 
+// TODO: current idea: get rid of `Runner`, move all its relevant methods to `State`,
+//  then there will be `State::run` and so on
+
+/// TODO: update all docs for `Runner`.
 /// A set of options required for running a Regulus program.
 ///
 /// Only `code` must be specified,
 /// `current_dir` and `starting_state` have default values.
 #[must_use]
+#[deprecated]
 pub struct Runner {
     code: Option<String>,
-    current_dir: Directory,
-    starting_state: Option<State>,
+    starting_state: State,
 }
 
 impl Default for Runner {
@@ -67,12 +71,12 @@ impl Default for Runner {
 }
 
 impl Runner {
-    pub const fn new() -> Self {
-        Self {
+    pub fn new() -> Self {
+        panic!()
+        /*Self {
             code: None,
-            current_dir: Directory::InternedSTL,
-            starting_state: None,
-        }
+            starting_state: State::initial_with_dir(Directory::InternedSTL),
+        }*/
     }
 
     /// Sets both the code and the current directory by reading from the given file path.
@@ -88,7 +92,7 @@ impl Runner {
         if current_dir == PathBuf::new() {
             current_dir = PathBuf::from(".");
         }
-        self.current_dir = Directory::Regular(current_dir);
+        self.starting_state.file_directory = Directory::Regular(current_dir);
         Ok(self)
     }
 
@@ -101,7 +105,7 @@ impl Runner {
     ///
     /// This is used to resolve imports of other local files in the same directory.
     pub fn current_dir(mut self, dir_path: impl AsRef<Path>) -> Self {
-        self.current_dir = Directory::Regular(dir_path.as_ref().to_path_buf());
+        self.starting_state.file_directory = Directory::Regular(dir_path.as_ref().to_path_buf());
         self
     }
 
@@ -113,8 +117,14 @@ impl Runner {
         self.current_dir(env::current_dir().unwrap())
     }
 
+    #[deprecated]
     pub fn starting_state(mut self, state: State) -> Self {
-        self.starting_state = Some(state);
+        self.starting_state = state;
+        self
+    }
+
+    pub fn starting_storage(mut self, storage: Storage) -> Self {
+        self.starting_state.storage = storage;
         self
     }
 
@@ -130,9 +140,7 @@ impl Runner {
     /// * `code` is missing
     pub fn run(self) -> (Result<Atom>, State) {
         let code = self.code.expect("code is required");
-        let mut state = self
-            .starting_state
-            .unwrap_or_else(|| State::initial_with_dir(self.current_dir));
+        let mut state = self.starting_state;
 
         macro_rules! return_err {
             ($val: expr) => {
@@ -173,21 +181,21 @@ pub(crate) enum Directory {
 ///
 /// Returns only the result of running the program, not the final state.
 ///
-/// For more options, use [`Runner`] instead.
+/// For more options, use [`State`] instead.
 ///
 /// # Panics
 /// Panics if the path is invalid or cannot be read from.
 pub fn run_file(path: impl AsRef<Path>) -> Result<Atom> {
-    Runner::new().file(path).unwrap().run().0
+    State::new().with_source_file(path).unwrap().run().0
 }
 
 /// A convenient helper for directly running a program string.
 ///
 /// Returns only the result of running the program, not the final state.
 ///
-/// For more options, use [`Runner`] instead.
+/// For more options, use [`State`] instead.
 pub fn run(code: impl AsRef<str>) -> Result<Atom> {
-    Runner::new().code(code).run().0
+    State::new().with_code(code).run().0
 }
 
 #[cfg(test)]
@@ -197,13 +205,22 @@ mod tests {
     #[test]
     fn bare_value_program_return() {
         assert_eq!(
-            Runner::new().code("_(4)").run().0.unwrap().int().unwrap(),
+            State::new()
+                .with_code("_(4)")
+                .run()
+                .0
+                .unwrap()
+                .int()
+                .unwrap(),
             4
         );
-        assert_eq!(Runner::new().code("4").run().0.unwrap().int().unwrap(), 4);
         assert_eq!(
-            Runner::new()
-                .code("=(x, 4), x")
+            State::new().with_code("4").run().0.unwrap().int().unwrap(),
+            4
+        );
+        assert_eq!(
+            State::new()
+                .with_code("=(x, 4), x")
                 .run()
                 .0
                 .unwrap()

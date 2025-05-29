@@ -28,10 +28,10 @@ fn main() {
     let args = Args::parse();
 
     //let t = Instant::now();
-    let mut runner = Runner::new();
-    match runner.file(args.path) {
+    let mut state = State::new();
+    match state.with_source_file(args.path) {
         Ok(updated) => {
-            runner = updated;
+            state = updated;
         }
         Err(err) => {
             eprintln!(
@@ -42,7 +42,7 @@ fn main() {
         }
     }
 
-    let result = runner.run();
+    let result = state.run();
     match result {
         (Ok(atom), state) => {
             match atom {

@@ -1,11 +1,13 @@
+use crate::build_program;
+use crate::tokenize;
 use crate::Directory;
 use crate::builtins::all_functions;
 use crate::parsing::positions::Position;
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
-use std::io::{BufRead, BufReader, Read, Stderr, Stdout, Write, stderr, stdin, stdout};
-use std::path::Path;
-use std::{io, str};
+use std::io::{BufRead, BufReader, Stderr, Stdout, Write, stderr, stdin, stdout};
+use std::path::{Path, PathBuf};
+use std::{env, fs, io, str};
 
 pub struct Storage {
     // TODO: consider a HashMap<String, (bool, Atom)> instead, the bool means local / global
@@ -61,7 +63,8 @@ impl Storage {
 }
 
 // TODO: users should be able to set their own stderr/out/in streams too
-// TODO: state should become private and only constructible via `Runner`.
+
+// TODO: add and update all docs here!
 pub struct State {
     pub storage: Storage,
     stdin: Box<dyn BufRead>,
@@ -73,95 +76,194 @@ pub struct State {
     #[expect(dead_code, reason = "WIP")]
     pub(crate) current_pos: Position,
     pub(crate) code: String,
+    code_was_initialized: bool,
     // make sure this type can never be constructed from outside
     __private: (),
 }
 
-impl State {
-    pub fn initial(current_dir: impl AsRef<Path>) -> Self {
-        Self::initial_with_dir(Directory::Regular(current_dir.as_ref().to_path_buf()))
+impl Default for State {
+    fn default() -> Self {
+        Self::new()
     }
+}
 
-    pub(crate) fn initial_with_dir(current_dir: Directory) -> Self {
+impl State {
+    pub fn new() -> Self {
         Self {
             storage: Storage::initial(),
             stdin: Box::new(BufReader::new(stdin())),
             stdout: WriteHandle::Regular(stdout()),
             stderr: WriteHandle::Regular(stderr()),
+            file_directory: Directory::InternedSTL,
+            exit_unwind_value: None,
+            current_pos: Position::ONE,
+            code: String::new(),
+            code_was_initialized: false,
+            __private: (),
+        }
+    }
+
+    /// Sets the code that will be executed.
+    #[must_use = "this returns the new state without modifying the original"]
+    pub fn with_code(mut self, code: impl AsRef<str>) -> Self {
+        code.as_ref().clone_into(&mut self.code);
+        self.code_was_initialized = true;
+        self
+    }
+
+    /// Sets both the code and the current directory by reading from the given file path.
+    ///
+    /// # Errors
+    /// Returns an error if reading from the file failed.
+    ///
+    /// # Panics
+    /// Panics if the path is invalid.
+    #[must_use = "this returns the new state without modifying the original"]
+    pub fn with_source_file(mut self, path: impl AsRef<Path>) -> io::Result<Self> {
+        self.code = fs::read_to_string(&path)?;
+        self.code_was_initialized = true;
+        
+        let mut current_dir = path.as_ref().parent().unwrap().to_path_buf();
+        if current_dir == PathBuf::new() {
+            current_dir = PathBuf::from(".");
+        }
+        self.file_directory = Directory::Regular(current_dir);
+        Ok(self)    
+    }
+
+    /// Sets the source directory for resolving imports to the given directory.
+    #[must_use = "this returns the new state without modifying the original"]
+    pub fn with_source_directory(mut self, dir_path: impl AsRef<Path>) -> Self {
+        self.file_directory = Directory::Regular(dir_path.as_ref().to_path_buf());
+        self
+    }
+
+    /// Sets the current directory to the operating systems current working directory.
+    ///
+    /// # Panics
+    /// Panics if [`env::current_dir`] returned an error.
+    #[must_use = "this returns the new state without modifying the original"]
+    pub fn with_cwd(self) -> Self {
+        self.with_source_directory(env::current_dir().unwrap())
+    }
+
+    /// Run the program specified by this configuration.
+    ///
+    /// Returns the result the program returned and the final state.
+    ///
+    /// If `starting_state` is specified, it overrides `current_dir`.
+    ///
+    /// # Panics
+    /// Panics if the configuration is invalid.
+    /// This happens if one of the following cases occurs:
+    /// * `code` is missing
+    pub fn run(mut self) -> (Result<Atom>, Self) {
+        assert!(self.code_was_initialized, "setting the source code is required");
+
+        macro_rules! return_err {
+            ($val: expr) => {
+                match $val {
+                    Ok(ok) => ok,
+                    Err(err) => return (Err(err), self),
+                }
+            };
+        }
+
+        // newlines are needed to avoid interaction with comments
+        // might also help with calculating the actual spans (just do line - 1)
+        self.code = format!("_(\n{}\n)", self.code);
+
+        let tokens = return_err!(tokenize(&self.code));
+
+        let program = return_err!(build_program(tokens));
+
+        let result = return_err!(program.eval(&mut self)).into_owned();
+
+        if let Some(exit_unwind_value) = &self.exit_unwind_value {
+            return (exit_unwind_value.clone(), self);
+        }
+
+        (Ok(result), self)
+    }
+
+    /*#[deprecated]
+    pub fn initial(current_dir: impl AsRef<Path>) -> Self {
+        Self::initial_with_dir(Directory::Regular(current_dir.as_ref().to_path_buf()))
+    }*/
+
+    /*#[deprecated]
+    pub(crate) fn initial_with_dir(current_dir: Directory) -> Self {
+        Self {
+            storage: Storage::initial(),
+            stdin: Box::new(BufReader::new(stdin())),
+            stdout: Box::new(stdout()),
+            stderr: Box::new(stderr()),
             file_directory: current_dir,
             exit_unwind_value: None,
             current_pos: Position::ONE,
             code: String::new(),
+            code_was_initialized: false,
             __private: (),
         }
-    }
+    }*/
 
-    pub(crate) fn stdin(&mut self) -> &mut dyn BufRead {
+    pub fn stdin(&mut self) -> &mut Box<dyn BufRead> {
         &mut self.stdin
     }
 
-    pub(crate) fn stdout(&mut self) -> &mut dyn Write {
-        match &mut self.stdout {
-            WriteHandle::Buffer(buf) => buf,
-            WriteHandle::Regular(stdout) => stdout,
-        }
+    pub const fn stdout(&mut self) -> &mut WriteHandle<Stdout> {
+        &mut self.stdout
     }
 
-    #[expect(dead_code, reason = "nothing outputs to stderr yet")]
-    pub(crate) fn stderr(&mut self) -> &mut dyn Write {
-        match &mut self.stderr {
-            WriteHandle::Buffer(buf) => buf,
-            WriteHandle::Regular(stderr) => stderr,
-        }
+    pub const fn stderr(&mut self) -> &mut WriteHandle<Stderr> {
+        &mut self.stderr
     }
-
-    #[doc(hidden)]
-    pub fn testing_setup(dir_path: &str, stdin: &str) -> Self {
-        Self {
-            storage: Storage::initial(),
-            stdin: Box::new(BufReader::new(VecReader(stdin.as_bytes().to_vec()))),
-            stdout: WriteHandle::Buffer(vec![]),
-            stderr: WriteHandle::Buffer(vec![]),
-            file_directory: Directory::Regular(dir_path.into()),
-            exit_unwind_value: None,
-            current_pos: Position::ONE,
-            code: String::new(),
-            __private: (),
-        }
-    }
-
+    
+    #[deprecated]
     #[doc(hidden)]
     pub fn testing_read_stdout(&self) -> &str {
         self.stdout.read_buffer()
     }
 
+    #[deprecated]
     #[doc(hidden)]
     pub fn testing_read_stderr(&self) -> &str {
         self.stderr.read_buffer()
     }
 }
 
-struct VecReader(Vec<u8>);
-impl Read for VecReader {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        self.0.as_slice().read(buf)
-    }
-}
-
-enum WriteHandle<T> {
+/// A handle that is either a `Vec<u8>` (to allow reading from it later)
+/// or anything that implements `Write` (such as `Stdout` or `Stderr`).
+pub enum WriteHandle<T: Write> {
     Regular(T),
     Buffer(Vec<u8>),
 }
 
-impl<T> WriteHandle<T> {
+impl<T: Write> WriteHandle<T> {
     /// Return a string representation of this handle if it is a buffer.
     ///
     /// # Panics
     /// Panics if it is not a buffer or if it does not contain valid UTF-8.
-    fn read_buffer(&self) -> &str {
+    pub fn read_buffer(&self) -> &str {
         let Self::Buffer(buf) = self else {
             unreachable!()
         };
         str::from_utf8(buf).unwrap()
+    }
+}
+
+impl<T: Write> Write for WriteHandle<T> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        match self {
+            Self::Regular(t) => t.write(buf),
+            Self::Buffer(vec) => vec.write(buf),
+        }
+    }
+    
+    fn flush(&mut self) -> io::Result<()> {
+        match self { 
+            Self::Regular(t) => t.flush(),
+            Self::Buffer(vec) => vec.flush(),
+        }
     }
 }
