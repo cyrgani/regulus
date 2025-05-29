@@ -1,6 +1,6 @@
 use crate::atom::Atom;
 use crate::exception::{Error, Exception, Result};
-use crate::parsing::SpanIndices;
+use crate::parsing::positions::Span;
 use crate::prelude::{Argument, ArgumentData};
 use crate::raise;
 use std::result;
@@ -12,7 +12,7 @@ pub struct Token {
     /// The actual token.
     pub data: TokenData,
     /// The start and end of the character range this token was created from.
-    pub indices: SpanIndices,
+    pub span: Span,
 }
 
 impl Token {
@@ -20,7 +20,7 @@ impl Token {
         if let TokenData::Atom(atom) = &self.data {
             Some(Argument {
                 data: ArgumentData::Atom(atom.clone()),
-                span_indices: self.indices.clone(),
+                span: self.span,
             })
         } else {
             None
@@ -32,7 +32,7 @@ impl Token {
             Some((
                 Argument {
                     data: ArgumentData::Variable(name.to_string()),
-                    span_indices: self.indices.clone(),
+                    span: self.span,
                 },
                 name.to_string(),
             ))
@@ -82,7 +82,7 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
     let mut chars = code.chars().enumerate();
     let mut add_token = |data, start, end| {
         tokens.push(Token {
-            indices: start..=end,
+            span: Span::new(start, end, usize::MAX),
             data,
         });
     };
@@ -162,15 +162,15 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
 
 /// Returns all characters of the text that the given indices enclose.
 /// Returns `None` if the indices are invalid (end before start or out of bounds).
-pub fn extract(text: &str, indices: SpanIndices) -> Option<String> {
-    if indices.start() > indices.end() || *indices.end() >= text.chars().count() {
+pub fn extract(text: &str, span: Span) -> Option<String> {
+    if span.start > span.end || span.end >= text.chars().count() {
         return None;
     }
 
     Some(
         text.chars()
-            .skip(*indices.start())
-            .take(indices.count())
+            .skip(span.start)
+            .take(span.len())
             .collect::<String>(),
     )
 }
@@ -179,8 +179,8 @@ pub fn extract(text: &str, indices: SpanIndices) -> Option<String> {
 mod tests {
     use super::*;
 
-    const fn sp(start: usize, end: usize) -> SpanIndices {
-        start..=end
+    fn sp(start: usize, end: usize) -> Span {
+        Span::new(start, end, usize::MAX)
     }
 
     #[expect(clippy::unnecessary_wraps)]
@@ -217,7 +217,7 @@ mod tests {
 
         let parts = tokens
             .into_iter()
-            .map(|t| extract(code, t.indices).unwrap())
+            .map(|t| extract(code, t.span).unwrap())
             .collect::<Vec<_>>();
 
         assert_eq!(

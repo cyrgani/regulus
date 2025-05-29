@@ -8,12 +8,10 @@
 pub mod positions;
 pub mod token;
 
+use crate::parsing::positions::Span;
 use crate::parsing::token::Token;
 use crate::prelude::*;
-use std::ops::RangeInclusive;
 pub use token::{TokenData, tokenize};
-
-pub type SpanIndices = RangeInclusive<usize>;
 
 pub fn build_program(mut tokens: Vec<Token>) -> Result<Argument> {
     tokens.retain(|t| !matches!(t.data, TokenData::Comment(_)));
@@ -23,7 +21,7 @@ pub fn build_program(mut tokens: Vec<Token>) -> Result<Argument> {
         return Err(Exception::spanned(
             "trailing unparsed tokens detected",
             Error::Syntax,
-            rest[0].indices.clone(),
+            rest[0].span,
         ));
     }
 
@@ -81,8 +79,11 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
                             args,
                             name: name_str,
                         }),
-                        span_indices: *tokens[1].indices.start()
-                            ..=*tokens.last().unwrap().indices.end(),
+                        span: Span::new(
+                            tokens[1].span.start,
+                            tokens.last().unwrap().span.end,
+                            usize::MAX,
+                        ),
                     },
                     rest,
                 ));
@@ -112,7 +113,7 @@ fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
         return Err(Exception::spanned(
             "missing comma in argument list",
             Error::Syntax,
-            remaining[0].indices.clone(),
+            remaining[0].span,
         ));
     }
     if remaining.len() > 1 {

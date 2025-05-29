@@ -1,15 +1,43 @@
-use crate::parsing::SpanIndices;
 use std::cmp::Ordering;
-use std::ops::RangeInclusive;
 use std::str::Chars;
+use crate::state::State;
 
 /// A memory-efficient version of [`ExpandedSpan`].
-/// Using a [`State`](crate::prelude::State), this can be converted into an [`ExpandedSpan`] 
+/// Using a [`State`](crate::prelude::State), this can be converted into an [`ExpandedSpan`]
 /// for display purposes.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Span {
-    pub indices: RangeInclusive<usize>,
+    /// inclusive
+    pub start: usize,
+    /// inclusive
+    pub end: usize,
     pub file_index: usize,
+}
+
+impl Span {
+    pub const fn new(start: usize, end: usize, file_index: usize) -> Self {
+        Self {
+            start,
+            end,
+            file_index,
+        }
+    }
+
+    pub const fn len(&self) -> usize {
+        self.end + 1 - self.start
+    }
+    
+    pub fn expand(self, state: &State) -> ExpandedSpan {
+        // TODO: horribly inefficient to redo the iteration for each span,
+        //  better: just do the iteration once, collect and then pass the slice to this function
+        let mut positions = CharPositions::new(state.code());
+        let (start, _) = positions.nth(self.start).unwrap();
+        if self.start == self.end {
+            return ExpandedSpan { start, end: start };
+        }
+        let (end, _) = positions.nth(self.end - self.start).unwrap();
+        ExpandedSpan { start, end }
+    }
 }
 
 /// A region of source code.
@@ -25,15 +53,16 @@ pub struct ExpandedSpan {
 }
 
 impl ExpandedSpan {
-    pub fn from_indices(indices: SpanIndices, code: &str) -> Self {
+    /// TODO: This will probably be removed in favor of [`Span::expand`].
+    pub fn from_span(span: Span, code: &str) -> Self {
         // TODO: horribly inefficient to redo the iteration for each span,
         //  better: just do the iteration once, collect and then pass the slice to this function
         let mut positions = CharPositions::new(code);
-        let (start, _) = positions.nth(*indices.start()).unwrap();
-        if indices.start() == indices.end() {
+        let (start, _) = positions.nth(span.start).unwrap();
+        if span.start == span.end {
             return Self { start, end: start };
         }
-        let (end, _) = positions.nth(*indices.end() - *indices.start()).unwrap();
+        let (end, _) = positions.nth(span.end - span.start).unwrap();
         Self { start, end }
     }
 }
@@ -147,16 +176,24 @@ mod tests {
         }
     }
 
+    const fn base_sp(start: usize, end: usize) -> Span {
+        Span {
+            start,
+            end,
+            file_index: 0,
+        }
+    }
+
     #[test]
     fn span_from_indices() {
         let s = "abc\nde\nf\n";
-        assert_eq!(ExpandedSpan::from_indices(0..=2, s), sp(1, 1, 1, 4));
-        assert_eq!(ExpandedSpan::from_indices(2..=6, s), sp(1, 3, 3, 1));
+        assert_eq!(ExpandedSpan::from_span(base_sp(0, 2), s), sp(1, 1, 1, 4));
+        assert_eq!(ExpandedSpan::from_span(base_sp(2, 6), s), sp(1, 3, 3, 1));
     }
 
     #[test]
     #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
     fn span_from_indices_panic() {
-        ExpandedSpan::from_indices(0..=1000, "abc\nde\nf\n");
+        ExpandedSpan::from_span(base_sp(0, 1000), "abc\nde\nf\n");
     }
 }

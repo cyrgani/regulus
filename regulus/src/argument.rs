@@ -1,14 +1,14 @@
+use crate::parsing::positions::Span;
 use crate::prelude::*;
 use std::borrow::Cow;
 #[cfg(feature = "display_impls")]
 use std::fmt;
-use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct Argument {
     pub data: ArgumentData,
-    pub span_indices: RangeInclusive<usize>,
+    pub span: Span,
 }
 
 #[derive(Debug, Clone)]
