@@ -1,5 +1,5 @@
+use regulus::FILE_EXTENSION;
 use regulus::prelude::{State, WriteHandle};
-use regulus::{FILE_EXTENSION};
 use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
 use std::str;
@@ -41,7 +41,7 @@ pub fn run_test(dir_path: &str, name: &str) {
 
     let stdout = final_state.stdout().read_buffer().to_owned();
     let mut stderr = final_state.stderr().read_buffer().to_owned();
-    
+
     if let Err(e) = res {
         stderr.push('\n');
         stderr.push_str(&e.display(&final_state).to_string());

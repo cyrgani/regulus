@@ -1,9 +1,9 @@
-use crate::build_program;
-use crate::tokenize;
 use crate::Directory;
+use crate::build_program;
 use crate::builtins::all_functions;
 use crate::parsing::positions::Position;
 use crate::prelude::*;
+use crate::tokenize;
 use std::collections::{HashMap, HashSet};
 use std::io::{BufRead, BufReader, Stderr, Stdout, Write, stderr, stdin, stdout};
 use std::path::{Path, PathBuf};
@@ -61,8 +61,6 @@ impl Storage {
         }
     }
 }
-
-// TODO: users should be able to set their own stderr/out/in streams too
 
 // TODO: add and update all docs here!
 pub struct State {
@@ -122,13 +120,13 @@ impl State {
     pub fn with_source_file(mut self, path: impl AsRef<Path>) -> io::Result<Self> {
         self.code = fs::read_to_string(&path)?;
         self.code_was_initialized = true;
-        
+
         let mut current_dir = path.as_ref().parent().unwrap().to_path_buf();
         if current_dir == PathBuf::new() {
             current_dir = PathBuf::from(".");
         }
         self.file_directory = Directory::Regular(current_dir);
-        Ok(self)    
+        Ok(self)
     }
 
     /// Sets the source directory for resolving imports to the given directory.
@@ -158,7 +156,10 @@ impl State {
     /// This happens if one of the following cases occurs:
     /// * `code` is missing
     pub fn run(mut self) -> (Result<Atom>, Self) {
-        assert!(self.code_was_initialized, "setting the source code is required");
+        assert!(
+            self.code_was_initialized,
+            "setting the source code is required"
+        );
 
         macro_rules! return_err {
             ($val: expr) => {
@@ -186,27 +187,6 @@ impl State {
         (Ok(result), self)
     }
 
-    /*#[deprecated]
-    pub fn initial(current_dir: impl AsRef<Path>) -> Self {
-        Self::initial_with_dir(Directory::Regular(current_dir.as_ref().to_path_buf()))
-    }*/
-
-    /*#[deprecated]
-    pub(crate) fn initial_with_dir(current_dir: Directory) -> Self {
-        Self {
-            storage: Storage::initial(),
-            stdin: Box::new(BufReader::new(stdin())),
-            stdout: Box::new(stdout()),
-            stderr: Box::new(stderr()),
-            file_directory: current_dir,
-            exit_unwind_value: None,
-            current_pos: Position::ONE,
-            code: String::new(),
-            code_was_initialized: false,
-            __private: (),
-        }
-    }*/
-
     pub fn stdin(&mut self) -> &mut Box<dyn BufRead> {
         &mut self.stdin
     }
@@ -218,20 +198,9 @@ impl State {
     pub const fn stderr(&mut self) -> &mut WriteHandle<Stderr> {
         &mut self.stderr
     }
-    
-    #[deprecated]
-    #[doc(hidden)]
-    pub fn testing_read_stdout(&self) -> &str {
-        self.stdout.read_buffer()
-    }
-
-    #[deprecated]
-    #[doc(hidden)]
-    pub fn testing_read_stderr(&self) -> &str {
-        self.stderr.read_buffer()
-    }
 }
 
+// TODO: think about whether there is a design that allows avoiding this type
 /// A handle that is either a `Vec<u8>` (to allow reading from it later)
 /// or anything that implements `Write` (such as `Stdout` or `Stderr`).
 pub enum WriteHandle<T: Write> {
@@ -259,9 +228,9 @@ impl<T: Write> Write for WriteHandle<T> {
             Self::Buffer(vec) => vec.write(buf),
         }
     }
-    
+
     fn flush(&mut self) -> io::Result<()> {
-        match self { 
+        match self {
             Self::Regular(t) => t.flush(),
             Self::Buffer(vec) => vec.flush(),
         }
