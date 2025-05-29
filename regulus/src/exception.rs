@@ -62,7 +62,7 @@ impl Exception {
             origin: self
                 .origin
                 .as_ref()
-                .map(|indices| Span::from_indices(indices.clone(), &state.code)),
+                .map(|indices| Span::from_indices(indices.clone(), state.code())),
         }
     }
 }

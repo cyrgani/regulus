@@ -73,7 +73,7 @@ pub struct State {
     /// TODO: not updated yet
     #[expect(dead_code, reason = "WIP")]
     pub(crate) current_pos: Position,
-    pub(crate) code: String,
+    code: String,
     code_was_initialized: bool,
     // make sure this type can never be constructed from outside
     __private: (),
@@ -86,6 +86,10 @@ impl Default for State {
 }
 
 impl State {
+    /// Creates a new state for running a program.
+    ///
+    /// You must use a method such as [`with_code`](Self::with_code) or [`with_source_file`](Self::with_source_file)
+    /// to set the program source code before using [`run`](Self::run) to execute it.
     pub fn new() -> Self {
         Self {
             storage: Storage::initial(),
@@ -145,17 +149,22 @@ impl State {
         self.with_source_directory(env::current_dir().unwrap())
     }
 
-    /// Run the program specified by this configuration.
+    /// Asserts that the source code is already initialized.
+    fn assert_code_init(&self) {
+        assert!(
+            self.code_was_initialized,
+            "setting the source code is required"
+        );
+    }
+
+    /// Runs the given program with the details specified by this state.
     ///
     /// Returns the result the program returned.
     ///
     /// # Panics
     /// Panics if `code` was not set.
     pub fn run(&mut self) -> Result<Atom> {
-        assert!(
-            self.code_was_initialized,
-            "setting the source code is required"
-        );
+        self.assert_code_init();
 
         // newlines are needed to avoid interaction with comments
         // might also help with calculating the actual spans (just do line - 1)
@@ -174,16 +183,24 @@ impl State {
         Ok(result)
     }
 
-    pub fn stdin(&mut self) -> &mut Box<dyn BufRead> {
+    /// Returns a mutable reference to the currently set stdin, allowing you to replace or update it.
+    pub const fn stdin(&mut self) -> &mut Box<dyn BufRead> {
         &mut self.stdin
     }
 
+    /// Returns a mutable reference to the currently set stdout, allowing you to replace or update it.
     pub const fn stdout(&mut self) -> &mut WriteHandle<Stdout> {
         &mut self.stdout
     }
 
+    /// Returns a mutable reference to the currently set stderr, allowing you to replace or update it.
     pub const fn stderr(&mut self) -> &mut WriteHandle<Stderr> {
         &mut self.stderr
+    }
+
+    pub(crate) fn code(&self) -> &str {
+        self.assert_code_init();
+        &self.code
     }
 }
 
