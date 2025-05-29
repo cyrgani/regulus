@@ -1,13 +1,19 @@
-use crate::Directory;
-use crate::build_program;
 use crate::builtins::all_functions;
 use crate::parsing::positions::Position;
+use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
-use crate::tokenize;
 use std::collections::{HashMap, HashSet};
 use std::io::{BufRead, BufReader, Stderr, Stdout, Write, stderr, stdin, stdout};
 use std::path::{Path, PathBuf};
 use std::{env, fs, io, str};
+
+// TODO: maybe replace this with Option<PathBuf>
+#[derive(Clone)]
+pub(crate) enum Directory {
+    Regular(PathBuf),
+    /// Should only be used internally.
+    InternedSTL,
+}
 
 pub struct Storage {
     // TODO: consider a HashMap<String, (bool, Atom)> instead, the bool means local / global

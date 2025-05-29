@@ -9,7 +9,8 @@
 #![allow(
     clippy::missing_errors_doc,
     clippy::option_if_let_else,
-    clippy::must_use_candidate
+    clippy::must_use_candidate,
+    clippy::redundant_pub_crate
 )]
 
 mod argument;
@@ -38,22 +39,10 @@ pub mod prelude {
     };
 }
 
-use crate::{
-    atom::Atom,
-    exception::Result,
-    parsing::{build_program, tokenize},
-    state::State,
-};
-use std::path::{Path, PathBuf};
+use crate::{atom::Atom, exception::Result, state::State};
+use std::path::Path;
 
 pub const FILE_EXTENSION: &str = "re";
-
-#[derive(Clone)]
-pub(crate) enum Directory {
-    Regular(PathBuf),
-    /// Should only be used internally.
-    InternedSTL,
-}
 
 /// A convenient helper for directly running one file program.
 ///

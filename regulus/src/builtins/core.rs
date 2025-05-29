@@ -1,6 +1,6 @@
 use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
-use crate::{Directory, FILE_EXTENSION};
+use crate::state::Directory;
 use std::borrow::Cow;
 use std::fs;
 
