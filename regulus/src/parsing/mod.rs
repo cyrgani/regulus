@@ -82,7 +82,7 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
                         span: Span::new(
                             tokens[1].span.start,
                             tokens.last().unwrap().span.end,
-                            usize::MAX,
+                            u16::MAX,
                         ),
                     },
                     rest,

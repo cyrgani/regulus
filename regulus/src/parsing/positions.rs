@@ -1,7 +1,12 @@
-use std::path::PathBuf;
-use std::cmp::Ordering;
-use std::str::Chars;
 use crate::state::State;
+use std::cmp::Ordering;
+use std::path::{Path, PathBuf};
+use std::str::Chars;
+
+// TODO: yet another idea: we could use only `ExpandedSpan` and store the path in an `Rc` to make clones cheap.
+//  then, ExpandedSpan is 4 u32s + 1 Rc. Span would be removed and ExpandedSpan renamed to Span.
+//  the new Span does not require a State to expand, since it is already expanded.
+//  the new Span is not Copy though and is larger than the current span (10 bytes).
 
 /// A memory-efficient version of [`ExpandedSpan`].
 /// Using a [`State`](crate::prelude::State), this can be converted into an [`ExpandedSpan`]
@@ -9,14 +14,14 @@ use crate::state::State;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Span {
     /// inclusive
-    pub start: usize,
+    pub start: u32,
     /// inclusive
-    pub end: usize,
-    pub file_index: usize,
+    pub end: u32,
+    pub file_index: u16,
 }
 
 impl Span {
-    pub const fn new(start: usize, end: usize, file_index: usize) -> Self {
+    pub const fn new(start: u32, end: u32, file_index: u16) -> Self {
         Self {
             start,
             end,
@@ -24,21 +29,16 @@ impl Span {
         }
     }
 
-    pub const fn len(&self) -> usize {
+    pub const fn len(&self) -> u32 {
         self.end + 1 - self.start
     }
-    
+
     pub fn expand(self, state: &State) -> ExpandedSpan {
-        // TODO: horribly inefficient to redo the iteration for each span,
-        //  better: just do the iteration once, collect and then pass the slice to this function
-        let mut positions = CharPositions::new(state.code());
-        let file = state.resolve_file_index(self.file_index);
-        let (start, _) = positions.nth(self.start).unwrap();
-        if self.start == self.end {
-            return ExpandedSpan { file, start, end: start };
-        }
-        let (end, _) = positions.nth(self.end - self.start).unwrap();
-        ExpandedSpan { file, start, end }
+        ExpandedSpan::from_span(
+            self,
+            state.code(),
+            state.resolve_file_index(self.file_index),
+        )
     }
 }
 
@@ -55,17 +55,21 @@ pub struct ExpandedSpan {
 }
 
 impl ExpandedSpan {
-    /// TODO: This will probably be removed in favor of [`Span::expand`].
-    pub fn from_span(span: Span, code: &str) -> Self {
+    /// TODO: This might be removed in favor of [`Span::expand`].
+    pub fn from_span(span: Span, code: &str, file: impl AsRef<Path>) -> Self {
         // TODO: horribly inefficient to redo the iteration for each span,
         //  better: just do the iteration once, collect and then pass the slice to this function
         let mut positions = CharPositions::new(code);
-        let (start, _) = positions.nth(span.start).unwrap();
-        let file = PathBuf::new();
+        let (start, _) = positions.nth(span.start as usize).unwrap();
+        let file = file.as_ref().to_path_buf();
         if span.start == span.end {
-            return Self { start, end: start, file };
+            return Self {
+                start,
+                end: start,
+                file,
+            };
         }
-        let (end, _) = positions.nth(span.end - span.start).unwrap();
+        let (end, _) = positions.nth((span.end - span.start) as usize).unwrap();
         Self { file, start, end }
     }
 }
@@ -73,9 +77,9 @@ impl ExpandedSpan {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Position {
     /// The line, starting at 1.
-    pub line: usize,
+    pub line: u32,
     /// The column, starting at 1.
-    pub column: usize,
+    pub column: u32,
 }
 
 impl Position {
@@ -135,12 +139,28 @@ impl<'a> CharPositions<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::rc::Rc;
 
-    const fn p(line: usize, column: usize) -> Position {
+    #[test]
+    fn sizes_of_types() {
+        #[expect(dead_code)]
+        struct RcExpandedSpan {
+            file: Rc<PathBuf>,
+            start: Position,
+            end: Position,
+        }
+
+        assert_eq!(size_of::<Position>(), 8);
+        assert_eq!(size_of::<Span>(), 12);
+        assert_eq!(size_of::<RcExpandedSpan>(), 24);
+        assert_eq!(size_of::<ExpandedSpan>(), 40);
+    }
+
+    const fn p(line: u32, column: u32) -> Position {
         Position { line, column }
     }
 
-    const fn pc(line: usize, column: usize, ch: char) -> (Position, char) {
+    const fn pc(line: u32, column: u32, ch: char) -> (Position, char) {
         (p(line, column), ch)
     }
 
@@ -172,7 +192,7 @@ mod tests {
         assert!(p(2, 1) > p(1, 10));
     }
 
-    fn sp(l1: usize, c1: usize, l2: usize, c2: usize) -> ExpandedSpan {
+    fn sp(l1: u32, c1: u32, l2: u32, c2: u32) -> ExpandedSpan {
         ExpandedSpan {
             file: PathBuf::new(),
             start: p(l1, c1),
@@ -180,7 +200,7 @@ mod tests {
         }
     }
 
-    const fn base_sp(start: usize, end: usize) -> Span {
+    const fn base_sp(start: u32, end: u32) -> Span {
         Span {
             start,
             end,
@@ -191,13 +211,19 @@ mod tests {
     #[test]
     fn span_from_indices() {
         let s = "abc\nde\nf\n";
-        assert_eq!(ExpandedSpan::from_span(base_sp(0, 2), s), sp(1, 1, 1, 4));
-        assert_eq!(ExpandedSpan::from_span(base_sp(2, 6), s), sp(1, 3, 3, 1));
+        assert_eq!(
+            ExpandedSpan::from_span(base_sp(0, 2), s, ""),
+            sp(1, 1, 1, 4)
+        );
+        assert_eq!(
+            ExpandedSpan::from_span(base_sp(2, 6), s, ""),
+            sp(1, 3, 3, 1)
+        );
     }
 
     #[test]
     #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
     fn span_from_indices_panic() {
-        ExpandedSpan::from_span(base_sp(0, 1000), "abc\nde\nf\n");
+        ExpandedSpan::from_span(base_sp(0, 1000), "abc\nde\nf\n", "");
     }
 }

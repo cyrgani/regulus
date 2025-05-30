@@ -4,8 +4,8 @@
 //!  - `catch(1)`'s functionality (exception -> string) will remain but might be renamed
 use crate::parsing::positions::{ExpandedSpan, Span};
 use crate::prelude::State;
-use std::{error, fmt, result};
 use std::path::PathBuf;
+use std::{error, fmt, result};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Error {

@@ -82,7 +82,11 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
     let mut chars = code.chars().enumerate();
     let mut add_token = |data, start, end| {
         tokens.push(Token {
-            span: Span::new(start, end, usize::MAX),
+            span: Span::new(
+                u32::try_from(start).unwrap(),
+                u32::try_from(end).unwrap(),
+                u16::MAX,
+            ),
             data,
         });
     };
@@ -163,14 +167,14 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
 /// Returns all characters of the text that the given indices enclose.
 /// Returns `None` if the indices are invalid (end before start or out of bounds).
 pub fn extract(text: &str, span: Span) -> Option<String> {
-    if span.start > span.end || span.end >= text.chars().count() {
+    if span.start > span.end || span.end as usize >= text.chars().count() {
         return None;
     }
 
     Some(
         text.chars()
-            .skip(span.start)
-            .take(span.len())
+            .skip(span.start as usize)
+            .take(span.len() as usize)
             .collect::<String>(),
     )
 }
@@ -179,8 +183,8 @@ pub fn extract(text: &str, span: Span) -> Option<String> {
 mod tests {
     use super::*;
 
-    fn sp(start: usize, end: usize) -> Span {
-        Span::new(start, end, usize::MAX)
+    fn sp(start: u32, end: u32) -> Span {
+        Span::new(start, end, u16::MAX)
     }
 
     #[expect(clippy::unnecessary_wraps)]

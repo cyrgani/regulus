@@ -207,32 +207,32 @@ impl State {
     }
 
     /// Returns an immutable reference to the source code.
-    /// 
+    ///
     /// # Panics
     /// Panics if the source code was not yet initialized.
     pub(crate) fn code(&self) -> &str {
         self.assert_code_init();
         &self.code
     }
-    
+
     /// Adds the given file path to the index of file paths.
     /// Returns the index this path has now.
-    pub(crate) fn add_file_to_index(&mut self, path: impl AsRef<Path>) -> usize {
+    pub(crate) fn add_file_to_index(&mut self, path: impl AsRef<Path>) -> u16 {
         self.file_path_indices.push(path.as_ref().to_path_buf());
-        self.file_path_indices.len() - 1
+        u16::try_from(self.file_path_indices.len()).unwrap() - 1
     }
-    
+
     /// Resolves a file path index to a [`PathBuf`].
-    /// 
-    /// TODO: as a temporary measure, this returns an empty [`PathBuf`] when [`usize::MAX`] is passed. 
-    /// 
+    ///
+    /// TODO: as a temporary measure, this returns an empty [`PathBuf`] when [`u16::MAX`] is passed.
+    ///
     /// # Panics
     /// Panics if the index is out of bounds.
-    pub(crate) fn resolve_file_index(&self, index: usize) -> PathBuf {
-        if index == usize::MAX {
+    pub(crate) fn resolve_file_index(&self, index: u16) -> PathBuf {
+        if index == u16::MAX {
             return PathBuf::new();
         }
-        self.file_path_indices[index].clone()
+        self.file_path_indices[index as usize].clone()
     }
 }
 
