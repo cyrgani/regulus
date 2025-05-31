@@ -74,7 +74,7 @@ fn take_until(
     Err(result)
 }
 
-pub fn tokenize(code: &str) -> Result<Vec<Token>> {
+pub fn tokenize(code: &str, file_id: u16) -> Result<Vec<Token>> {
     let mut tokens = vec![];
 
     let mut current = String::new();
@@ -85,7 +85,7 @@ pub fn tokenize(code: &str) -> Result<Vec<Token>> {
             span: Span::new(
                 u32::try_from(start).unwrap(),
                 u32::try_from(end).unwrap(),
-                u16::MAX,
+                file_id,
             ),
             data,
         });
@@ -217,7 +217,7 @@ mod tests {
 	def(double_and_print, x, print(*(2, x))),
 )
 ";
-        let tokens = tokenize(code).unwrap();
+        let tokens = tokenize(code, 0).unwrap();
 
         let parts = tokens
             .into_iter()

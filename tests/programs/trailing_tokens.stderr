@@ -1,2 +1,2 @@
 
-<file>:1:10: SyntaxError: trailing unparsed tokens detected
+programs/trailing_tokens.re:1:10: SyntaxError: trailing unparsed tokens detected

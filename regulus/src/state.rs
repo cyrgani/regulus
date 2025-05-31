@@ -1,5 +1,5 @@
 use crate::builtins::all_functions;
-use crate::parsing::positions::Position;
+use crate::parsing::positions::{ExpandedSpan, Span};
 use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
@@ -75,10 +75,11 @@ pub struct State {
     stdout: WriteHandle<Stdout>,
     stderr: WriteHandle<Stderr>,
     pub(crate) file_directory: Directory,
+    current_file_path: Option<PathBuf>,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
     /// TODO: not updated yet
     #[expect(dead_code, reason = "WIP")]
-    pub(crate) current_pos: Position,
+    current_span: Span,
     code: String,
     code_was_initialized: bool,
     file_path_indices: Vec<PathBuf>,
@@ -104,8 +105,9 @@ impl State {
             stdout: WriteHandle::Regular(stdout()),
             stderr: WriteHandle::Regular(stderr()),
             file_directory: Directory::InternedSTL,
+            current_file_path: None,
             exit_unwind_value: None,
-            current_pos: Position::ONE,
+            current_span: Span::new(0, 0, 0),
             code: String::new(),
             code_was_initialized: false,
             file_path_indices: vec![],
@@ -132,6 +134,8 @@ impl State {
     pub fn with_source_file(mut self, path: impl AsRef<Path>) -> io::Result<Self> {
         self.code = fs::read_to_string(&path)?;
         self.code_was_initialized = true;
+
+        self.current_file_path = Some(path.as_ref().to_owned());
 
         let mut current_dir = path.as_ref().parent().unwrap().to_path_buf();
         if current_dir == PathBuf::new() {
@@ -178,7 +182,13 @@ impl State {
         // might also help with calculating the actual spans (just do line - 1)
         self.code = format!("_(\n{}\n)", self.code);
 
-        let tokens = tokenize(&self.code)?;
+        let file_id = if let Some(path) = &self.current_file_path {
+            self.add_file_to_index(path.clone())
+        } else {
+            u16::MAX
+        };
+
+        let tokens = tokenize(&self.code, file_id)?;
 
         let program = build_program(tokens)?;
 
@@ -190,6 +200,8 @@ impl State {
 
         Ok(result)
     }
+
+    // TODO: consider removing the three methods below and making the corresponding three fields public instead
 
     /// Returns a mutable reference to the currently set stdin, allowing you to replace or update it.
     pub const fn stdin(&mut self) -> &mut Box<dyn BufRead> {
@@ -233,6 +245,27 @@ impl State {
             return PathBuf::new();
         }
         self.file_path_indices[index as usize].clone()
+    }
+
+    // TODO: choose which of the two methods below is more useful
+
+    /// Returns the span of the source code part which is currently being interpreted.
+    ///
+    /// Useful for error messages.
+    pub(crate) const fn current_span(&self) -> Span {
+        self.current_span
+    }
+
+    /// Returns the expanded of the source code part which is currently being interpreted.
+    ///
+    /// Useful for error messages.
+    pub(crate) fn current_span_expanded(&self) -> ExpandedSpan {
+        self.current_span.expand(self)
+    }
+
+    /// Only intended to be used by `import` internals for now.
+    pub(crate) fn set_current_file_path(&mut self, path: impl AsRef<Path>) {
+        self.current_file_path = Some(path.as_ref().to_owned());
     }
 }
 

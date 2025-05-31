@@ -4,9 +4,9 @@ use std::path::{Path, PathBuf};
 use std::str::Chars;
 
 // TODO: yet another idea: we could use only `ExpandedSpan` and store the path in an `Rc` to make clones cheap.
-//  then, ExpandedSpan is 4 u32s + 1 Rc. Span would be removed and ExpandedSpan renamed to Span.
+//  then, ExpandedSpan is 24 bytes. Span would be removed and ExpandedSpan renamed to Span.
 //  the new Span does not require a State to expand, since it is already expanded.
-//  the new Span is not Copy though and is larger than the current span (10 bytes).
+//  the new Span is not Copy though and is larger than the current span (12 bytes).
 
 /// A memory-efficient version of [`ExpandedSpan`].
 /// Using a [`State`](crate::prelude::State), this can be converted into an [`ExpandedSpan`]
@@ -17,15 +17,15 @@ pub struct Span {
     pub start: u32,
     /// inclusive
     pub end: u32,
-    pub file_index: u16,
+    pub file_id: u16,
 }
 
 impl Span {
-    pub const fn new(start: u32, end: u32, file_index: u16) -> Self {
+    pub const fn new(start: u32, end: u32, file_id: u16) -> Self {
         Self {
             start,
             end,
-            file_index,
+            file_id,
         }
     }
 
@@ -37,7 +37,7 @@ impl Span {
         ExpandedSpan::from_span(
             self,
             state.code(),
-            state.resolve_file_index(self.file_index),
+            state.resolve_file_index(self.file_id),
         )
     }
 }
@@ -151,6 +151,7 @@ mod tests {
         }
 
         assert_eq!(size_of::<Position>(), 8);
+        assert_eq!(size_of::<Rc<PathBuf>>(), 8);
         assert_eq!(size_of::<Span>(), 12);
         assert_eq!(size_of::<RcExpandedSpan>(), 24);
         assert_eq!(size_of::<ExpandedSpan>(), 40);
@@ -204,7 +205,7 @@ mod tests {
         Span {
             start,
             end,
-            file_index: 0,
+            file_id: 0,
         }
     }
 

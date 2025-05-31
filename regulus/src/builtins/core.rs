@@ -3,6 +3,7 @@ use crate::prelude::*;
 use crate::state::Directory;
 use std::borrow::Cow;
 use std::fs;
+use std::path::{Path, PathBuf};
 
 fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
     let body = body.clone();
@@ -47,25 +48,28 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
     Ok(Atom::Function(function))
 }
 
-fn try_resolve_import_in_dir(name: &str, dir_path: &Directory) -> Option<String> {
-    match &dir_path {
-        Directory::Regular(path) => {
-            let paths = fs::read_dir(path)
-                .unwrap_or_else(|err| {
-                    panic!("error when reading directory `{}`: {err}", path.display())
-                })
-                .flatten();
-            for item in paths {
-                if *item.file_name() == *format!("{name}.{FILE_EXTENSION}") {
-                    if let Ok(file_content) = fs::read_to_string(item.path()) {
-                        return Some(file_content);
-                    }
-                }
-            }
-            None
+/// Returns:
+/// * `None` if the resolution in the given directory failed,
+/// * `Some(path)` if the code was found outside the interned STL,
+fn try_resolve_import_in_dir(name: &str, dir_path: &Path) -> Option<PathBuf> {
+    let paths = fs::read_dir(dir_path)
+        .unwrap_or_else(|err| {
+            panic!(
+                "error when reading directory `{}`: {err}",
+                dir_path.display()
+            )
+        })
+        .flatten();
+    for item in paths {
+        if *item.file_name() == *format!("{name}.{FILE_EXTENSION}") {
+            return Some(item.path());
         }
-        Directory::InternedSTL => INTERNED_STL.get(name).map(ToString::to_string),
     }
+    None
+}
+
+fn try_resolve_import_in_stl(name: &str) -> Option<String> {
+    INTERNED_STL.get(name).map(ToString::to_string)
 }
 
 functions! {
@@ -166,22 +170,28 @@ functions! {
         // lookup order:
         // 1. look inside the programs current directory
         // 2. look in the global stl directory
-        let source = if let Some(code) = try_resolve_import_in_dir(name, &state.file_directory) {
-            Some((code, state.file_directory.clone()))
-        } else {
-            try_resolve_import_in_dir(name, &Directory::InternedSTL).map(|code| (code, Directory::InternedSTL))
-        };
-
-        let Some((code, source_dir)) = source else {
+        let mut import_state = State::new();
+        let mut found = false;
+        if let Directory::Regular(dir_path) = &state.file_directory {
+            if let Some(path) = try_resolve_import_in_dir(name, dir_path) {
+                import_state = import_state.with_source_file(path).unwrap();
+                found = true;
+            }
+        }
+        if !found {
+            if let Some(code) = try_resolve_import_in_stl(name) {
+                import_state = import_state.with_code(code);
+                import_state.set_current_file_path(format!("<stl:{name}>"));
+                found = true;
+            }
+        }
+        if !found {
             return raise!(
                 Error::Import,
                 "failed to find file for importing `{name}`",
             );
-        };
+        }
 
-        // TODO: consider using `.with_file()` here instead
-        let mut import_state = State::new().with_code(code);
-        import_state.file_directory = source_dir;
         import_state.storage.global_idents.clone_from(&state.storage.global_idents);
         import_state.storage.data.extend(state.storage.global_items());
         let atom = import_state.run();

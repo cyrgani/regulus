@@ -82,7 +82,7 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
                         span: Span::new(
                             tokens[1].span.start,
                             tokens.last().unwrap().span.end,
-                            u16::MAX,
+                            tokens[1].span.file_id,
                         ),
                     },
                     rest,
@@ -128,7 +128,7 @@ mod tests {
 
     #[test]
     fn extra_parens() {
-        let prog = build_program(tokenize("_((2))").unwrap());
+        let prog = build_program(tokenize("_((2))", 0).unwrap());
 
         assert_eq!(
             prog,
@@ -138,7 +138,7 @@ mod tests {
             ))
         );
 
-        let prog = build_program(tokenize("(print(2)), print(3)").unwrap());
+        let prog = build_program(tokenize("(print(2)), print(3)", 0).unwrap());
 
         assert_eq!(
             prog,
