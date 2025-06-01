@@ -57,10 +57,11 @@ fn find_within_parens(tokens: &[Token]) -> Option<(&[Token], &[Token])> {
 
 /// returns the constructed argument and all remaining tokens
 fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
-    if let Some(atom) = get_token(tokens, 0)?.to_atom() {
-        return Ok((atom, &tokens[1..]));
+    let first_token = get_token(tokens, 0)?;
+    if let Some(atom) = first_token.to_atom() {
+        return Ok((Argument::Atom(atom, first_token.span), &tokens[1..]));
     }
-    if let Some((name_arg, name_str)) = get_token(tokens, 0)?.to_name() {
+    if let Some(name) = first_token.to_name() {
         // we may not use `?` on the result of `get_token_data`, since that is valid in the `a` or `n` case
         if matches!(
             get_token(tokens, 1).map(|t| &t.data),
@@ -75,10 +76,7 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
 
                 return Ok((
                     Argument::FunctionCall(
-                        FunctionCall {
-                            args,
-                            name: name_str,
-                        },
+                        FunctionCall { args, name },
                         Span::new(
                             tokens[1].span.start,
                             tokens.last().unwrap().span.end,
@@ -89,7 +87,7 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
                 ));
             }
         } else {
-            return Ok((name_arg, &tokens[1..]));
+            return Ok((Argument::Variable(name, first_token.span), &tokens[1..]));
         }
     }
     // TODO: better error message

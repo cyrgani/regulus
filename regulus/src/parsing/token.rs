@@ -1,7 +1,6 @@
 use crate::atom::Atom;
 use crate::exception::{Error, Exception, Result};
 use crate::parsing::positions::Span;
-use crate::prelude::Argument;
 use crate::raise;
 use std::result;
 
@@ -16,20 +15,17 @@ pub struct Token {
 }
 
 impl Token {
-    pub(crate) fn to_atom(&self) -> Option<Argument> {
+    pub(crate) fn to_atom(&self) -> Option<Atom> {
         if let TokenData::Atom(atom) = &self.data {
-            Some(Argument::Atom(atom.clone(), self.span))
+            Some(atom.clone())
         } else {
             None
         }
     }
 
-    pub(crate) fn to_name(&self) -> Option<(Argument, String)> {
+    pub(crate) fn to_name(&self) -> Option<String> {
         if let TokenData::Name(name) = &self.data {
-            Some((
-                Argument::Variable(name.clone(), self.span),
-                name.to_string(),
-            ))
+            Some(name.to_string())
         } else {
             None
         }
