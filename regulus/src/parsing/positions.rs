@@ -34,11 +34,7 @@ impl Span {
     }
 
     pub fn expand(self, state: &State) -> ExpandedSpan {
-        ExpandedSpan::from_span(
-            self,
-            state.code(),
-            state.resolve_file_index(self.file_id),
-        )
+        ExpandedSpan::from_span(self, state.code(), state.resolve_file_index(self.file_id))
     }
 }
 

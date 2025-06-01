@@ -30,7 +30,7 @@ mod interned_stdlib;
 pub mod prelude {
     pub use crate::{
         FILE_EXTENSION,
-        argument::{Argument, ArgumentData},
+        argument::Argument,
         atom::Atom,
         exception::{Error, Exception, Result},
         function::{Function, FunctionBody, FunctionCall},

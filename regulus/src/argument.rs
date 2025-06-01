@@ -6,17 +6,10 @@ use std::fmt;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
-pub struct Argument {
-    pub data: ArgumentData,
-    pub span: Span,
-}
-
-#[derive(Debug, Clone)]
-#[cfg_attr(test, derive(PartialEq))]
-pub enum ArgumentData {
-    FunctionCall(FunctionCall),
-    Atom(Atom),
-    Variable(String),
+pub enum Argument {
+    FunctionCall(FunctionCall, Span),
+    Atom(Atom, Span),
+    Variable(String, Span),
 }
 
 impl Argument {
@@ -24,10 +17,10 @@ impl Argument {
         if state.exit_unwind_value.is_some() {
             return Ok(Cow::Owned(Atom::Null));
         }
-        match &self.data {
-            ArgumentData::FunctionCall(call) => call.eval(state).map(Cow::Owned),
-            ArgumentData::Atom(atom) => Ok(Cow::Borrowed(atom)),
-            ArgumentData::Variable(var) => match state.storage.get(var) {
+        match self {
+            Self::FunctionCall(call, _) => call.eval(state).map(Cow::Owned),
+            Self::Atom(atom, _) => Ok(Cow::Borrowed(atom)),
+            Self::Variable(var, _) => match state.storage.get(var) {
                 Some(value) => Ok(Cow::Borrowed(value)),
                 None => raise!(Error::Name, "No variable named `{var}` found!"),
             },
@@ -37,8 +30,8 @@ impl Argument {
     /// Returns the identifier of this variable.
     /// If it is not a variable, it raises an exception with the given error message.
     pub fn variable(&self, error_msg: &str) -> Result<&String> {
-        match &self.data {
-            ArgumentData::Variable(var) => Ok(var),
+        match self {
+            Self::Variable(var, _) => Ok(var),
             _ => raise!(Error::Argument, error_msg),
         }
     }

@@ -74,17 +74,17 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
                 };
 
                 return Ok((
-                    Argument {
-                        data: ArgumentData::FunctionCall(FunctionCall {
+                    Argument::FunctionCall(
+                        FunctionCall {
                             args,
                             name: name_str,
-                        }),
-                        span: Span::new(
+                        },
+                        Span::new(
                             tokens[1].span.start,
                             tokens.last().unwrap().span.end,
                             tokens[1].span.file_id,
                         ),
-                    },
+                    ),
                     rest,
                 ));
             }
