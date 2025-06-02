@@ -134,7 +134,7 @@ functions! {
     /// Values defined in the function are scoped and cannot be accessed outside of the function body.
     "def"(_) => |state, args| {
         let [var, fn_args @ .., body] = args else {
-            return raise!(
+            raise!(
                 Error::Argument,
                 "too few arguments passed to `def`: expected at least 2, found {}", args.len()
             );
@@ -152,7 +152,7 @@ functions! {
     /// Values defined in the function are scoped and cannot be accessed outside of the function body.
     "fn"(_) => |_, args| {
         let Some((body, fn_args)) = args.split_last() else {
-            return raise!(Error::Argument, "`fn` invocation is missing body");
+            raise!(Error::Argument, "`fn` invocation is missing body");
         };
         define_function(body, fn_args)
     }
@@ -161,7 +161,7 @@ functions! {
     "import"(1) => |state, args| {
         let name = args[0].variable("`import` argument must be a variable, string syntax was removed")?;
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
-            return raise!(
+            raise!(
                 Error::Import,
                 "invalid characters in import name `{name}`",
             );
@@ -186,10 +186,7 @@ functions! {
             }
         }
         if !found {
-            return raise!(
-                Error::Import,
-                "failed to find file for importing `{name}`",
-            );
+            raise!(Error::Import, "failed to find file for importing `{name}`");
         }
 
         import_state.storage.global_idents.clone_from(&state.storage.global_idents);

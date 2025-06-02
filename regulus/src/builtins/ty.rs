@@ -26,7 +26,7 @@ functions! {
     /// All further arguments are its fields.
     "type"(_) => |state, args| {
         let Some((ident, fields)) = args.split_first() else {
-            return raise!(Error::Argument, "`type` takes at least one argument");
+            raise!(Error::Argument, "`type` takes at least one argument");
         };
         let var = ident.variable("`type` must take a variable as first argument")?;
         let fields = fields

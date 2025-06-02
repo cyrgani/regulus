@@ -122,7 +122,7 @@ pub fn tokenize(code: &str, file_id: u16) -> Result<Vec<Token>> {
             }
             '"' => {
                 let Ok((end_pos, body)) = take_until(chars.by_ref(), '"') else {
-                    return raise!(Error::Syntax, "unclosed string literal");
+                    raise!(Error::Syntax, "unclosed string literal");
                 };
                 add_token(TokenData::Atom(Atom::String(body)), char_idx, end_pos);
             }

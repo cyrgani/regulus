@@ -64,16 +64,28 @@ impl Exception {
     }
 }
 
-/// Creates an exception wrapped in an `Err`.
+/// Creates an exception wrapped in an `Err` and returns it from the current function or closure.
+///
 /// The first argument is the kind of the exception, the second the message or format string.
 /// Any further arguments are passed into the `format!` string.
 #[macro_export]
 macro_rules! raise {
+    ($($t: tt)*) => {
+        return $crate::raise_noreturn!($($t)*)
+    }
+}
+
+/// Creates an exception wrapped in an `Err`.
+///
+/// The first argument is the kind of the exception, the second the message or format string.
+/// Any further arguments are passed into the `format!` string.
+#[macro_export]
+macro_rules! raise_noreturn {
     ($kind: expr, $string: literal) => {
-        raise!($kind, $string,)
+        $crate::raise_noreturn!($kind, $string,)
     };
     ($kind: expr, $msg: expr) => {
-        raise!($kind, "{}", $msg)
+        $crate::raise_noreturn!($kind, "{}", $msg)
     };
     ($kind: expr, $string: literal, $($fmt_args: expr),*) => {
         Err(Exception::new(format!($string, $($fmt_args),*), $kind))
