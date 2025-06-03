@@ -1,8 +1,6 @@
 use crate::parsing::positions::Span;
 use crate::prelude::*;
 use std::borrow::Cow;
-#[cfg(feature = "display_impls")]
-use std::fmt;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
@@ -35,15 +33,13 @@ impl Argument {
             _ => raise!(Error::Argument, error_msg),
         }
     }
-}
 
-#[cfg(feature = "display_impls")]
-impl fmt::Display for Argument {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.data {
-            ArgumentData::Atom(atom) => write!(f, "{atom}"),
-            ArgumentData::FunctionCall(call) => write!(f, "{call}"),
-            ArgumentData::Variable(name) => write!(f, "{name}"),
+    /// Returns an approximation of the source code of this argument.
+    pub fn stringify(&self) -> String {
+        match self {
+            Self::Atom(atom, _) => atom.to_string(),
+            Self::FunctionCall(call, _) => call.stringify(),
+            Self::Variable(name, _) => name.to_string(),
         }
     }
 }

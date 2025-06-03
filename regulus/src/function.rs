@@ -9,22 +9,6 @@ pub struct FunctionCall {
     pub name: String,
 }
 
-#[cfg(feature = "display_impls")]
-impl fmt::Display for FunctionCall {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}({})",
-            self.name,
-            self.args
-                .iter()
-                .map(ToString::to_string)
-                .collect::<Vec<_>>()
-                .join(", ")
-        )
-    }
-}
-
 impl FunctionCall {
     pub fn eval(&self, state: &mut State) -> Result<Atom> {
         if state.exit_unwind_value.is_some() {
@@ -44,6 +28,19 @@ impl FunctionCall {
         }
 
         (function.body())(state, &self.args)
+    }
+
+    /// Returns an approximation of the source code of this function call.
+    pub fn stringify(&self) -> String {
+        format!(
+            "{}({})",
+            self.name,
+            self.args
+                .iter()
+                .map(Argument::stringify)
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
     }
 }
 

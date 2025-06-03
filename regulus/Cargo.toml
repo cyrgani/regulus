@@ -14,5 +14,4 @@ build = "build.rs"
 [dependencies]
 
 [features]
-display_impls = []
 default = []
