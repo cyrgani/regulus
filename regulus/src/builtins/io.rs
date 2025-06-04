@@ -1,24 +1,19 @@
 use crate::prelude::*;
-use std::io::Write;
-
-fn write_to_stdout(state: &mut State, msg: &str) {
-    state.stdout().write_all(msg.as_bytes()).unwrap();
-}
 
 functions! {
     /// Evaluates all given arguments and prints them to stdout.
     /// All arguments are separated with a single space.
     /// After all arguments have been printed, a newline is also printed.
     /// Returns `null`.
-    /// 
+    ///
     /// If you need more precise control over the output, use `write` instead.
     "print"(_) => |state, args| {
         for arg in args {
             let arg_val = arg.eval(state)?;
             let s = format!("{arg_val} ");
-            write_to_stdout(state, &s);
+            state.write_to_stdout(&s);
         }
-        write_to_stdout(state, "\n");
+        state.write_to_stdout("\n");
         Ok(Atom::Null)
     }
     /// Takes no arguments and reads from stdin until a newline is entered.
@@ -40,13 +35,13 @@ functions! {
     "__builtin_rust_debug"(1) => |state, args| {
         let arg_val = args[0].eval(state)?;
         let s = format!("{arg_val:?}\n");
-        write_to_stdout(state, &s);
+        state.write_to_stdout(&s);
         Ok(Atom::Null)
     }
     /// Evaluates the given argument and prints it to stdout, without any additional spaces or newline.
     "write"(1) => |state, args| {
         let s = args[0].eval(state)?.to_string();
-        write_to_stdout(state, &s);
+        state.write_to_stdout(&s);
         Ok(Atom::Null)
     }
 }

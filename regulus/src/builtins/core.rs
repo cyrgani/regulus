@@ -163,7 +163,7 @@ functions! {
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
             raise!(
                 Error::Import,
-                "invalid characters in import name `{name}`",
+                "invalid characters in import name `{name}`, only a-Z, 0-9 and _ are allowed",
             );
         }
 
@@ -240,8 +240,8 @@ functions! {
     /// Evaluates both arguments and compares then, returning `null` if they are equal.
     /// If not, raise an exception of the `Assertion` kind with a message containing both values.
     "assert_eq"(2) => |state, args| {
-        // FIXME: first `into_owned` is needed right now since eval is
-        //  fn eval<'a>(&'a self, state: &'a mut State) -> Result<Cow<'a, Atom>>;
+        // first `into_owned` is needed right now since eval is
+        // fn eval<'a>(&'a self, state: &'a mut State) -> Result<Cow<'a, Atom>>;
         let lhs = args[0].eval(state)?.into_owned();
         let rhs = args[1].eval(state)?;
         if lhs == *rhs {

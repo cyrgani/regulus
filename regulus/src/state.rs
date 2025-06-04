@@ -218,6 +218,11 @@ impl State {
         &mut self.stderr
     }
 
+    /// Writes the given string to stdout, without any extra newline.
+    pub(crate) fn write_to_stdout(&mut self, msg: &str) {
+        self.stdout.write_all(msg.as_bytes()).unwrap();
+    }
+
     /// Returns an immutable reference to the source code.
     ///
     /// # Panics

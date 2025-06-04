@@ -1,5 +1,7 @@
- Returns the documentation string for a function.
- TODO: implement this for non-builtin functions as well.
- TODO: also show the argc somehow
- TODO: consider printing directly too
- TODO: consider removing the leading newline (should then be done in `functions!`) 
+<function>(1): 
+
+Prints the documentation string for a function as well its argc.
+
+Use `doc(1)` to return it instead.
+
+TODO (not yet possible): also show the name somehow

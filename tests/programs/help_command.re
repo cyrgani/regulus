@@ -1,1 +1,2 @@
-print(help(help))
+=(x, help(help)),
+assert_eq(x, null),
