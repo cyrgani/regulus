@@ -86,32 +86,38 @@ def(get_winner, board, _(
     )
 )),
 
-def(set_random, board, player, _(
-    =(random_index, choose(filter(
-        range(0, 9), 
+def(choose_random_empty, board, _(
+    choose(filter(
+        range(0, 9),
         fn(idx, ==(index(board, idx), E))
-    ))),
-    overwrite_at_index(board, random_index, player)
+    )),
 )),
 
-def(play_game, _(
-    # TODO: player should be able to choose "X" or "O"
+def(play_game, x_controller, o_controller, _(
     =(current_player, "X"),
     =(board, empty_board()),
     while(==(get_winner(board), null), ifelse(
         ==(current_player, X),
         _(
             print_board(board),
-            =(player_num, request_number(board)),
-            =(board, overwrite_at_index(board, -(player_num, 1), X)),
+            =(x_num, x_controller(board)),
+            =(board, overwrite_at_index(board, x_num, X)),
             =(current_player, O),
         ),
         _(
             print_board(board),
-            =(board, set_random(board, O)),
+            =(o_num, o_controller(board)),
+            =(board, overwrite_at_index(board, o_num, O)),
             =(current_player, X),
         )
     )),
     print("Game over, winner:", get_winner(board)),
     print_board(board)
 )),
+
+def(play_game_directly, play_game(
+    fn(board, -(request_number(board), 1)),
+    choose_random_empty
+)),
+
+# todo: add an optimal minimax-based computer player
