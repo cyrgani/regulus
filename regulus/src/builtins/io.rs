@@ -20,7 +20,7 @@ functions! {
     /// Returns the read input, excluding the newline, as a string.
     "input"(0) => |state, _| {
         let mut input = String::new();
-        match state.stdin().read_line(&mut input) {
+        match state.stdin.read_line(&mut input) {
             // TODO: consider removing this exception and using `.unwrap_or(&input).to_string()` instead
             Ok(_) => Ok(Atom::String(input.strip_suffix('\n').ok_or_else(|| Exception::new("missing newline after input() call", Error::Io))?.to_string())),
             Err(error) => {

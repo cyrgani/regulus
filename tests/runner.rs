@@ -31,16 +31,16 @@ pub fn run_test(dir_path: &str, name: &str) {
     let mut state = State::new()
         .with_source_file(base_path.with_extension(FILE_EXTENSION))
         .expect("fatal error: program file not found");
-    *state.stdin() = Box::new(BufReader::new(RwVec(
+    state.stdin = Box::new(BufReader::new(RwVec(
         read_file_or_empty(&base_path, "stdin").into_bytes(),
     )));
-    *state.stdout() = WriteHandle::new_read_write(RwVec(vec![]));
-    *state.stderr() = WriteHandle::new_read_write(RwVec(vec![]));
+    state.stdout = WriteHandle::new_read_write(RwVec(vec![]));
+    state.stderr = WriteHandle::new_read_write(RwVec(vec![]));
 
     let res = state.run();
 
-    let stdout = state.stdout().read_to_string().to_owned();
-    let mut stderr = state.stderr().read_to_string().to_owned();
+    let stdout = state.stdout.read_to_string().to_owned();
+    let mut stderr = state.stderr.read_to_string().to_owned();
 
     if let Err(e) = res {
         stderr.push('\n');

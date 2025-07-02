@@ -71,9 +71,9 @@ impl Storage {
 // TODO: add and update all docs here!
 pub struct State {
     pub storage: Storage,
-    stdin: Box<dyn BufRead>,
-    stdout: WriteHandle,
-    stderr: WriteHandle,
+    pub stdin: Box<dyn BufRead>,
+    pub stdout: WriteHandle,
+    pub stderr: WriteHandle,
     pub(crate) file_directory: Directory,
     current_file_path: Option<PathBuf>,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
@@ -102,8 +102,8 @@ impl State {
         Self {
             storage: Storage::initial(),
             stdin: Box::new(BufReader::new(stdin())),
-            stdout: WriteHandle::Write(Box::new(stdout())),
-            stderr: WriteHandle::Write(Box::new(stderr())),
+            stdout: WriteHandle::new_write(stdout()),
+            stderr: WriteHandle::new_write(stderr()),
             file_directory: Directory::InternedSTL,
             current_file_path: None,
             exit_unwind_value: None,
@@ -201,24 +201,6 @@ impl State {
         Ok(result)
     }
 
-    // TODO: consider removing the three methods below and making the corresponding three fields public instead,
-    //  this would mean committing to the `WriteHandle` design
-
-    /// Returns a mutable reference to the currently set stdin, allowing you to replace or update it.
-    pub const fn stdin(&mut self) -> &mut Box<dyn BufRead> {
-        &mut self.stdin
-    }
-
-    /// Returns a mutable reference to the currently set stdout, allowing you to replace or update it.
-    pub const fn stdout(&mut self) -> &mut WriteHandle {
-        &mut self.stdout
-    }
-
-    /// Returns a mutable reference to the currently set stderr, allowing you to replace or update it.
-    pub const fn stderr(&mut self) -> &mut WriteHandle {
-        &mut self.stderr
-    }
-
     /// Writes the given string to stdout, without any extra newline.
     pub(crate) fn write_to_stdout(&mut self, msg: &str) {
         self.stdout.as_write().write_all(msg.as_bytes()).unwrap();
@@ -290,6 +272,7 @@ pub enum WriteHandle {
 }
 
 impl WriteHandle {
+    /// Access the `Write` part of this handle.
     pub fn as_write(&mut self) -> &mut dyn Write {
         match self {
             Self::Write(w) => w,
@@ -297,6 +280,12 @@ impl WriteHandle {
         }
     }
 
+    /// Constructs a new `WriteHandle` that only allows writing.
+    pub fn new_write(write: impl Write + 'static) -> Self {
+        Self::Write(Box::new(write))
+    }
+
+    /// Access the `Read` part of this handle or `None` if the handle does not allow reading.
     pub fn as_read(&mut self) -> Option<&mut dyn Read> {
         match self {
             Self::ReadWrite(w) => Some(w),
@@ -304,10 +293,7 @@ impl WriteHandle {
         }
     }
 
-    pub fn new_write(write: impl Write + 'static) -> Self {
-        Self::Write(Box::new(write))
-    }
-
+    /// Constructs a new `WriteHandle` that allows both writing and reading.
     pub fn new_read_write(read_write: impl ReadAndWrite + 'static) -> Self {
         Self::ReadWrite(Box::new(read_write))
     }
