@@ -3,7 +3,7 @@ use crate::parsing::positions::{ExpandedSpan, Span};
 use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
-use std::io::{BufRead, BufReader, Stderr, Stdout, Write, stderr, stdin, stdout};
+use std::io::{BufRead, BufReader, Read, Write, stderr, stdin, stdout};
 use std::path::{Path, PathBuf};
 use std::{env, fs, io, str};
 
@@ -72,8 +72,8 @@ impl Storage {
 pub struct State {
     pub storage: Storage,
     stdin: Box<dyn BufRead>,
-    stdout: WriteHandle<Stdout>,
-    stderr: WriteHandle<Stderr>,
+    stdout: WriteHandle,
+    stderr: WriteHandle,
     pub(crate) file_directory: Directory,
     current_file_path: Option<PathBuf>,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
@@ -102,8 +102,8 @@ impl State {
         Self {
             storage: Storage::initial(),
             stdin: Box::new(BufReader::new(stdin())),
-            stdout: WriteHandle::Regular(stdout()),
-            stderr: WriteHandle::Regular(stderr()),
+            stdout: WriteHandle::Write(Box::new(stdout())),
+            stderr: WriteHandle::Write(Box::new(stderr())),
             file_directory: Directory::InternedSTL,
             current_file_path: None,
             exit_unwind_value: None,
@@ -201,7 +201,8 @@ impl State {
         Ok(result)
     }
 
-    // TODO: consider removing the three methods below and making the corresponding three fields public instead
+    // TODO: consider removing the three methods below and making the corresponding three fields public instead,
+    //  this would mean committing to the `WriteHandle` design
 
     /// Returns a mutable reference to the currently set stdin, allowing you to replace or update it.
     pub const fn stdin(&mut self) -> &mut Box<dyn BufRead> {
@@ -209,18 +210,18 @@ impl State {
     }
 
     /// Returns a mutable reference to the currently set stdout, allowing you to replace or update it.
-    pub const fn stdout(&mut self) -> &mut WriteHandle<Stdout> {
+    pub const fn stdout(&mut self) -> &mut WriteHandle {
         &mut self.stdout
     }
 
     /// Returns a mutable reference to the currently set stderr, allowing you to replace or update it.
-    pub const fn stderr(&mut self) -> &mut WriteHandle<Stderr> {
+    pub const fn stderr(&mut self) -> &mut WriteHandle {
         &mut self.stderr
     }
 
     /// Writes the given string to stdout, without any extra newline.
     pub(crate) fn write_to_stdout(&mut self, msg: &str) {
-        self.stdout.write_all(msg.as_bytes()).unwrap();
+        self.stdout.as_write().write_all(msg.as_bytes()).unwrap();
     }
 
     /// Returns an immutable reference to the source code.
@@ -274,39 +275,68 @@ impl State {
     }
 }
 
-// TODO: think about whether there is a design that allows avoiding this type
-/// A handle that is either a `Vec<u8>` (to allow reading from it later)
-/// or anything that implements `Write` (such as `Stdout` or `Stderr`).
-pub enum WriteHandle<T: Write> {
-    Regular(T),
-    Buffer(Vec<u8>),
+/// Helper trait for types that can both be read from and written to.
+pub trait ReadAndWrite: Read + Write {}
+
+impl<T> ReadAndWrite for T where T: Read + Write {}
+
+/// A handle that always allows writing and optionally allows reading. Used for stdout and stderr.
+///
+/// Usually, stdout / stderr only need to be written to, but sometimes, one may want to capture
+/// what is written to them. In this case, the `ReadWrite` variant can be used.
+pub enum WriteHandle {
+    ReadWrite(Box<dyn ReadAndWrite>),
+    Write(Box<dyn Write>),
 }
 
-impl<T: Write> WriteHandle<T> {
-    /// Return a string representation of this handle if it is a buffer.
+impl WriteHandle {
+    pub fn as_write(&mut self) -> &mut dyn Write {
+        match self {
+            Self::Write(w) => w,
+            Self::ReadWrite(w) => w,
+        }
+    }
+
+    pub fn as_read(&mut self) -> Option<&mut dyn Read> {
+        match self {
+            Self::ReadWrite(w) => Some(w),
+            Self::Write(_) => None,
+        }
+    }
+
+    pub fn new_write(write: impl Write + 'static) -> Self {
+        Self::Write(Box::new(write))
+    }
+
+    pub fn new_read_write(read_write: impl ReadAndWrite + 'static) -> Self {
+        Self::ReadWrite(Box::new(read_write))
+    }
+
+    /// Return a string representation of the data in this handle if it allows reading.
     ///
     /// # Panics
-    /// Panics if it is not a buffer or if it does not contain valid UTF-8.
-    pub fn read_buffer(&self) -> &str {
-        let Self::Buffer(buf) = self else {
+    /// Panics if it is does not allow reading or if it does not contain valid UTF-8.
+    pub fn read_to_string(&mut self) -> String {
+        let Self::ReadWrite(buf) = self else {
             panic!("read_buffer() expected a buffer")
         };
-        str::from_utf8(buf).unwrap()
-    }
-}
-
-impl<T: Write> Write for WriteHandle<T> {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        match self {
-            Self::Regular(t) => t.write(buf),
-            Self::Buffer(vec) => vec.write(buf),
+        let mut vec = vec![0; 1024];
+        let mut n = 0;
+        let mut last_was_zero = false;
+        loop {
+            let amount = buf.read(&mut vec[n..]).unwrap();
+            n += amount;
+            if amount == 0 {
+                if last_was_zero {
+                    break;
+                }
+                vec.extend_from_slice(&[0; 1024]);
+                last_was_zero = true;
+            } else {
+                last_was_zero = false;
+            }
         }
-    }
-
-    fn flush(&mut self) -> io::Result<()> {
-        match self {
-            Self::Regular(t) => t.flush(),
-            Self::Buffer(vec) => vec.flush(),
-        }
+        vec.retain(|&x| x != 0);
+        String::from_utf8(vec).unwrap()
     }
 }
