@@ -77,9 +77,8 @@ pub struct State {
     pub(crate) file_directory: Directory,
     current_file_path: Option<PathBuf>,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
-    /// TODO: not updated yet
-    #[expect(dead_code, reason = "WIP")]
-    current_span: Span,
+    /// TODO: maybe not updated everywhere yet
+    pub(crate) current_span: Span,
     code: String,
     code_was_initialized: bool,
     file_path_indices: Vec<PathBuf>,
@@ -237,6 +236,7 @@ impl State {
 
     // TODO: choose which of the two methods below is more useful
 
+    #[deprecated(note = "use the field directly")]
     /// Returns the span of the source code part which is currently being interpreted.
     ///
     /// Useful for error messages.
@@ -250,7 +250,7 @@ impl State {
     pub(crate) fn current_span_expanded(&self) -> ExpandedSpan {
         self.current_span.expand(self)
     }
-
+    
     /// Only intended to be used by `import` internals for now.
     pub(crate) fn set_current_file_path(&mut self, path: impl AsRef<Path>) {
         self.current_file_path = Some(path.as_ref().to_owned());

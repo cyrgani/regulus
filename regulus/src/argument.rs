@@ -12,6 +12,7 @@ pub enum Argument {
 
 impl Argument {
     pub fn eval<'a>(&'a self, state: &'a mut State) -> Result<Cow<'a, Atom>> {
+        state.current_span = self.span();
         if state.exit_unwind_value.is_some() {
             return Ok(Cow::Owned(Atom::Null));
         }
@@ -40,6 +41,13 @@ impl Argument {
             Self::Atom(atom, _) => atom.to_string(),
             Self::FunctionCall(call, _) => call.stringify(),
             Self::Variable(name, _) => name.to_string(),
+        }
+    }
+    
+    // TODO: consider making this public
+    pub(crate) const fn span(&self) -> Span {
+        match self { 
+            Self::Atom(_, s) | Self::FunctionCall(_, s) | Self::Variable(_, s) => *s,
         }
     }
 }

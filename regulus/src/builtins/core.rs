@@ -288,6 +288,9 @@ functions! {
     /// propagate further.
     ///
     /// Returns `null`.
+    /// 
+    /// TODO: consider instead returning what the first argument evaluates to (if successfull),
+    ///  otherwise returning the eval of the second arg.
     "try_except"(2) => |state, args| {
         if args[0].eval(state).is_err() {
             args[1].eval(state)?;

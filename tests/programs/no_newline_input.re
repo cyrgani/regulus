@@ -1,0 +1,1 @@
+assert_eq(catch(input()), "programs/no_newline_input.re:1:22: IoError: missing newline after input() call")
