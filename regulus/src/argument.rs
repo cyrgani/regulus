@@ -43,10 +43,10 @@ impl Argument {
             Self::Variable(name, _) => name.to_string(),
         }
     }
-    
+
     // TODO: consider making this public
     pub(crate) const fn span(&self) -> Span {
-        match self { 
+        match self {
             Self::Atom(_, s) | Self::FunctionCall(_, s) | Self::Variable(_, s) => *s,
         }
     }

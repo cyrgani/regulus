@@ -250,7 +250,7 @@ impl State {
     pub(crate) fn current_span_expanded(&self) -> ExpandedSpan {
         self.current_span.expand(self)
     }
-    
+
     /// Only intended to be used by `import` internals for now.
     pub(crate) fn set_current_file_path(&mut self, path: impl AsRef<Path>) {
         self.current_file_path = Some(path.as_ref().to_owned());

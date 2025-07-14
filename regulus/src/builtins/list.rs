@@ -136,13 +136,13 @@ functions! {
             .eval(state)?
             .str_or_slice()?
             .get(index)
-            .ok_or_else(|| Exception::new("sequence index out of bounds", Error::Index))
+            .ok_or_else(|| Exception::spanned("sequence index out of bounds", Error::Index, state.current_span))
     }
     /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {
         Ok(Atom::Int(
             i64::try_from(args[0].eval(state)?.str_or_slice()?.len())
-                .map_err(|e| Exception::new(format!("list is too long: {e}"), Error::Overflow))?
+                .map_err(|e| Exception::spanned(format!("list is too long: {e}"), Error::Overflow, state.current_span))?
         ))
     }
     /// Iterates over the given list elements or string characters.
