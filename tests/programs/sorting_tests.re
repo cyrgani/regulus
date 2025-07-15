@@ -9,3 +9,11 @@ assert_eq(quicksort(list(2, 1)), list(1, 2)),
 
 import(random),
 assert_eq(quicksort(shuffle(range(0, 400))), range(0, 400)),
+
+assert(is_sorted(range(0, 300))),
+assert(is_sorted(list())),
+assert(is_sorted(list(1))),
+assert(is_sorted(list(1, 2))),
+assert(is_sorted(list(2, 2, 2, 2))),
+assert(!(is_sorted(list(2, 1)))),
+assert(is_sorted(quicksort(list(1, 4, 6, 23, 1, 4, 6, 1, 0, -1, 6, 2))))

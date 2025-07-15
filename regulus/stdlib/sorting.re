@@ -68,4 +68,18 @@ def(quicksort, seq, _(
         ),
     )),
     seq
-))
+)),
+
+# Returns whether the given sequence is sorted in ascending order.
+def(is_sorted, seq, _(
+    =(s, true),
+    if(>=(len(seq), 2),
+        for_in(range(0, -(len(seq), 1)), i, _(
+            if(
+                >(index(seq, i), index(seq, +(i, 1))),
+                =(s, false)
+            )
+        )),
+    ),
+    s
+)),
