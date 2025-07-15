@@ -21,7 +21,7 @@ import(aliases),
 =(x, Ident(2, 5, "adsa")),
 # read x.field1, alias .
 assert_eq(getattr(x, field1), 2),
-# set x.field1 to 3, alias ->
+# set x.field1 to "strings", alias ->
 =(x, setattr(x, field1, "strings")),
 
 assert_eq(.(x, field1), "strings"),
