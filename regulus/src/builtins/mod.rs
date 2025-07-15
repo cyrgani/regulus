@@ -15,5 +15,5 @@ macro_rules! builtin_modules {
 }
 
 builtin_modules! {
-    cast, core, help, io, list, logic, math, string, time, ty
+    cast, core, help, io, list, logic, math, private, string, time, ty
 }

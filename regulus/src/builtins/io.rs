@@ -33,16 +33,6 @@ functions! {
             }
         }
     }
-    /// Prints the debug representation of the given argument to stdout, followed by a newline.
-    ///
-    /// NOTE: the output format of this method is unstable.
-    /// NOTE: this method may be removed in the future.
-    "__builtin_rust_debug"(1) => |state, args| {
-        let arg_val = args[0].eval(state)?;
-        let s = format!("{arg_val:?}\n");
-        state.write_to_stdout(&s);
-        Ok(Atom::Null)
-    }
     /// Evaluates the given argument and prints it to stdout, without any additional spaces or newline.
     "write"(1) => |state, args| {
         let s = args[0].eval(state)?.to_string();
