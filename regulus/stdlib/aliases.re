@@ -6,3 +6,4 @@
 =(equals, ==),
 =(getattr, .),
 =(setattr, ->),
+=(call_method, @),

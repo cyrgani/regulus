@@ -18,6 +18,7 @@ def(fictional_main, _(
 ))
 */
 
+use std::collections::{HashMap, HashSet};
 use crate::prelude::*;
 
 functions! {
@@ -29,22 +30,48 @@ functions! {
             raise!(Error::Argument, "`type` takes at least one argument");
         };
         let var = ident.variable("`type` must take a variable as first argument")?;
-        let fields = fields
-            .iter()
-            .map(|field| field.variable("`type` field arguments should be variables").cloned())
-            .collect::<Result<Vec<_>>>()?;
+
+        let mut required_fields = vec![];
+        let mut defaulted_fields = vec![];
+        let mut found_fields = HashSet::new();
+
+        for field in fields {
+            match field {
+                Argument::Atom(..) => raise!(Error::Syntax, "`type` field arguments should be variables or `=` calls"),
+                Argument::FunctionCall(call, _) => {
+                    if call.name != "=" {
+                        raise!(Error::Syntax, "defaulted `type` values must use `=`");
+                    }
+                    let [Argument::Variable(name, _), value] = call.args.as_slice() else {
+                        raise!(Error::Syntax, "defaulted `type` values must have the form `=(name, value)`");
+                    };
+                    if found_fields.contains(name) {
+                        raise!(Error::Syntax, "duplicate `type` field `{name}`");
+                    }
+                    found_fields.insert(name);
+                    defaulted_fields.push((name.clone(), value.eval(state)?.into_owned()));
+                },
+                Argument::Variable(name, _) => {
+                    if found_fields.contains(name) {
+                        raise!(Error::Syntax, "duplicate `type` field `{name}`");
+                    }
+                    found_fields.insert(name);
+                    required_fields.push(name.clone());
+                },
+            }
+        }
 
         let function = Function::new(
             String::new(),
-            Some(fields.len()),
+            Some(required_fields.len()),
             Box::new(move |state, args| {
-                Ok(Atom::Object(
-                    fields
-                        .iter()
-                        .zip(args)
-                        .map(|(field, arg)| Ok((field.clone(), arg.eval(state)?.into_owned())))
-                        .collect::<Result<_>>()?,
-                ))
+                let mut fields = required_fields
+                    .iter()
+                    .zip(args)
+                    .map(|(field, arg)| Ok((field.clone(), arg.eval(state)?.into_owned())))
+                    .collect::<Result<HashMap<String, Atom>>>()?;
+                fields.extend(defaulted_fields.clone());
+                Ok(Atom::Object(fields))
             }),
         );
 
@@ -79,5 +106,25 @@ functions! {
         let value = args[2].eval(state)?;
         *obj.get_mut(field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value.into_owned();
         Ok(Atom::Object(obj))
+    }
+    /// Calls a method on an object with the given arguments.
+    /// The object itself is implicitly added as the first argument to the method.
+    ///
+    /// The first argument is the object, the second the identifier of the method and all further arguments are the arguments to the method.
+    /// 
+    /// This method has an alias: `call_method`.
+    "@"(_) => |state, args| {
+        let [obj_arg, method, rest @ ..] = args else {
+            raise!(Error::Syntax, "too few arguments for `@`");
+        };
+        let obj = obj_arg.eval(state)?.object()?;
+        let method_name = method.variable("`@` expected the name of a method as second arg")?;
+        let Some(func) = obj.get(method_name) else {
+            raise!(Error::Name, "object has no method `{method_name}`");
+        };
+        let func = func.function()?;
+        let mut args = vec![obj_arg.clone()];
+        args.extend_from_slice(rest);
+        func.call(state, &args, &format!("<object>.{method_name}"))
     }
 }

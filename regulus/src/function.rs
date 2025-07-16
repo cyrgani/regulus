@@ -27,7 +27,7 @@ impl FunctionCall {
             }
         }
 
-        (function.body())(state, &self.args)
+        function.call(state, &self.args, &self.name)
     }
 
     /// Returns an approximation of the source code of this function call.
@@ -68,6 +68,25 @@ impl Function {
 
     pub fn body(&self) -> &FunctionBody {
         &self.0.body
+    }
+
+    // TODO: consider making this public
+    pub(crate) fn call(
+        &self,
+        state: &mut State,
+        args: &[Argument],
+        fn_name_hint: &str,
+    ) -> Result<Atom> {
+        if let Some(argc) = self.argc() {
+            let arg_len = args.len();
+            if argc != arg_len {
+                raise!(
+                    Error::Argument,
+                    "expected `{argc}` args, found `{arg_len}` args for `{fn_name_hint}`",
+                );
+            }
+        }
+        (self.body())(state, args)
     }
 }
 
