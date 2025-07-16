@@ -179,7 +179,12 @@ impl State {
 
         // newlines are needed to avoid interaction with comments
         // might also help with calculating the actual spans (just do line - 1)
-        self.code = format!("_(\n{}\n)", self.code);
+        let prelude_import = match self.file_directory  {
+            // TODO: consider replacing this with `__builtin_prelude_import()`
+            Directory::Regular(_) => "import(__builtin_prelude),",
+            Directory::InternedSTL => "",
+        };
+        self.code = format!("_({prelude_import}\n{}\n)", self.code);
 
         let file_id = if let Some(path) = &self.current_file_path {
             self.add_file_to_index(path.clone())

@@ -12,4 +12,8 @@ functions! {
         state.write_to_stdout(&s);
         Ok(Atom::Null)
     }
+    /// TODO
+    "__builtin_prelude_import"(0) => |state, _| {
+        Ok(Atom::Null)
+    }
 }
