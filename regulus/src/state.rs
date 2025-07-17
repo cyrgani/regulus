@@ -7,7 +7,6 @@ use std::io::{BufRead, BufReader, Read, Write, stderr, stdin, stdout};
 use std::path::{Path, PathBuf};
 use std::{env, fs, io, str};
 
-// TODO: maybe replace this with Option<PathBuf>
 #[derive(Clone)]
 pub(crate) enum Directory {
     Regular(PathBuf),

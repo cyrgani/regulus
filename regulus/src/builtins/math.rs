@@ -25,11 +25,11 @@ functions! {
     /// Adds the two given integers and returns the result, causing an exception in case of overflow.
     "__builtin_int_add"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
     /// Subtracts the two given integers and returns the result, causing an exception in case of overflow.
-    "-"(2) => |state, args| arithmetic_operation(state, args, "-", i64::checked_sub)
+    "__builtin_int_sub"(2) => |state, args| arithmetic_operation(state, args, "-", i64::checked_sub)
     /// Multiplies the two given integers and returns the result, causing an exception in case of overflow.
-    "*"(2) => |state, args| arithmetic_operation(state, args, "*", i64::checked_mul)
+    "__builtin_int_mul"(2) => |state, args| arithmetic_operation(state, args, "*", i64::checked_mul)
     /// Divides the two given integers and returns the result, causing an exception in case of division by zero.
-    "/"(2) => |state, args| arithmetic_operation(state, args, "/", i64::checked_div)
+    "__builtin_int_div"(2) => |state, args| arithmetic_operation(state, args, "/", i64::checked_div)
     /// Calculates the remainder of the two given integers and returns the result,
     /// causing an exception in case of division by zero.
     "%"(2) => |state, args| arithmetic_operation(state, args, "%", i64::checked_rem)
