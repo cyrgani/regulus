@@ -1,0 +1,7 @@
+=(INT_TY_ID, 0),
+=(BOOL_TY_ID, 1),
+=(NULL_TY_ID, 2),
+=(LIST_TY_ID, 3),
+=(STRING_TY_ID, 4),
+=(FUNCTION_TY_ID, 5),
+=(MIN_OBJECT_TY_ID, 6),

@@ -182,7 +182,7 @@ impl State {
 
         // newlines are needed to avoid interaction with comments
         // might also help with calculating the actual spans (just do line - 1)
-        let prelude_import = match self.file_directory  {
+        let prelude_import = match self.file_directory {
             // TODO: consider replacing this with `__builtin_prelude_import()`
             Directory::Regular(_) | Directory::FromEval => "import(__builtin_prelude),",
             Directory::InternedSTL => "",
@@ -263,7 +263,7 @@ impl State {
     pub(crate) fn set_current_file_path(&mut self, path: impl AsRef<Path>) {
         self.current_file_path = Some(path.as_ref().to_owned());
     }
-    
+
     /// Returns a new type id for a `type` call.
     pub const fn make_type_id(&mut self) -> i64 {
         let old = self.next_type_id;

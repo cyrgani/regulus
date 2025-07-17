@@ -23,7 +23,7 @@ fn arithmetic_operation<T: TryFrom<i64, Error: std::fmt::Display>>(
 
 functions! {
     /// Adds the two given integers and returns the result, causing an exception in case of overflow.
-    "+"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
+    "__builtin_int_add"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
     /// Subtracts the two given integers and returns the result, causing an exception in case of overflow.
     "-"(2) => |state, args| arithmetic_operation(state, args, "-", i64::checked_sub)
     /// Multiplies the two given integers and returns the result, causing an exception in case of overflow.
