@@ -272,7 +272,9 @@ functions! {
     /// TODO: think about imports, test them
     "eval"(1) => |state, args| {
         let code = args[0].eval(state)?.string()?;
-        State::new().with_code(code).run()
+        let mut state = State::new().with_code(code);
+        state.file_directory = Directory::FromEval;
+        state.run()
     }
     /// Marks a variable identifier as global.
     ///
