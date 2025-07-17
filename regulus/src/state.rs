@@ -83,6 +83,7 @@ pub struct State {
     code: String,
     code_was_initialized: bool,
     file_path_indices: Vec<PathBuf>,
+    next_type_id: i64,
     // make sure this type can never be constructed from outside
     __private: (),
 }
@@ -111,6 +112,7 @@ impl State {
             code: String::new(),
             code_was_initialized: false,
             file_path_indices: vec![],
+            next_type_id: Atom::MIN_OBJECT_TY_ID,
             __private: (),
         }
     }
@@ -260,6 +262,13 @@ impl State {
     /// Only intended to be used by `import` internals for now.
     pub(crate) fn set_current_file_path(&mut self, path: impl AsRef<Path>) {
         self.current_file_path = Some(path.as_ref().to_owned());
+    }
+    
+    /// Returns a new type id for a `type` call.
+    pub const fn make_type_id(&mut self) -> i64 {
+        let old = self.next_type_id;
+        self.next_type_id += 1;
+        old
     }
 }
 

@@ -12,25 +12,8 @@ pub enum Atom {
     List(Vec<Atom>),
     String(String),
     Function(Function),
-    Object(HashMap<String, Atom>),
+    Object(Object),
 }
-
-/*
-impl Clone for Atom {
-    fn clone(&self) -> Self {
-        crate::clone_investigate(self);
-        match self {
-            Self::Int(i) => Self::Int(*i),
-            Self::Bool(b) => Self::Bool(*b),
-            Self::Null => Self::Null,
-            Self::List(l) => Self::List(l.clone()),
-            Self::String(s) => Self::String(s.clone()),
-            Self::Function(f) => Self::Function(f.clone()),
-            Self::Object(o) => Self::Object(o.clone()),
-        }
-    }
-}
-*/
 
 impl Atom {
     pub fn try_from_str(value: &str) -> Result<Option<Self>> {
@@ -48,6 +31,26 @@ impl Atom {
                     _ => Ok(None),
                 },
             },
+        }
+    }
+
+    pub const INT_TY_ID: i64 = 0;
+    pub const BOOL_TY_ID: i64 = 1;
+    pub const NULL_TY_ID: i64 = 2;
+    pub const LIST_TY_ID: i64 = 3;
+    pub const STRING_TY_ID: i64 = 4;
+    pub const FUNCTION_TY_ID: i64 = 5;
+    pub const MIN_OBJECT_TY_ID: i64 = 6;
+
+    pub const fn ty_id(&self) -> i64 {
+        match self {
+            Self::Int(_) => Self::INT_TY_ID,
+            Self::Bool(_) => Self::BOOL_TY_ID,
+            Self::Null => Self::NULL_TY_ID,
+            Self::List(_) => Self::LIST_TY_ID,
+            Self::String(_) => Self::STRING_TY_ID,
+            Self::Function(_) => Self::FUNCTION_TY_ID,
+            Self::Object(o) => o.ty_id,
         }
     }
 }
@@ -77,7 +80,7 @@ atom_try_as_variant_methods! {
     list -> Vec<Self>: List;
     string -> String: String;
     function -> Function: Function;
-    object -> HashMap<String, Atom>: Object;
+    object -> Object: Object;
 }
 
 impl fmt::Display for Atom {
@@ -106,14 +109,26 @@ impl fmt::Display for Atom {
             // TODO: format is unstable, since iteration order is not guaranteed
             Self::Object(obj) => {
                 write!(f, "{{")?;
-                for (idx, (key, val)) in obj.iter().enumerate() {
+                for (idx, (key, val)) in obj.data.iter().enumerate() {
                     write!(f, "{key}: {val}")?;
-                    if idx != obj.len() - 1 {
+                    if idx != obj.data.len() - 1 {
                         write!(f, ", ")?;
                     }
                 }
                 write!(f, "}}")
             }
         }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Object {
+    pub data: HashMap<String, Atom>,
+    pub ty_id: i64,
+}
+
+impl Object {
+    pub const fn new(data: HashMap<String, Atom>, ty_id: i64) -> Self {
+        Self { data, ty_id }
     }
 }

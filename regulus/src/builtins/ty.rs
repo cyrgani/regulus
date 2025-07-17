@@ -60,6 +60,7 @@ functions! {
                 },
             }
         }
+        let ty_id = state.make_type_id();
 
         let function = Function::new(
             String::new(),
@@ -71,7 +72,7 @@ functions! {
                     .map(|(field, arg)| Ok((field.clone(), arg.eval(state)?.into_owned())))
                     .collect::<Result<HashMap<String, Atom>>>()?;
                 fields.extend(defaulted_fields.clone());
-                Ok(Atom::Object(fields))
+                Ok(Atom::Object(Object::new(fields, ty_id)))
             }),
         );
 
@@ -89,7 +90,7 @@ functions! {
     "."(2) => |state, args| {
         let obj = args[0].eval(state)?.object()?;
         let field = args[1].variable("`.` takes a field identifier as second argument")?;
-        obj.get(field).cloned().ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))
+        obj.data.get(field).cloned().ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))
     }
     /// Set the value of a field of an object to a new value and returns the updated object.
     ///
@@ -104,7 +105,7 @@ functions! {
         let mut obj = args[0].eval(state)?.object()?;
         let field = args[1].variable("`.` takes a field identifier as second argument")?;
         let value = args[2].eval(state)?;
-        *obj.get_mut(field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value.into_owned();
+        *obj.data.get_mut(field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value.into_owned();
         Ok(Atom::Object(obj))
     }
     /// Calls a method on an object with the given arguments.
@@ -119,12 +120,27 @@ functions! {
         };
         let obj = obj_arg.eval(state)?.object()?;
         let method_name = method.variable("`@` expected the name of a method as second arg")?;
-        let Some(func) = obj.get(method_name) else {
+        let Some(func) = obj.data.get(method_name) else {
             raise!(Error::Name, "object has no method `{method_name}`");
         };
         let func = func.function()?;
         let mut args = vec![obj_arg.clone()];
         args.extend_from_slice(rest);
         func.call(state, &args, &format!("<object>.{method_name}"))
+    }
+    /// Returns the type id corresponding to the given value.
+    /// 
+    /// A type id is a positive integer. Primitive types are currently represented with these IDs
+    /// (note that this may change at any point):
+    /// 
+    /// * Int: 0
+    /// * Bool: 1
+    /// * Null: 2
+    /// * List: 3
+    /// * String: 4
+    /// * Function: 5
+    /// * Object: 6+ (depending on the type of object).
+    "type_id"(1) => |state, args| {
+        Ok(Atom::Int(args[0].eval(state)?.ty_id()))
     }
 }
