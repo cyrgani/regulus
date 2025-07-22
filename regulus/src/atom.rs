@@ -53,6 +53,12 @@ impl Atom {
             Self::Object(o) => o.ty_id,
         }
     }
+
+    /// Contructs an object with the type id `i64::MAX` directly.
+    /// Useful for (singleton) objects added from outside the language.
+    pub const fn new_object(data: HashMap<String, Self>) -> Self {
+        Self::Object(Object::new(data, i64::MAX))
+    }
 }
 
 macro_rules! atom_try_as_variant_methods {
