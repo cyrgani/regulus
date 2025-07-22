@@ -14,6 +14,7 @@
   * (other non-literal atoms: lists, objects, function pointers)
 * all meaningful operations and statements are function calls
 * every program is implicitly wrapped in `_(` and `)` for convenience
+* every program except for the STL itself automatically imports `__builtin_prelude`
 
 ### Builtins
 * are present in every program without having to import them
@@ -34,7 +35,7 @@
 ### Error handling
 * any fallible operation can `raise` an `Exception`
 * exceptions bubble up unless stopped with `catch`
-* note: rust panics in Regulus outside of the `Runner` API are generally bugs and should be exceptions instead
+* note: rust panics in Regulus outside of the `State` API are generally bugs and should be exceptions instead
 
 ### Naming conventions
 * identifiers starting with `__stl` are reserved (this is not enforced though) for internal use in the STL, manipulating them is expected to cause panics or crashes
