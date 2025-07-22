@@ -21,6 +21,10 @@ functions! {
     }
     /// Converts the given value into a string, raising an exception if it is not possible to cast.
     /// TODO document the exact conditions and rules
+    /// 
+    /// This method is fallible and is currently only able to cast ints, bools, strings and nulls.
+    /// If you want to display an arbitrary atom (such as for error messages), use `printable(1)` 
+    /// instead, which is infallible.
     "string"(1) => |state, args| {
         let atom = args[0].eval(state)?.into_owned();
         Ok(match atom {
@@ -41,5 +45,12 @@ functions! {
             Atom::Null => false,
             _ => return Err(cast_error_builder(&atom, "bool", state.current_span)),
         }))
+    }
+    /// Evaluates the given arg and returns a string representation of it.
+    /// See the documentation of `string(1)` for a comparison of these two methods.
+    /// Note that the exact output format is not yet stable and may change, especially regarding 
+    /// objects. 
+    "printable"(1) => |state, args| {
+        Ok(Atom::String(args[0].eval(state)?.to_string()))
     }
 }

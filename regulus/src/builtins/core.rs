@@ -228,31 +228,6 @@ functions! {
     "!="(2) => |state, args| {
         Ok(Atom::Bool(args[0].eval(state)?.into_owned() != *args[1].eval(state)?))
     }
-    /// Evaluates the argument as a boolean and returns `null` if it is true.
-    /// If it is false, raise an exception of the `Assertion` kind.
-    "assert"(1) => |state, args| {
-        if args[0].eval(state)?.bool()? {
-            Ok(Atom::Null)
-        } else {
-            raise!(Error::Assertion, "Assertion failed!")
-        }
-    }
-    /// Evaluates both arguments and compares then, returning `null` if they are equal.
-    /// If not, raise an exception of the `Assertion` kind with a message containing both values.
-    "assert_eq"(2) => |state, args| {
-        // first `into_owned` is needed right now since eval is
-        // fn eval<'a>(&'a self, state: &'a mut State) -> Result<Cow<'a, Atom>>;
-        let lhs = args[0].eval(state)?.into_owned();
-        let rhs = args[1].eval(state)?;
-        if lhs == *rhs {
-            Ok(Atom::Null)
-        } else {
-            raise!(
-                Error::Assertion,
-                "Equality assertion failed! lhs: `{lhs}`, rhs: `{rhs}`!"
-            )
-        }
-    }
     /// Evaluates the given argument and terminates the program directly.
     /// The program will return the given value as its final result.
     ///
