@@ -64,6 +64,18 @@ impl StringOrVec {
             Self::Vec(v) => Atom::List(v),
         }
     }
+
+    fn push(&mut self, val: Atom) -> Result<()> {
+        match self {
+            Self::String(s) => {
+                s.push_str(&val.string()?);
+            }
+            Self::Vec(v) => {
+                v.push(val);
+            }
+        }
+        Ok(())
+    }
 }
 
 impl StrOrSlice<'_> {
@@ -113,10 +125,12 @@ functions! {
     }
     /// Appends the second argument at the back of the list given as first argument and returns
     /// the new list.
+    /// Alternatively, if the first argument is a string and the second is too, a new concatenated
+    /// string will be returned.
     "append"(2) => |state, args| {
-        let mut list = args[0].eval(state)?.list()?;
-        list.push(args[1].eval(state)?.into_owned());
-        Ok(Atom::List(list))
+        let mut seq = args[0].eval(state)?.string_or_list()?;
+        seq.push(args[1].eval(state)?.into_owned())?;
+        Ok(seq.into_atom())
     }
     /// Takes any amount of lists and joins their elements together into a single list.
     "join"(_) => |state, args| {
@@ -154,7 +168,7 @@ functions! {
     "for_in"(3) => |state, args| {
         let seq = args[0].eval(state)?.string_or_list()?;
         let loop_var = args[1].variable("invalid loop variable given to `for_in`")?;
-        let loop_body = &args[2];//.function_call("invalid loop body given to `for_in`")?;
+        let loop_body = &args[2];
 
         let possibly_shadowed_value = state.storage.remove(loop_var);
 
@@ -177,6 +191,8 @@ functions! {
     /// Replaces an element at a list index with another.
     /// The first argument is the list, the second the index and the third the new value.
     /// If the index is out of bounds, an exception is raised.
+    /// If the first argument is a string instead, the new value must be a single character,
+    /// otherwise an exception will be raised.
     /// TODO: give it a better name
     "overwrite_at_index"(3) => |state, args| {
         let mut seq = args[0].eval(state)?.string_or_list()?;

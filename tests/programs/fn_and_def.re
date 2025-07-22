@@ -1,4 +1,3 @@
-# TODO: make a decision which syntax is better
 def(f_def, x, _(
     *(2, x)
 )),
