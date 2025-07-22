@@ -50,11 +50,11 @@ def(frac_extend, frac, n, Fraction(
 )),
 
 def(frac_simplify, frac, _(
-    error("not yet implemented")
+    error("TODO", "not yet implemented")
     # todo: requires `math.gcd` to exist
 )),
 
 def(frac_compare, f1, f2, _(
-    error("not yet implemented")
+    error("TODO", "not yet implemented")
     # todo: requires `frac_simplify` to be implemented (?)
 )),

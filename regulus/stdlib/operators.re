@@ -1,5 +1,10 @@
 import(type_id),
 
+def(__stl_arith_err, op, error(
+    "Arithmetic",
+    append("Unsupported ", op),
+)),
+
 def(+, lhs, rhs, _(
     =(lid, type_id(lhs)),
     =(rid, type_id(rhs)),
@@ -10,7 +15,7 @@ def(+, lhs, rhs, _(
         ifelse(
             &&(>=(lid, MIN_OBJECT_TY_ID), >=(rid, MIN_OBJECT_TY_ID)),
             @(lhs, +, rhs),
-            error("unsupported addition"),
+            __stl_arith_err("addition"),
         )
     )
 )),
@@ -25,7 +30,7 @@ def(-, lhs, rhs, _(
         ifelse(
             &&(>=(lid, MIN_OBJECT_TY_ID), >=(rid, MIN_OBJECT_TY_ID)),
             @(lhs, -, rhs),
-            error("unsupported subtraction"),
+            __stl_arith_err("subtraction"),
         )
     )
 )),
@@ -40,7 +45,7 @@ def(*, lhs, rhs, _(
         ifelse(
             &&(>=(lid, MIN_OBJECT_TY_ID), >=(rid, MIN_OBJECT_TY_ID)),
             @(lhs, *, rhs),
-            error("unsupported multiplication"),
+            __stl_arith_err("multiplication"),
         )
     )
 )),
@@ -55,7 +60,7 @@ def(/, lhs, rhs, _(
         ifelse(
             &&(>=(lid, MIN_OBJECT_TY_ID), >=(rid, MIN_OBJECT_TY_ID)),
             @(lhs, /, rhs),
-            error("unsupported division"),
+            __stl_arith_err("division"),
         )
     )
 )),

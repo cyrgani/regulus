@@ -18,7 +18,7 @@ def(rand, _(
 # raises if low >= high
 def(randrange, low, high, _(
     =(diff, -(high, low)),
-    if(<=(diff, 0), error("called randrange with an empty range")),
+    if(<=(diff, 0), error("Range", "called randrange with an empty range")),
     +(low, abs(%(rand(), diff)))
 )),
 

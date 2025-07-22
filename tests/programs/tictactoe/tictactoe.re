@@ -40,12 +40,12 @@ def(request_number, board, _(
                 =(num, int(input())),
                 if(
                     ||(<(num, 1), >(num, 9)),
-                    error(""),
+                    error("", ""),
                 ),
                 =(val, index(board, -(num, 1))),
                 if(
                     !=(val, E),
-                    error("")
+                    error("", "")
                 ),
                 =(idx, num),
             ),

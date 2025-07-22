@@ -7,7 +7,7 @@ use crate::prelude::State;
 use std::path::PathBuf;
 use std::{error, fmt, result};
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Error {
     Type,
     Overflow,
@@ -21,11 +21,16 @@ pub enum Error {
     UserRaised,
     Assertion,
     Unimplemented,
+    Other(String),
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self:?}Error")
+        if let Self::Other(s) = self {
+            write!(f, "{s}Error")
+        } else {
+            write!(f, "{self:?}Error")
+        }
     }
 }
 

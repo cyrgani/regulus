@@ -205,9 +205,17 @@ functions! {
         state.storage.global_idents = import_state.storage.global_idents;
         Ok(atom)
     }
-    /// Raises an exception of the kind `UserRaised` with the given string message.
-    "error"(1) => |state, args| {
-        Err(Exception::new(args[0].eval(state)?.string()?, Error::UserRaised))
+    /// Raises an exception.
+    /// The first argument is a string that describes the error kind.
+    /// The second argument is a string error message.
+    /// 
+    /// The error kind should be a captialized word.
+    /// When displaying the error kind, `Error` will be appended implicitly, so the error kind given
+    /// here should not end in `Error`, `Exception` or similar.
+    "error"(2) => |state, args| {
+        let kind = args[0].eval(state)?.string()?;
+        let msg = args[1].eval(state)?.string()?;
+        Err(Exception::new(msg, Error::Other(kind)))
     }
     /// Evaluates the given value and returns it.
     /// If an exception occurs while evaluating the argument, the exception is converted into a
