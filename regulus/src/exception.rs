@@ -52,19 +52,20 @@ impl Exception {
         }
     }
 
-    pub fn spanned(msg: impl Into<String>, error: Error, span: Span) -> Self {
+    pub fn spanned(msg: impl Into<String>, error: Error, span: &Span) -> Self {
         Self {
             msg: msg.into(),
             error,
-            origin: Some(span),
+            origin: Some(span.clone()),
         }
     }
 
     pub fn display(&self, state: &State) -> impl error::Error {
+        dbg!(self);
         ExceptionDisplay {
             msg: &self.msg,
             error: &self.error,
-            origin: self.origin.map(|span| span.expand(state)),
+            origin: self.origin.clone().map(|span| span.expand(state)),
         }
     }
 }

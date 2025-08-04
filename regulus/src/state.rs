@@ -5,6 +5,7 @@ use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
 use std::io::{BufRead, BufReader, Read, Write, stderr, stdin, stdout};
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 use std::{env, fs, io, str};
 
 #[derive(Clone)]
@@ -81,7 +82,6 @@ pub struct State {
     pub(crate) current_span: Span,
     code: String,
     code_was_initialized: bool,
-    file_path_indices: Vec<PathBuf>,
     next_type_id: i64,
     // make sure this type can never be constructed from outside
     __private: (),
@@ -107,10 +107,9 @@ impl State {
             file_directory: Directory::InternedSTL,
             current_file_path: None,
             exit_unwind_value: None,
-            current_span: Span::new(0, 0, 0),
+            current_span: Span::new(0, 0, Rc::new(PathBuf::new())),
             code: String::new(),
             code_was_initialized: false,
-            file_path_indices: vec![],
             next_type_id: Atom::MIN_OBJECT_TY_ID,
             __private: (),
         }
@@ -188,13 +187,13 @@ impl State {
         };
         self.code = format!("_({prelude_import}\n{}\n)", self.code);
 
-        let file_id = if let Some(path) = &self.current_file_path {
-            self.add_file_to_index(path.clone())
+        let file_path = if let Some(path) = &self.current_file_path {
+            Rc::new(path.clone())
         } else {
-            u16::MAX
+            Rc::new(PathBuf::new())
         };
 
-        let tokens = tokenize(&self.code, file_id)?;
+        let tokens = tokenize(&self.code, file_path)?;
 
         let program = build_program(tokens)?;
 
@@ -221,34 +220,14 @@ impl State {
         &self.code
     }
 
-    /// Adds the given file path to the index of file paths.
-    /// Returns the index this path has now.
-    pub(crate) fn add_file_to_index(&mut self, path: impl AsRef<Path>) -> u16 {
-        self.file_path_indices.push(path.as_ref().to_path_buf());
-        u16::try_from(self.file_path_indices.len()).unwrap() - 1
-    }
-
-    /// Resolves a file path index to a [`PathBuf`].
-    ///
-    /// TODO: as a temporary measure, this returns an empty [`PathBuf`] when [`u16::MAX`] is passed.
-    ///
-    /// # Panics
-    /// Panics if the index is out of bounds.
-    pub(crate) fn resolve_file_index(&self, index: u16) -> PathBuf {
-        if index == u16::MAX {
-            return PathBuf::new();
-        }
-        self.file_path_indices[index as usize].clone()
-    }
-
     // TODO: choose which of the two methods below is more useful
 
     #[deprecated(note = "use the field directly")]
     /// Returns the span of the source code part which is currently being interpreted.
     ///
     /// Useful for error messages.
-    pub(crate) const fn current_span(&self) -> Span {
-        self.current_span
+    pub(crate) const fn current_span(&self) -> &Span {
+        &self.current_span
     }
 
     /// Returns the expanded of the source code part which is currently being interpreted.
