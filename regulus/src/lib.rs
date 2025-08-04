@@ -39,8 +39,13 @@ pub mod prelude {
     };
 }
 
+pub(crate) fn no_path() -> Rc<PathBuf> {
+    Rc::new(PathBuf::new())
+}
+
 use crate::{atom::Atom, exception::Result, state::State};
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::rc::Rc;
 
 pub const FILE_EXTENSION: &str = "re";
 

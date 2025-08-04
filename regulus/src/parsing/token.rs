@@ -174,9 +174,10 @@ pub fn extract(text: &str, span: Span) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::no_path;
 
     fn sp(start: u32, end: u32) -> Span {
-        Span::new(start, end, Rc::new(PathBuf::new()))
+        Span::new(start, end, no_path())
     }
 
     #[expect(clippy::unnecessary_wraps)]
@@ -209,7 +210,7 @@ mod tests {
 	def(double_and_print, x, print(*(2, x))),
 )
 ";
-        let tokens = tokenize(code, Rc::new(PathBuf::new())).unwrap();
+        let tokens = tokenize(code, no_path()).unwrap();
 
         let parts = tokens
             .into_iter()
