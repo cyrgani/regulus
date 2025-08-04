@@ -4,7 +4,6 @@
 //!  - `catch(1)`'s functionality (exception -> string) will remain but might be renamed
 use crate::parsing::positions::{ExpandedSpan, Span};
 use crate::prelude::State;
-use std::path::PathBuf;
 use std::{error, fmt, result};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -113,7 +112,7 @@ impl fmt::Display for ExceptionDisplay<'_> {
                 f,
                 "{}:{}:{}: {}: {}",
                 // TODO: this check might be temporary
-                if origin.file == PathBuf::new() {
+                if origin.file.to_str() == Some("") {
                     "<file>".to_string()
                 } else {
                     origin.file.display().to_string()

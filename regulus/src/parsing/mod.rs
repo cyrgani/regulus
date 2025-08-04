@@ -126,12 +126,11 @@ fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
-    use std::rc::Rc;
+    use crate::no_path;
 
     #[test]
     fn extra_parens() {
-        let prog = build_program(tokenize("_((2))", Rc::new(PathBuf::new())).unwrap());
+        let prog = build_program(tokenize("_((2))", no_path()).unwrap());
 
         assert_eq!(
             prog,
@@ -141,8 +140,7 @@ mod tests {
             ))
         );
 
-        let prog =
-            build_program(tokenize("(print(2)), print(3)", Rc::new(PathBuf::new())).unwrap());
+        let prog = build_program(tokenize("(print(2)), print(3)", no_path()).unwrap());
 
         assert_eq!(
             prog,

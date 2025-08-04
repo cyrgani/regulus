@@ -1,4 +1,5 @@
 use crate::builtins::all_functions;
+use crate::no_path;
 use crate::parsing::positions::{ExpandedSpan, Span};
 use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
@@ -107,7 +108,7 @@ impl State {
             file_directory: Directory::InternedSTL,
             current_file_path: None,
             exit_unwind_value: None,
-            current_span: Span::new(0, 0, Rc::new(PathBuf::new())),
+            current_span: Span::new(0, 0, no_path()),
             code: String::new(),
             code_was_initialized: false,
             next_type_id: Atom::MIN_OBJECT_TY_ID,
@@ -190,7 +191,7 @@ impl State {
         let file_path = if let Some(path) = &self.current_file_path {
             Rc::new(path.clone())
         } else {
-            Rc::new(PathBuf::new())
+            no_path()
         };
 
         let tokens = tokenize(&self.code, file_path)?;

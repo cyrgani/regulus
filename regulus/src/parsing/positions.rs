@@ -1,14 +1,10 @@
 use crate::state::State;
 use std::cmp::Ordering;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::str::Chars;
 
-// TODO: yet another idea: we could use only `ExpandedSpan` and store the path in an `Rc` to make clones cheap.
-//  then, ExpandedSpan is 24 bytes. Span would be removed and ExpandedSpan renamed to Span.
-//  the new Span does not require a State to expand, since it is already expanded.
-//  the new Span is not Copy though and is larger than the current span (12 bytes).
-
+// TODO: this will be removed in favor of ExpandedSpan, which will then be renamed to Span.
 /// A memory-efficient version of [`ExpandedSpan`].
 /// Using a [`State`](crate::prelude::State), this can be converted into an [`ExpandedSpan`]
 /// for display purposes.
@@ -35,8 +31,7 @@ impl Span {
     }
 
     pub fn expand(&self, state: &State) -> ExpandedSpan {
-        let path = self.file_path.clone();
-        ExpandedSpan::from_span(self, state.code(), path.as_ref())
+        ExpandedSpan::from_span(self, state.code())
     }
 }
 
@@ -45,7 +40,7 @@ impl Span {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExpandedSpan {
     /// The file path this span points to.
-    pub file: PathBuf,
+    pub file: Rc<PathBuf>,
     /// The start position of the span, inclusive.
     pub start: Position,
     /// The end position of the span, inclusive.
@@ -54,22 +49,25 @@ pub struct ExpandedSpan {
 
 impl ExpandedSpan {
     /// TODO: This might be removed in favor of [`Span::expand`].
-    pub fn from_span(span: &Span, code: &str, file: impl AsRef<Path>) -> Self {
+    pub fn from_span(span: &Span, code: &str) -> Self {
         // TODO: horribly inefficient to redo the iteration for each span,
         //  better: just do the iteration once, collect and then pass the slice to this function
-        dbg!(&span, code, file.as_ref());
+        dbg!(&span, code);
         let mut positions = CharPositions::new(code);
         let (start, _) = positions.nth(span.start as usize).unwrap();
-        let file = file.as_ref().to_path_buf();
         if span.start == span.end {
             return Self {
                 start,
                 end: start,
-                file,
+                file: span.file_path.clone(),
             };
         }
         let (end, _) = positions.nth((span.end - span.start) as usize).unwrap();
-        Self { file, start, end }
+        Self {
+            file: span.file_path.clone(),
+            start,
+            end,
+        }
     }
 }
 
@@ -138,6 +136,7 @@ impl<'a> CharPositions<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::no_path;
     use std::rc::Rc;
 
     #[test]
@@ -145,7 +144,7 @@ mod tests {
         assert_eq!(size_of::<Position>(), 8);
         assert_eq!(size_of::<Rc<PathBuf>>(), 8);
         assert_eq!(size_of::<Span>(), 16);
-        assert_eq!(size_of::<ExpandedSpan>(), 40);
+        assert_eq!(size_of::<ExpandedSpan>(), 24);
     }
 
     const fn p(line: u32, column: u32) -> Position {
@@ -186,7 +185,7 @@ mod tests {
 
     fn sp(l1: u32, c1: u32, l2: u32, c2: u32) -> ExpandedSpan {
         ExpandedSpan {
-            file: PathBuf::new(),
+            file: no_path(),
             start: p(l1, c1),
             end: p(l2, c2),
         }
@@ -196,26 +195,20 @@ mod tests {
         Span {
             start,
             end,
-            file_path: Rc::new(PathBuf::new()),
+            file_path: no_path(),
         }
     }
 
     #[test]
     fn span_from_indices() {
         let s = "abc\nde\nf\n";
-        assert_eq!(
-            ExpandedSpan::from_span(&base_sp(0, 2), s, ""),
-            sp(1, 1, 1, 4)
-        );
-        assert_eq!(
-            ExpandedSpan::from_span(&base_sp(2, 6), s, ""),
-            sp(1, 3, 3, 1)
-        );
+        assert_eq!(ExpandedSpan::from_span(&base_sp(0, 2), s), sp(1, 1, 1, 4));
+        assert_eq!(ExpandedSpan::from_span(&base_sp(2, 6), s), sp(1, 3, 3, 1));
     }
 
     #[test]
     #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
     fn span_from_indices_panic() {
-        ExpandedSpan::from_span(&base_sp(0, 1000), "abc\nde\nf\n", "");
+        ExpandedSpan::from_span(&base_sp(0, 1000), "abc\nde\nf\n");
     }
 }
