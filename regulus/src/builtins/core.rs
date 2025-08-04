@@ -223,7 +223,7 @@ functions! {
     "catch"(1) => |state, args| {
         Ok(match args[0].eval(state) {
             Ok(atom) => Cow::into_owned(atom),
-            Err(exc) => Atom::String(exc.display(state).to_string())
+            Err(exc) => Atom::String(exc.display().to_string())
         })
     }
     /// Evaluates both arguments and returns whether they are equal.

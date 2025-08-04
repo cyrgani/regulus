@@ -8,7 +8,7 @@
 pub mod positions;
 pub mod token;
 
-use crate::parsing::positions::Span;
+use crate::parsing::positions::{ExpandedSpan};
 use crate::parsing::token::Token;
 use crate::prelude::*;
 pub use token::{TokenData, tokenize};
@@ -77,10 +77,10 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
                 return Ok((
                     Argument::FunctionCall(
                         FunctionCall { args, name },
-                        Span::new(
+                        ExpandedSpan::new(
                             tokens[1].span.start,
                             tokens.last().unwrap().span.end,
-                            tokens[1].span.file_path.clone(),
+                            tokens[1].span.file.clone(),
                         ),
                     ),
                     rest,

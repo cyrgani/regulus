@@ -55,7 +55,7 @@ fn main() {
         Err(error) => {
             eprintln!(
                 "{}",
-                format!("The program caused an error: {}", error.display(&state)).red()
+                format!("The program caused an error: {}", error.display()).red()
             );
             exit(1);
         }
