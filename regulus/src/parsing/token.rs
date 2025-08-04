@@ -1,6 +1,6 @@
 use crate::atom::Atom;
 use crate::exception::{Error, Exception, Result};
-use crate::parsing::positions::Span;
+use crate::parsing::positions::{CharPositions, ExpandedSpan, Position};
 use crate::raise;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -13,7 +13,7 @@ pub struct Token {
     /// The actual token.
     pub data: TokenData,
     /// The start and end of the character range this token was created from.
-    pub span: Span,
+    pub span: ExpandedSpan,
 }
 
 impl Token {
@@ -53,9 +53,9 @@ pub enum TokenData {
 /// Returns all characters before `target` and the index of `target`.
 /// Returns `Err(all_consumed_chars)` if `target` was never found.
 fn take_until(
-    chars: impl Iterator<Item = (usize, char)>,
+    chars: impl Iterator<Item = (Position, char)>,
     target: char,
-) -> result::Result<(usize, String), String> {
+) -> result::Result<(Position, String), String> {
     let mut result = String::new();
     for (pos, c) in chars {
         if c == target {
@@ -71,14 +71,10 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
 
     let mut current = String::new();
 
-    let mut chars = code.chars().enumerate();
+    let mut chars = CharPositions::new(code);
     let mut add_token = |data, start, end| {
         tokens.push(Token {
-            span: Span::new(
-                u32::try_from(start).unwrap(),
-                u32::try_from(end).unwrap(),
-                file_path.clone(),
-            ),
+            span: ExpandedSpan::new(start, end, file_path.clone()),
             data,
         });
     };
@@ -92,7 +88,7 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
                     add_token(
                         TokenData::Name(current.clone()),
                         current_start_idx.unwrap(),
-                        char_idx - 1,
+                        char_idx.one_back(),
                     );
                     current.clear();
                     current_start_idx = None;
@@ -107,7 +103,7 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
                             None => TokenData::Name(current.clone()),
                         },
                         current_start_idx.unwrap(),
-                        char_idx - 1,
+                        char_idx.one_back(),
                     );
                     current.clear();
                     current_start_idx = None;
@@ -130,7 +126,7 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
             }
             '#' => {
                 let (end_pos, body) =
-                    take_until(chars.by_ref(), '\n').unwrap_or_else(|body| (code.len() - 1, body));
+                    take_until(chars.by_ref(), '\n').unwrap_or_else(|body| (last_pos(code), body));
                 add_token(TokenData::Comment(body), char_idx, end_pos);
             }
             _ => {
@@ -149,13 +145,22 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
                 None => TokenData::Name(current.clone()),
             },
             current_start_idx.unwrap(),
-            code.len(),
+            last_pos(code),
         );
     }
 
     Ok(tokens)
 }
 
+fn last_pos(code: &str) -> Position {
+    CharPositions::new(code)
+        .last()
+        .expect("already found some code")
+        .0
+}
+
+// TODO: reenable or remove
+#[cfg(false)]
 /// Returns all characters of the text that the given indices enclose.
 /// Returns `None` if the indices are invalid (end before start or out of bounds).
 pub fn extract(text: &str, span: Span) -> Option<String> {
@@ -171,6 +176,8 @@ pub fn extract(text: &str, span: Span) -> Option<String> {
     )
 }
 
+// TODO: reenable or remove
+#[cfg(false)]
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -2,8 +2,7 @@
 //!  - exceptions have spans and tracebacks
 //!  - `Error` will be removed
 //!  - `catch(1)`'s functionality (exception -> string) will remain but might be renamed
-use crate::parsing::positions::{ExpandedSpan, Span};
-use crate::prelude::State;
+use crate::parsing::positions::{ExpandedSpan};
 use std::{error, fmt, result};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -39,7 +38,7 @@ pub struct Exception {
     pub msg: String,
     pub error: Error,
     // todo: this will eventually stop being optional
-    pub origin: Option<Span>,
+    pub origin: Option<ExpandedSpan>,
 }
 
 impl Exception {
@@ -51,7 +50,7 @@ impl Exception {
         }
     }
 
-    pub fn spanned(msg: impl Into<String>, error: Error, span: &Span) -> Self {
+    pub fn spanned(msg: impl Into<String>, error: Error, span: &ExpandedSpan) -> Self {
         Self {
             msg: msg.into(),
             error,
@@ -59,12 +58,12 @@ impl Exception {
         }
     }
 
-    pub fn display(&self, state: &State) -> impl error::Error {
-        dbg!(self);
+    #[deprecated]
+    pub fn display(&self) -> impl error::Error {
         ExceptionDisplay {
             msg: &self.msg,
             error: &self.error,
-            origin: self.origin.clone().map(|span| span.expand(state)),
+            origin: self.origin.clone(),
         }
     }
 }

@@ -1,6 +1,6 @@
 use crate::builtins::all_functions;
 use crate::no_path;
-use crate::parsing::positions::{ExpandedSpan, Span};
+use crate::parsing::positions::{ExpandedSpan, Position};
 use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
@@ -80,7 +80,7 @@ pub struct State {
     current_file_path: Option<PathBuf>,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
     /// TODO: maybe not updated everywhere yet
-    pub(crate) current_span: Span,
+    pub(crate) current_span: ExpandedSpan,
     code: String,
     code_was_initialized: bool,
     next_type_id: i64,
@@ -108,7 +108,7 @@ impl State {
             file_directory: Directory::InternedSTL,
             current_file_path: None,
             exit_unwind_value: None,
-            current_span: Span::new(0, 0, no_path()),
+            current_span: ExpandedSpan::new(Position::ONE, Position::ONE, no_path()),
             code: String::new(),
             code_was_initialized: false,
             next_type_id: Atom::MIN_OBJECT_TY_ID,
@@ -219,23 +219,6 @@ impl State {
     pub(crate) fn code(&self) -> &str {
         self.assert_code_init();
         &self.code
-    }
-
-    // TODO: choose which of the two methods below is more useful
-
-    #[deprecated(note = "use the field directly")]
-    /// Returns the span of the source code part which is currently being interpreted.
-    ///
-    /// Useful for error messages.
-    pub(crate) const fn current_span(&self) -> &Span {
-        &self.current_span
-    }
-
-    /// Returns the expanded of the source code part which is currently being interpreted.
-    ///
-    /// Useful for error messages.
-    pub(crate) fn current_span_expanded(&self) -> ExpandedSpan {
-        self.current_span.expand(self)
     }
 
     /// Only intended to be used by `import` internals for now.
