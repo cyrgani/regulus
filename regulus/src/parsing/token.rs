@@ -1,6 +1,6 @@
 use crate::atom::Atom;
 use crate::exception::{Error, Exception, Result};
-use crate::parsing::positions::{CharPositions, ExpandedSpan, Position};
+use crate::parsing::positions::{CharPositions, Position, Span};
 use crate::raise;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -13,7 +13,7 @@ pub struct Token {
     /// The actual token.
     pub data: TokenData,
     /// The start and end of the character range this token was created from.
-    pub span: ExpandedSpan,
+    pub span: Span,
 }
 
 impl Token {
@@ -74,7 +74,7 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
     let mut chars = CharPositions::new(code);
     let mut add_token = |data, start, end| {
         tokens.push(Token {
-            span: ExpandedSpan::new(start, end, file_path.clone()),
+            span: Span::new(start, end, file_path.clone()),
             data,
         });
     };

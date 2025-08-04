@@ -1,6 +1,6 @@
 use crate::builtins::all_functions;
 use crate::no_path;
-use crate::parsing::positions::{ExpandedSpan, Position};
+use crate::parsing::positions::{Position, Span};
 use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
@@ -80,7 +80,7 @@ pub struct State {
     current_file_path: Option<PathBuf>,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
     /// TODO: maybe not updated everywhere yet
-    pub(crate) current_span: ExpandedSpan,
+    pub(crate) current_span: Span,
     code: String,
     code_was_initialized: bool,
     next_type_id: i64,
@@ -108,7 +108,7 @@ impl State {
             file_directory: Directory::InternedSTL,
             current_file_path: None,
             exit_unwind_value: None,
-            current_span: ExpandedSpan::new(Position::ONE, Position::ONE, no_path()),
+            current_span: Span::new(Position::ONE, Position::ONE, no_path()),
             code: String::new(),
             code_was_initialized: false,
             next_type_id: Atom::MIN_OBJECT_TY_ID,

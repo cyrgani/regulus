@@ -1,7 +1,7 @@
-use crate::parsing::positions::{ExpandedSpan};
+use crate::parsing::positions::{Span};
 use crate::prelude::*;
 
-fn cast_error_builder(atom: &Atom, new_type: &str, current_span: &ExpandedSpan) -> Exception {
+fn cast_error_builder(atom: &Atom, new_type: &str, current_span: &Span) -> Exception {
     Exception::spanned(format!("Unable to cast {atom} to {new_type}"), Error::Type, current_span)
 }
 

@@ -6,7 +6,7 @@ use std::str::Chars;
 /// A region of source code.
 /// Both start and end are inclusive.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExpandedSpan {
+pub struct Span {
     /// The file path this span points to.
     pub file: Rc<PathBuf>,
     /// The start position of the span, inclusive.
@@ -15,7 +15,7 @@ pub struct ExpandedSpan {
     pub end: Position,
 }
 
-impl ExpandedSpan {
+impl Span {
     pub const fn new(start: Position, end: Position, file: Rc<PathBuf>) -> Self {
         Self { file, start, end }
     }
@@ -98,7 +98,7 @@ mod tests {
     #[test]
     fn sizes_of_types() {
         assert_eq!(size_of::<Position>(), 8);
-        assert_eq!(size_of::<ExpandedSpan>(), 24);
+        assert_eq!(size_of::<Span>(), 24);
     }
 
     const fn p(line: u32, column: u32) -> Position {
