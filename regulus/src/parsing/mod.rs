@@ -21,7 +21,7 @@ pub fn build_program(mut tokens: Vec<Token>) -> Result<Argument> {
         return Err(Exception::spanned(
             "trailing unparsed tokens detected",
             Error::Syntax,
-            rest[0].span,
+            &rest[0].span,
         ));
     }
 
@@ -59,7 +59,7 @@ fn find_within_parens(tokens: &[Token]) -> Option<(&[Token], &[Token])> {
 fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
     let first_token = get_token(tokens, 0)?;
     if let Some(atom) = first_token.to_atom() {
-        return Ok((Argument::Atom(atom, first_token.span), &tokens[1..]));
+        return Ok((Argument::Atom(atom, first_token.span.clone()), &tokens[1..]));
     }
     if let Some(name) = first_token.to_name() {
         // we may not use `?` on the result of `get_token_data`, since that is valid in the `a` or `n` case
@@ -80,14 +80,17 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
                         Span::new(
                             tokens[1].span.start,
                             tokens.last().unwrap().span.end,
-                            tokens[1].span.file_id,
+                            tokens[1].span.file_path.clone(),
                         ),
                     ),
                     rest,
                 ));
             }
         } else {
-            return Ok((Argument::Variable(name, first_token.span), &tokens[1..]));
+            return Ok((
+                Argument::Variable(name, first_token.span.clone()),
+                &tokens[1..],
+            ));
         }
     }
     // TODO: better error message
@@ -111,7 +114,7 @@ fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
         return Err(Exception::spanned(
             "missing comma in argument list",
             Error::Syntax,
-            remaining[0].span,
+            &remaining[0].span,
         ));
     }
     if remaining.len() > 1 {
@@ -123,10 +126,12 @@ fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::PathBuf;
+    use std::rc::Rc;
 
     #[test]
     fn extra_parens() {
-        let prog = build_program(tokenize("_((2))", 0).unwrap());
+        let prog = build_program(tokenize("_((2))", Rc::new(PathBuf::new())).unwrap());
 
         assert_eq!(
             prog,
@@ -136,7 +141,8 @@ mod tests {
             ))
         );
 
-        let prog = build_program(tokenize("(print(2)), print(3)", 0).unwrap());
+        let prog =
+            build_program(tokenize("(print(2)), print(3)", Rc::new(PathBuf::new())).unwrap());
 
         assert_eq!(
             prog,

@@ -25,7 +25,7 @@ functions! {
             Ok(_) => Ok(Atom::String(
                 input
                     .strip_suffix('\n')
-                    .ok_or_else(|| Exception::spanned("missing newline after input() call", Error::Io, state.current_span))?
+                    .ok_or_else(|| Exception::spanned("missing newline after input() call", Error::Io, &state.current_span))?
                     .to_string(),
             )),
             Err(error) => {

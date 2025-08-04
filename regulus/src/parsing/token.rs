@@ -2,6 +2,8 @@ use crate::atom::Atom;
 use crate::exception::{Error, Exception, Result};
 use crate::parsing::positions::Span;
 use crate::raise;
+use std::path::PathBuf;
+use std::rc::Rc;
 use std::result;
 
 /// A token of source code with location information.
@@ -64,7 +66,7 @@ fn take_until(
     Err(result)
 }
 
-pub fn tokenize(code: &str, file_id: u16) -> Result<Vec<Token>> {
+pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
     let mut tokens = vec![];
 
     let mut current = String::new();
@@ -75,7 +77,7 @@ pub fn tokenize(code: &str, file_id: u16) -> Result<Vec<Token>> {
             span: Span::new(
                 u32::try_from(start).unwrap(),
                 u32::try_from(end).unwrap(),
-                file_id,
+                file_path.clone(),
             ),
             data,
         });
@@ -174,7 +176,7 @@ mod tests {
     use super::*;
 
     fn sp(start: u32, end: u32) -> Span {
-        Span::new(start, end, u16::MAX)
+        Span::new(start, end, Rc::new(PathBuf::new()))
     }
 
     #[expect(clippy::unnecessary_wraps)]
@@ -207,7 +209,7 @@ mod tests {
 	def(double_and_print, x, print(*(2, x))),
 )
 ";
-        let tokens = tokenize(code, 0).unwrap();
+        let tokens = tokenize(code, Rc::new(PathBuf::new())).unwrap();
 
         let parts = tokens
             .into_iter()
