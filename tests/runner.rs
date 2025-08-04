@@ -44,7 +44,7 @@ pub fn run_test(dir_path: &str, name: &str) {
 
     if let Err(e) = res {
         stderr.push('\n');
-        stderr.push_str(&e.display().to_string());
+        stderr.push_str(&e.to_string());
     }
 
     if bless_stream_files {

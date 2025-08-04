@@ -57,15 +57,6 @@ impl Exception {
             origin: Some(span.clone()),
         }
     }
-
-    #[deprecated]
-    pub fn display(&self) -> impl error::Error {
-        ExceptionDisplay {
-            msg: &self.msg,
-            error: &self.error,
-            origin: self.origin.clone(),
-        }
-    }
 }
 
 /// Creates an exception wrapped in an `Err` and returns it from the current function or closure.
@@ -96,21 +87,12 @@ macro_rules! raise_noreturn {
     };
 }
 
-#[derive(Debug)]
-struct ExceptionDisplay<'a> {
-    msg: &'a String,
-    error: &'a Error,
-    // todo: will stop being optional soon
-    origin: Option<ExpandedSpan>,
-}
-
-impl fmt::Display for ExceptionDisplay<'_> {
+impl fmt::Display for Exception {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(origin) = self.origin.as_ref() {
             write!(
                 f,
                 "{}:{}:{}: {}: {}",
-                // TODO: this check might be temporary
                 if origin.file.to_str() == Some("") {
                     "<file>".to_string()
                 } else {
@@ -127,7 +109,7 @@ impl fmt::Display for ExceptionDisplay<'_> {
     }
 }
 
-impl error::Error for ExceptionDisplay<'_> {}
+impl error::Error for Exception {}
 
 /// A shorthand alias for `Result<T, Exception>`.
 pub type Result<T> = result::Result<T, Exception>;
