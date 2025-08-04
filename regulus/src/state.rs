@@ -212,15 +212,6 @@ impl State {
         self.stdout.as_write().write_all(msg.as_bytes()).unwrap();
     }
 
-    /// Returns an immutable reference to the source code.
-    ///
-    /// # Panics
-    /// Panics if the source code was not yet initialized.
-    pub(crate) fn code(&self) -> &str {
-        self.assert_code_init();
-        &self.code
-    }
-
     /// Only intended to be used by `import` internals for now.
     pub(crate) fn set_current_file_path(&mut self, path: impl AsRef<Path>) {
         self.current_file_path = Some(path.as_ref().to_owned());
