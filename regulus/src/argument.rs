@@ -1,13 +1,13 @@
-use crate::parsing::positions::ExpandedSpan;
+use crate::parsing::positions::Span;
 use crate::prelude::*;
 use std::borrow::Cow;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
 pub enum Argument {
-    FunctionCall(FunctionCall, ExpandedSpan),
-    Atom(Atom, ExpandedSpan),
-    Variable(String, ExpandedSpan),
+    FunctionCall(FunctionCall, Span),
+    Atom(Atom, Span),
+    Variable(String, Span),
 }
 
 impl Argument {
@@ -45,7 +45,7 @@ impl Argument {
     }
 
     // TODO: consider making this public
-    pub(crate) const fn span(&self) -> &ExpandedSpan {
+    pub(crate) const fn span(&self) -> &Span {
         match self {
             Self::Atom(_, s) | Self::FunctionCall(_, s) | Self::Variable(_, s) => s,
         }
