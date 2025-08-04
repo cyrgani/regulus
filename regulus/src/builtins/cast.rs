@@ -1,4 +1,4 @@
-use crate::parsing::positions::{Span};
+use crate::parsing::positions::Span;
 use crate::prelude::*;
 
 fn cast_error_builder(atom: &Atom, new_type: &str, current_span: &Span) -> Exception {
