@@ -3,39 +3,6 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::str::Chars;
 
-// TODO: this will be removed in favor of ExpandedSpan, which will then be renamed to Span.
-/// A memory-efficient version of [`ExpandedSpan`].
-/// Using a [`State`](crate::prelude::State), this can be converted into an [`ExpandedSpan`]
-/// for display purposes.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Span {
-    /// inclusive
-    pub start: u32,
-    /// inclusive
-    pub end: u32,
-    pub file_path: Rc<PathBuf>,
-}
-
-impl Span {
-    pub const fn new(start: u32, end: u32, file_path: Rc<PathBuf>) -> Self {
-        Self {
-            start,
-            end,
-            file_path,
-        }
-    }
-
-    pub const fn len(&self) -> u32 {
-        self.end + 1 - self.start
-    }
-}
-
-impl ExpandedSpan {
-    pub const fn new(start: Position, end: Position, file: Rc<PathBuf>) -> Self {
-        Self { file, start, end }
-    }
-}
-
 /// A region of source code.
 /// Both start and end are inclusive.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -49,25 +16,8 @@ pub struct ExpandedSpan {
 }
 
 impl ExpandedSpan {
-    #[deprecated]
-    pub fn from_span(span: &Span, code: &str) -> Self {
-        // TODO: horribly inefficient to redo the iteration for each span,
-        //  better: just do the iteration once, collect and then pass the slice to this function
-        let mut positions = CharPositions::new(code);
-        let (start, _) = positions.nth(span.start as usize).unwrap();
-        if span.start == span.end {
-            return Self {
-                start,
-                end: start,
-                file: span.file_path.clone(),
-            };
-        }
-        let (end, _) = positions.nth((span.end - span.start) as usize).unwrap();
-        Self {
-            file: span.file_path.clone(),
-            start,
-            end,
-        }
+    pub const fn new(start: Position, end: Position, file: Rc<PathBuf>) -> Self {
+        Self { file, start, end }
     }
 }
 
@@ -144,13 +94,10 @@ impl<'a> CharPositions<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::rc::Rc;
 
     #[test]
     fn sizes_of_types() {
         assert_eq!(size_of::<Position>(), 8);
-        assert_eq!(size_of::<Rc<PathBuf>>(), 8);
-        assert_eq!(size_of::<Span>(), 16);
         assert_eq!(size_of::<ExpandedSpan>(), 24);
     }
 

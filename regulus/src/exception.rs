@@ -2,7 +2,7 @@
 //!  - exceptions have spans and tracebacks
 //!  - `Error` will be removed
 //!  - `catch(1)`'s functionality (exception -> string) will remain but might be renamed
-use crate::parsing::positions::{ExpandedSpan};
+use crate::parsing::positions::ExpandedSpan;
 use std::{error, fmt, result};
 
 #[derive(Debug, Clone, PartialEq, Eq)]

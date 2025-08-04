@@ -1,4 +1,4 @@
-use crate::parsing::positions::{ExpandedSpan};
+use crate::parsing::positions::ExpandedSpan;
 use crate::prelude::*;
 use std::borrow::Cow;
 
