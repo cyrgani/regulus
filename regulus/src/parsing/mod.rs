@@ -8,7 +8,7 @@
 pub mod positions;
 pub mod token;
 
-use crate::parsing::positions::{ExpandedSpan};
+use crate::parsing::positions::ExpandedSpan;
 use crate::parsing::token::Token;
 use crate::prelude::*;
 pub use token::{TokenData, tokenize};
