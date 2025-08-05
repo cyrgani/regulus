@@ -80,8 +80,7 @@ pub struct State {
     pub(crate) current_file_path: Option<PathBuf>,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
     pub(crate) backtrace: Vec<Span>,
-    code: String,
-    code_was_initialized: bool,
+    code: Option<String>,
     next_type_id: i64,
     // make sure this type can never be constructed from outside
     __private: (),
@@ -108,8 +107,7 @@ impl State {
             current_file_path: None,
             exit_unwind_value: None,
             backtrace: Vec::new(),
-            code: String::new(),
-            code_was_initialized: false,
+            code: None,
             next_type_id: Atom::MIN_OBJECT_TY_ID,
             __private: (),
         }
@@ -118,8 +116,7 @@ impl State {
     /// Sets the code that will be executed.
     #[must_use = "this returns the new state without modifying the original"]
     pub fn with_code(mut self, code: impl AsRef<str>) -> Self {
-        code.as_ref().clone_into(&mut self.code);
-        self.code_was_initialized = true;
+        self.code = Some(code.as_ref().to_owned());
         self
     }
 
@@ -132,8 +129,7 @@ impl State {
     /// Panics if the path is invalid.
     #[must_use = "this returns the new state without modifying the original"]
     pub fn with_source_file(mut self, path: impl AsRef<Path>) -> io::Result<Self> {
-        self.code = fs::read_to_string(&path)?;
-        self.code_was_initialized = true;
+        self.code = Some(fs::read_to_string(&path)?);
 
         self.current_file_path = Some(path.as_ref().to_owned());
 
@@ -161,14 +157,6 @@ impl State {
         self.with_source_directory(env::current_dir().unwrap())
     }
 
-    /// Asserts that the source code is already initialized.
-    fn assert_code_init(&self) {
-        assert!(
-            self.code_was_initialized,
-            "setting the source code is required"
-        );
-    }
-
     /// Runs the given program with the details specified by this state.
     ///
     /// Returns the result the program returned.
@@ -176,15 +164,19 @@ impl State {
     /// # Panics
     /// Panics if `code` was not set.
     pub fn run(&mut self) -> Result<Atom> {
-        self.assert_code_init();
-
         // newlines are needed to avoid interaction with comments
         // might also help with calculating the actual spans (just do line - 1)
         let prelude_import = match self.file_directory {
             Directory::Regular(_) | Directory::FromEval => "__builtin_prelude_import(),",
             Directory::InternedSTL => "",
         };
-        self.code = format!("_({prelude_import}\n{}\n)", self.code);
+
+        let code = format!(
+            "_({prelude_import}\n{}\n)",
+            self.code
+                .as_ref()
+                .expect("setting the source code is required")
+        );
 
         let file_path = if let Some(path) = &self.current_file_path {
             Rc::new(path.clone())
@@ -192,7 +184,7 @@ impl State {
             no_path()
         };
 
-        let tokens = tokenize(&self.code, file_path)?;
+        let tokens = tokenize(&code, file_path)?;
 
         let program = build_program(tokens)?;
 
