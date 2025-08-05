@@ -1,6 +1,6 @@
 use clap::Parser;
 use colored::Colorize;
-use regulus::prelude::*;
+use regulus::prelude::{Atom, State};
 use std::path::PathBuf;
 use std::process::exit;
 
@@ -37,7 +37,7 @@ fn main() {
         Ok(atom) => {
             match atom {
                 Atom::Null => (),
-                _ => println!("{atom:?}"),
+                _ => println!("{atom}"),
             };
             if args.dump_storage {
                 println!("{:?}", state.storage.data)

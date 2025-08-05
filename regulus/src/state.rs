@@ -185,8 +185,7 @@ impl State {
         // newlines are needed to avoid interaction with comments
         // might also help with calculating the actual spans (just do line - 1)
         let prelude_import = match self.file_directory {
-            // TODO: consider replacing this with `__builtin_prelude_import()`
-            Directory::Regular(_) | Directory::FromEval => "import(__builtin_prelude),",
+            Directory::Regular(_) | Directory::FromEval => "__builtin_prelude_import(),",
             Directory::InternedSTL => "",
         };
         self.code = format!("_({prelude_import}\n{}\n)", self.code);

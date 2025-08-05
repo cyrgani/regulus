@@ -1,13 +1,24 @@
 //! Builtin functions which will never have a stable equivalent and are for internal use only.
 
+use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
 use crate::state::TestHelper;
 use std::fs;
 use std::io::Write;
 
 functions! {
-    /// TODO
-    "__builtin_prelude_import"(0) => |_state, _| {
+    /// Imports the prelude from the STL.
+    /// This is implicitly done on startup.
+    /// Calling this function manually is not supported.
+    "__builtin_prelude_import"(0) => |state, _| {
+        let name = "prelude";
+        let mut import_state = State::new();
+        let code = INTERNED_STL[name];
+        import_state = import_state.with_code(code);
+        import_state.set_current_file_path(format!("<stl:{name}>"));
+        import_state.run().unwrap();
+
+        state.storage = import_state.storage;
         Ok(Atom::Null)
     }
     /// Evaluates the given argument, checks that it causes an exception and compares
@@ -31,7 +42,10 @@ fn file_catch_assert_eq(state: &mut State, args: &[Argument]) -> Result<Atom> {
             let mut exc = String::new();
             for line in content.lines() {
                 if line.is_empty() {
-                    assert!(!exc.is_empty(), "too many empty lines found in exc_stderr file");
+                    assert!(
+                        !exc.is_empty(),
+                        "too many empty lines found in exc_stderr file"
+                    );
                     lines.push(exc);
                     exc = String::new();
                 } else {
