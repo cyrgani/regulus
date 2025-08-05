@@ -41,17 +41,17 @@ impl StringOrVec {
         }
     }
 
-    fn overwrite_at_index(&mut self, index: usize, val: Atom) -> Result<()> {
+    fn overwrite_at_index(&mut self, index: usize, val: Atom, state: &State) -> Result<()> {
         match self {
             Self::String(s) => {
                 let mut chars = s.chars().collect::<Vec<_>>();
                 *chars.get_mut(index).ok_or_else(|| {
-                    Exception::new("Unable to insert at index into list!", Error::Index)
+                    state.raise(Error::Index, "Unable to insert at index into list!")
                 })? = atom_to_char(val)?;
             }
             Self::Vec(v) => {
                 *v.get_mut(index).ok_or_else(|| {
-                    Exception::new("Unable to insert at index into list!", Error::Index)
+                    state.raise(Error::Index, "Unable to insert at index into list!")
                 })? = val;
             }
         }
@@ -196,7 +196,7 @@ functions! {
     /// TODO: give it a better name
     "overwrite_at_index"(3) => |state, args| {
         let mut seq = args[0].eval(state)?.string_or_list()?;
-        seq.overwrite_at_index(atom_to_index(args[1].eval(state)?)?, args[2].eval(state)?.into_owned())?;
+        seq.overwrite_at_index(atom_to_index(args[1].eval(state)?)?, args[2].eval(state)?.into_owned(), state)?;
         Ok(seq.into_atom())
     }
     /// Swaps the values at two indices of a list or string and returns the new sequence.

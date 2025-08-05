@@ -1,4 +1,4 @@
 hello world 1! 
-String("fooError: mistake")
+String("programs/stdio_basics.re:2:41: fooError: mistake")
 hello world 2! 
 foo bar[1, 2]
