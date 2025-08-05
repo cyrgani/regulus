@@ -8,6 +8,7 @@ use std::io::{BufRead, BufReader, Read, Write, stderr, stdin, stdout};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::{env, fs, io, str};
+use std::fs::File;
 
 #[derive(Clone)]
 pub(crate) enum Directory {
@@ -77,12 +78,14 @@ pub struct State {
     pub stdout: WriteHandle,
     pub stderr: WriteHandle,
     pub(crate) file_directory: Directory,
-    current_file_path: Option<PathBuf>,
+    pub(crate) current_file_path: Option<PathBuf>,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
     pub(crate) backtrace: Vec<Span>,
     code: String,
     code_was_initialized: bool,
     next_type_id: i64,
+    // TODO: try removing this field again
+    pub(crate) test_helper: Option<TestHelper>,
     // make sure this type can never be constructed from outside
     __private: (),
 }
@@ -111,6 +114,7 @@ impl State {
             code: String::new(),
             code_was_initialized: false,
             next_type_id: Atom::MIN_OBJECT_TY_ID,
+            test_helper: None,
             __private: (),
         }
     }
@@ -224,7 +228,7 @@ impl State {
     }
 
     pub(crate) fn raise(&self, error: Error, msg: impl Into<String>) -> Exception {
-        Exception::with_trace(msg, error, &self.backtrace)
+        Exception::with_trace(error, msg, &self.backtrace)
     }
 }
 
@@ -296,4 +300,12 @@ impl WriteHandle {
         vec.retain(|&x| x != 0);
         String::from_utf8(vec).unwrap()
     }
+}
+
+pub(crate) enum TestHelper {
+    Bless(File),
+    Normal {
+        expected_lines: Vec<String>,
+        line_number: usize,
+    },
 }

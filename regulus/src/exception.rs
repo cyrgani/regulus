@@ -65,7 +65,7 @@ impl Exception {
 
     /// If you hae a [`State`](crate::prelude::State) available,
     /// consider using [`State::raise`](crate::prelude::State::raise) instead.
-    pub fn with_trace(msg: impl Into<String>, error: Error, backtrace: &[Span]) -> Self {
+    pub fn with_trace(error: Error, msg: impl Into<String>, backtrace: &[Span]) -> Self {
         Self {
             msg: msg.into(),
             error,
