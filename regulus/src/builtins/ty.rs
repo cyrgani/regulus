@@ -27,7 +27,7 @@ functions! {
     /// All further arguments are its fields.
     "type"(_) => |state, args| {
         let Some((ident, fields)) = args.split_first() else {
-            raise!(Error::Argument, "`type` takes at least one argument");
+            raise!(state, Error::Argument, "`type` takes at least one argument");
         };
         let var = ident.variable("`type` must take a variable as first argument")?;
 
@@ -37,23 +37,23 @@ functions! {
 
         for field in fields {
             match field {
-                Argument::Atom(..) => raise!(Error::Syntax, "`type` field arguments should be variables or `=` calls"),
+                Argument::Atom(..) => raise!(state, Error::Syntax, "`type` field arguments should be variables or `=` calls"),
                 Argument::FunctionCall(call, _) => {
                     if call.name != "=" {
-                        raise!(Error::Syntax, "defaulted `type` values must use `=`");
+                        raise!(state, Error::Syntax, "defaulted `type` values must use `=`");
                     }
                     let [Argument::Variable(name, _), value] = call.args.as_slice() else {
-                        raise!(Error::Syntax, "defaulted `type` values must have the form `=(name, value)`");
+                        raise!(state, Error::Syntax, "defaulted `type` values must have the form `=(name, value)`");
                     };
                     if found_fields.contains(name) {
-                        raise!(Error::Syntax, "duplicate `type` field `{name}`");
+                        raise!(state, Error::Syntax, "duplicate `type` field `{name}`");
                     }
                     found_fields.insert(name);
                     defaulted_fields.push((name.clone(), value.eval(state)?.into_owned()));
                 },
                 Argument::Variable(name, _) => {
                     if found_fields.contains(name) {
-                        raise!(Error::Syntax, "duplicate `type` field `{name}`");
+                        raise!(state, Error::Syntax, "duplicate `type` field `{name}`");
                     }
                     found_fields.insert(name);
                     required_fields.push(name.clone());

@@ -20,6 +20,7 @@ impl FunctionCall {
             let arg_len = self.args.len();
             if argc != arg_len {
                 raise!(
+                    state,
                     Error::Argument,
                     "expected `{argc}` args, found `{arg_len}` args for `{}`",
                     self.name

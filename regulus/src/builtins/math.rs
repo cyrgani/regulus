@@ -13,9 +13,9 @@ fn arithmetic_operation(
         Ok(Atom::Int(i))
     } else {
         if name == "/" && rhs == 0 {
-            raise!(Error::DivideByZero, "attempted to divide by zero")
+            raise!(state, Error::DivideByZero, "attempted to divide by zero")
         }
-        raise!(Error::Overflow, "overflow occured during {name}")
+        raise!(state, Error::Overflow, "overflow occured during {name}")
     }
 }
 
@@ -35,7 +35,7 @@ fn shift_operation(
     if let Some(i) = f(lhs, rhs) {
         Ok(Atom::Int(i))
     } else {
-        raise!(Error::Overflow, "{name} operation failed")
+        raise!(state, Error::Overflow, "{name} operation failed")
     }
 }
 

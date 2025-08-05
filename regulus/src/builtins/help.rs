@@ -9,7 +9,7 @@ functions! {
         if let Atom::Function(f) = &*arg {
             Ok(Atom::String(f.doc().to_string()))
         } else {
-            raise!(Error::Argument, "`doc` must be called on a function")
+            raise!(state, Error::Argument, "`doc` must be called on a function")
         }
     }
 
@@ -27,7 +27,7 @@ functions! {
             let msg = format!("<function>({argc_str}): \n\n{}\n", f.doc());
             state.write_to_stdout(&msg);
         } else {
-            raise!(Error::Argument, "`doc` must be called on a function")
+            raise!(state, Error::Argument, "`doc` must be called on a function")
         }
         Ok(Atom::Null)
     }

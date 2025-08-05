@@ -29,7 +29,7 @@ functions! {
                     .to_string(),
             )),
             Err(error) => {
-                raise!(Error::Io, "Error while reading input: {error}")
+                raise!(state, Error::Io, "Error while reading input: {error}")
             }
         }
     }
