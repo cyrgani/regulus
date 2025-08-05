@@ -7,4 +7,4 @@ assert_eq(true, bool(1)),
 assert_eq(string(int(bool(int("2")))), "1"),
 
 # disallowed
-__builtin_file_catch_assert_eq(int("a")),
+__builtin_print_catch(int("a")),

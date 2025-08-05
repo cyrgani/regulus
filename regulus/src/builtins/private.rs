@@ -21,7 +21,14 @@ functions! {
         state.storage = import_state.storage;
         Ok(Atom::Null)
     }
-    // IDEA: TODO: consider adding `print_catch` instead of this, which does exactly what it says
+    /// Evaluates the given argument, extracts the exception and prints it.
+    /// Not meant to be used outside of tests.
+    "__builtin_print_catch"(1) => |state, args| {
+        let exc = args[0].eval(state).expect_err("`__builtin_print_catch` arg should cause exception");
+        state.write_to_stdout(&exc.to_string());
+        state.write_to_stdout("\n");
+        Ok(Atom::Null)
+    }
     /// Evaluates the given argument, checks that it causes an exception and compares
     /// the exception and backtrace to the fitting `.exc_stderr` file.
     /// Not meant to be used outside of tests.
