@@ -1,5 +1,4 @@
 print("hello world 1!"),
-__builtin_rust_debug(catch(error("foo", "mistake"))),
 print("hello world 2!"),
 write("foo"),
 write(" "),

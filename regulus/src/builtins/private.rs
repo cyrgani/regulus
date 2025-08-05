@@ -6,21 +6,13 @@ use std::fs;
 use std::io::Write;
 
 functions! {
-    /// Prints the debug representation of the given argument to stdout, followed by a newline.
-    ///
-    /// NOTE: the output format of this method is unstable.
-    /// NOTE: this method may be removed in the future.
-    "__builtin_rust_debug"(1) => |state, args| {
-        let arg_val = args[0].eval(state)?;
-        let s = format!("{arg_val:?}\n");
-        state.write_to_stdout(&s);
-        Ok(Atom::Null)
-    }
     /// TODO
     "__builtin_prelude_import"(0) => |_state, _| {
         Ok(Atom::Null)
     }
-    /// TODO
+    /// Evaluates the given argument, checks that it causes an exception and compares
+    /// the exception and backtrace to the fitting `.exc_stderr` file.
+    /// Not meant to be used outside of tests.
     "__builtin_file_catch_assert_eq"(1) => |state, args| {
         file_catch_assert_eq(state, args)
     }

@@ -44,7 +44,7 @@ fn main() {
             }
         }
         Err(error) => {
-            eprintln!("{}", format!("The program caused an error: {error}").red());
+            eprintln!("{}", error.to_string().red());
             exit(1);
         }
     }
