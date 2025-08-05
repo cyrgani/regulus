@@ -27,9 +27,9 @@ fn shift_operation(
 ) -> Result<Atom> {
     let lhs = args[0].eval(state)?.int()?;
     let rhs = u32::try_from(args[1].eval(state)?.int()?).map_err(|err| {
-        Exception::new(
-            format!("invalid arithmetic argument for `{name}`: `{err}`"),
+        state.raise(
             Error::Argument,
+            format!("invalid arithmetic argument for `{name}`: `{err}`"),
         )
     })?;
     if let Some(i) = f(lhs, rhs) {

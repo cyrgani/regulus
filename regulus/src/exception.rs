@@ -100,6 +100,15 @@ macro_rules! raise_noreturn {
     ($kind: expr, $string: literal, $($fmt_args: expr),*) => {
         Err(Exception::new(format!($string, $($fmt_args),*), $kind))
     };
+    ($state: expr, $kind: expr, $string: literal) => {
+        $crate::raise_noreturn!($state, $kind, $string,)
+    };
+    ($state: expr, $kind: expr, $msg: expr) => {
+        $crate::raise_noreturn!($state, $kind, "{}", $msg)
+    };
+    ($state: expr, $kind: expr, $string: literal, $($fmt_args: expr),*) => {
+        Err(Exception::with_trace($kind, format!($string, $($fmt_args),*), &$state.backtrace))
+    };
 }
 
 impl fmt::Display for Exception {

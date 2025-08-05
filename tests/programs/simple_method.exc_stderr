@@ -1,0 +1,10 @@
+NameError: object has no method `nonexistent`
+at programs/simple_method.re:19:33
+at programs/simple_method.re:19:31
+
+ArgumentError: expected `1` args, found `2` args for `<object>.double`
+
+TypeError: 5 is not a Object!
+
+ArgumentError: `@` expected the name of a method as second arg
+

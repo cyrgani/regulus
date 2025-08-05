@@ -217,6 +217,7 @@ functions! {
         let msg = args[1].eval(state)?.string()?;
         Err(state.raise(Error::Other(kind), msg))
     }
+    // TODO: rename this to something that makes clear how niche it is, once most tests no longer use it
     /// Evaluates the given value and returns it.
     /// If an exception occurs while evaluating the argument, the exception is converted into a
     /// string and returned instead.

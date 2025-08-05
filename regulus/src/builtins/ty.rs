@@ -105,7 +105,7 @@ functions! {
         let mut obj = args[0].eval(state)?.object()?;
         let field = args[1].variable("`.` takes a field identifier as second argument")?;
         let value = args[2].eval(state)?;
-        *obj.data.get_mut(field).ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))? = value.into_owned();
+        *obj.data.get_mut(field).ok_or_else(|| state.raise(Error::Name, format!("object has no field named `{field}`")))? = value.into_owned();
         Ok(Atom::Object(obj))
     }
     /// Calls a method on an object with the given arguments.
@@ -116,12 +116,12 @@ functions! {
     /// This method has an alias: `call_method`.
     "@"(_) => |state, args| {
         let [obj_arg, method, rest @ ..] = args else {
-            raise!(Error::Syntax, "too few arguments for `@`");
+            raise!(state, Error::Syntax, "too few arguments for `@`");
         };
         let obj = obj_arg.eval(state)?.object()?;
         let method_name = method.variable("`@` expected the name of a method as second arg")?;
         let Some(func) = obj.data.get(method_name) else {
-            raise!(Error::Name, "object has no method `{method_name}`");
+            raise!(state, Error::Name, "object has no method `{method_name}`");
         };
         let func = func.function()?;
         let mut args = vec![obj_arg.clone()];
