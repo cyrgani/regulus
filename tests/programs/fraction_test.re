@@ -6,7 +6,7 @@ assert_eq(frac_to_int(Fraction(3, 2)), 1),
 assert_eq(frac_to_int(Fraction(5, 2)), 2),
 assert_eq(frac_to_int(Fraction(-3, 2)), -1),
 assert_eq(frac_to_int(Fraction(-1, 2)), 0),
-assert_eq(catch(frac_to_int(Fraction(0, 0))), "OverflowError: overflow occured during /!"),
+assert_eq(catch(frac_to_int(Fraction(0, 0))), "DivideByZeroError: attempted to divide by zero"),
 
 =(a, Fraction(2, 3)),
 =(b, Fraction(4, 7)),

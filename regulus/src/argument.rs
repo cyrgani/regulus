@@ -44,8 +44,8 @@ impl Argument {
         }
     }
 
-    // TODO: consider making this public
-    pub(crate) const fn span(&self) -> &Span {
+    /// Returns the span of this argument.
+    pub const fn span(&self) -> &Span {
         match self {
             Self::Atom(_, s) | Self::FunctionCall(_, s) | Self::Variable(_, s) => s,
         }

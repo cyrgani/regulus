@@ -1,23 +1,41 @@
 use crate::prelude::*;
 
-fn arithmetic_operation<T: TryFrom<i64, Error: std::fmt::Display>>(
+fn arithmetic_operation(
     state: &mut State,
     args: &[Argument],
     name: &str,
-    f: fn(i64, T) -> Option<i64>,
+    f: fn(i64, i64) -> Option<i64>,
 ) -> Result<Atom> {
-    match f(
-        args[0].eval(state)?.int()?,
-        T::try_from(args[1].eval(state)?.int()?).map_err(|err| {
-            Exception::new(
-                format!("invalid arithmetic argument for `{name}`: `{err}`"),
-                Error::Argument,
-            )
-        })?,
-    ) {
-        Some(i) => Ok(Atom::Int(i)),
-        // TODO: this error could also be division by zero
-        None => raise!(Error::Overflow, "overflow occured during {name}!"),
+    let lhs = args[0].eval(state)?.int()?;
+    let rhs = args[1].eval(state)?.int()?;
+
+    if let Some(i) = f(lhs, rhs) {
+        Ok(Atom::Int(i))
+    } else {
+        if name == "/" && rhs == 0 {
+            raise!(Error::DivideByZero, "attempted to divide by zero")
+        }
+        raise!(Error::Overflow, "overflow occured during {name}")
+    }
+}
+
+fn shift_operation(
+    state: &mut State,
+    args: &[Argument],
+    name: &str,
+    f: fn(i64, u32) -> Option<i64>,
+) -> Result<Atom> {
+    let lhs = args[0].eval(state)?.int()?;
+    let rhs = u32::try_from(args[1].eval(state)?.int()?).map_err(|err| {
+        Exception::new(
+            format!("invalid arithmetic argument for `{name}`: `{err}`"),
+            Error::Argument,
+        )
+    })?;
+    if let Some(i) = f(lhs, rhs) {
+        Ok(Atom::Int(i))
+    } else {
+        raise!(Error::Overflow, "{name} operation failed")
     }
 }
 
@@ -35,8 +53,8 @@ functions! {
     "%"(2) => |state, args| arithmetic_operation(state, args, "%", i64::checked_rem)
     /// Shifts the first integer to the left by the second amount of digits,
     /// causing an exception in case of overflow or a negative shift amount.
-    "<<"(2) => |state, args| arithmetic_operation(state, args, "<<", i64::checked_shl)
+    "<<"(2) => |state, args| shift_operation(state, args, "<<", i64::checked_shl)
     /// Shifts the first integer to the right by the second amount of digits,
     /// causing an exception in case of overflow or a negative shift amount.
-    ">>"(2) => |state, args| arithmetic_operation(state, args, ">>", i64::checked_shr)
+    ">>"(2) => |state, args| shift_operation(state, args, ">>", i64::checked_shr)
 }

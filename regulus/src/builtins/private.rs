@@ -13,7 +13,7 @@ functions! {
         Ok(Atom::Null)
     }
     /// TODO
-    "__builtin_prelude_import"(0) => |state, _| {
+    "__builtin_prelude_import"(0) => |_state, _| {
         Ok(Atom::Null)
     }
 }

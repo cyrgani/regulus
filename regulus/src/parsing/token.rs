@@ -46,6 +46,9 @@ pub enum TokenData {
     RightParen,
     Atom(Atom),
     Name(String),
+    // TODO: use or remove
+    #[expect(clippy::allow_attributes, reason = "#[expect(dead_code)] is broken")]
+    #[allow(dead_code)]
     Comment(String),
 }
 

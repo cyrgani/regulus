@@ -6,6 +6,7 @@ use crate::parsing::positions::Span;
 use std::{error, fmt, result};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Error {
     Type,
     Overflow,
@@ -19,6 +20,7 @@ pub enum Error {
     UserRaised,
     Assertion,
     Unimplemented,
+    DivideByZero,
     Other(String),
 }
 
