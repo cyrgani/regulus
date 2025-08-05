@@ -4,7 +4,6 @@ use crate::parsing::positions::Span;
 use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
-use std::fs::File;
 use std::io::{BufRead, BufReader, Read, Write, stderr, stdin, stdout};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
@@ -84,8 +83,6 @@ pub struct State {
     code: String,
     code_was_initialized: bool,
     next_type_id: i64,
-    // TODO: try removing this field again
-    pub(crate) test_helper: Option<TestHelper>,
     // make sure this type can never be constructed from outside
     __private: (),
 }
@@ -114,7 +111,6 @@ impl State {
             code: String::new(),
             code_was_initialized: false,
             next_type_id: Atom::MIN_OBJECT_TY_ID,
-            test_helper: None,
             __private: (),
         }
     }
@@ -304,12 +300,4 @@ impl WriteHandle {
         vec.retain(|&x| x != 0);
         String::from_utf8(vec).unwrap()
     }
-}
-
-pub(crate) enum TestHelper {
-    Bless(File),
-    Normal {
-        expected_lines: Vec<String>,
-        line_number: usize,
-    },
 }
