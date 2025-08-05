@@ -1,2 +1,3 @@
 
-programs/trailing_tokens.re:1:10: SyntaxError: trailing unparsed tokens detected
+SyntaxError: trailing unparsed tokens detected
+at programs/trailing_tokens.re:1:10

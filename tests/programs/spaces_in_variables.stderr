@@ -1,2 +1,3 @@
 
-programs/spaces_in_variables.re:2:5: SyntaxError: missing comma in argument list
+SyntaxError: missing comma in argument list
+at programs/spaces_in_variables.re:2:5
