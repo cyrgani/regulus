@@ -1,1 +1,1 @@
-assert_eq(catch(input()), "programs/no_newline_input.re:1:22: IoError: missing newline after input() call")
+__builtin_file_catch_assert_eq(input()),

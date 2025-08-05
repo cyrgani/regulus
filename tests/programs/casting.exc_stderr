@@ -1,0 +1,4 @@
+TypeError: Unable to cast a to int
+at programs/casting.re:10:35
+at programs/casting.re:10:31
+
