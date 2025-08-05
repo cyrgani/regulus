@@ -219,7 +219,6 @@ functions! {
         let msg = args[1].eval(state)?.string()?;
         Err(state.raise(Error::Other(kind), msg))
     }
-    // TODO: move this to STL?
     /// Evaluates the given value and returns it.
     /// If an exception occurs while evaluating the argument, the exception is converted into a
     /// string and returned instead.

@@ -1,6 +1,7 @@
 use crate::prelude::*;
 use std::collections::HashMap;
 use std::fmt;
+use std::fmt::Display;
 use std::num::IntErrorKind;
 
 // TODO: consider adding floats
@@ -31,6 +32,18 @@ impl Atom {
                     _ => Ok(None),
                 },
             },
+        }
+    }
+
+    // TODO: make this public?
+    pub(crate) fn int_from_rust_int<T>(val: T) -> Result<Self>
+    where
+        i64: TryFrom<T>,
+        <i64 as TryFrom<T>>::Error: Display,
+    {
+        match i64::try_from(val) {
+            Ok(int) => Ok(Self::Int(int)),
+            Err(e) => raise!(Error::Overflow, "invalid integer: {e}"),
         }
     }
 

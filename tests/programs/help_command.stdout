@@ -1,7 +1,5 @@
 <function>(1): 
 
-Prints the documentation string for a function as well its argc.
+Returns the documentation string for a function.
 
-Use `doc(1)` to return it instead.
-
-TODO (not yet possible): also show the name somehow
+TODO: implement this for non-builtin functions as well.

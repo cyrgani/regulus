@@ -82,34 +82,34 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
         });
     };
 
-    let mut current_start_idx = None;
+    let mut current_start_pos = None;
 
-    while let Some((char_idx, c)) = chars.next() {
+    while let Some((char_pos, c)) = chars.next() {
         match c {
             '(' => {
                 if !current.is_empty() {
                     add_token(
                         TokenData::Name(current.clone()),
-                        current_start_idx.unwrap(),
-                        char_idx.one_back(),
+                        current_start_pos.unwrap(),
+                        char_pos.one_back(),
                     );
                     current.clear();
-                    current_start_idx = None;
+                    current_start_pos = None;
                 }
-                add_token(TokenData::LeftParen, char_idx, char_idx);
+                add_token(TokenData::LeftParen, char_pos, char_pos);
             }
             ')' | ',' | ' ' | '\n' | '\t' => {
                 if !current.is_empty() {
                     add_token(
-                        match Atom::try_from_str(current.as_str())? {
+                        match Atom::try_from_str(&current)? {
                             Some(value) => TokenData::Atom(value),
                             None => TokenData::Name(current.clone()),
                         },
-                        current_start_idx.unwrap(),
-                        char_idx.one_back(),
+                        current_start_pos.unwrap(),
+                        char_pos.one_back(),
                     );
                     current.clear();
-                    current_start_idx = None;
+                    current_start_pos = None;
                 }
                 add_token(
                     match c {
@@ -117,24 +117,24 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
                         ',' => TokenData::Comma,
                         _ => continue,
                     },
-                    char_idx,
-                    char_idx,
+                    char_pos,
+                    char_pos,
                 );
             }
             '"' => {
                 let Ok((end_pos, body)) = take_until(chars.by_ref(), '"') else {
                     raise!(Error::Syntax, "unclosed string literal");
                 };
-                add_token(TokenData::Atom(Atom::String(body)), char_idx, end_pos);
+                add_token(TokenData::Atom(Atom::String(body)), char_pos, end_pos);
             }
             '#' => {
                 let (end_pos, body) =
                     take_until(chars.by_ref(), '\n').unwrap_or_else(|body| (last_pos(code), body));
-                add_token(TokenData::Comment(body), char_idx, end_pos);
+                add_token(TokenData::Comment(body), char_pos, end_pos);
             }
             _ => {
-                if current_start_idx.is_none() {
-                    current_start_idx = Some(char_idx);
+                if current_start_pos.is_none() {
+                    current_start_pos = Some(char_pos);
                 }
                 current.push(c);
             }
@@ -143,11 +143,11 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
 
     if !current.is_empty() {
         add_token(
-            match Atom::try_from_str(current.as_str())? {
+            match Atom::try_from_str(&current)? {
                 Some(value) => TokenData::Atom(value),
                 None => TokenData::Name(current.clone()),
             },
-            current_start_idx.unwrap(),
+            current_start_pos.unwrap(),
             last_pos(code),
         );
     }

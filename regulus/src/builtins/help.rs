@@ -12,23 +12,19 @@ functions! {
             raise!(state, Error::Argument, "`doc` must be called on a function")
         }
     }
-
-    /// Prints the documentation string for a function as well its argc.
+    /// Returns the argument count for a function, or `null` if it has none.
     ///
-    /// Use `doc(1)` to return it instead.
-    ///
-    /// TODO (not yet possible): also show the name somehow
-    "help"(1) => |state, args| {
-        if let Atom::Function(f) = &*args[0].eval(state)? {
-            let argc_str = match f.argc() {
-                Some(argc) => argc.to_string(),
-                None => "_".to_string(),
-            };
-            let msg = format!("<function>({argc_str}): \n\n{}\n", f.doc());
-            state.write_to_stdout(&msg);
+    /// TODO: implement this for non-builtin functions as well.
+    "argc"(1) => |state, args| {
+        let arg = args[0].eval(state)?;
+        if let Atom::Function(f) = &*arg {
+            Ok(if let Some(argc) = f.argc() {
+                Atom::int_from_rust_int(argc)?
+            } else {
+                Atom::Null
+            })
         } else {
             raise!(state, Error::Argument, "`doc` must be called on a function")
         }
-        Ok(Atom::Null)
     }
 }
