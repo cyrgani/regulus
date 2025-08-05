@@ -4,11 +4,11 @@ use crate::parsing::positions::Span;
 use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
+use std::fs::File;
 use std::io::{BufRead, BufReader, Read, Write, stderr, stdin, stdout};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::{env, fs, io, str};
-use std::fs::File;
 
 #[derive(Clone)]
 pub(crate) enum Directory {
