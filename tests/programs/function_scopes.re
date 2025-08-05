@@ -4,4 +4,4 @@ def(foo, x, _(
 )),
 
 assert_eq(foo(2), 2),
-print(catch(y))
+__builtin_file_catch_assert_eq(y)

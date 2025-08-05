@@ -1,5 +1,5 @@
 _(
     import(random),
     not_random(),
-    print("expected error:", catch(random_u16())),
+    print("expected error:", run_or_string_exception(random_u16())),
 )

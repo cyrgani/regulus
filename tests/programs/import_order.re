@@ -1,2 +1,2 @@
-print(catch(range(0, 1))),
+__builtin_file_catch_assert_eq(range(0, 1)),
 import(range)

@@ -6,6 +6,6 @@ def(outer, x, _(
 )),
 
 outer(2),
-assert_eq(catch(inner()), "NameError: No function `inner` found!"),
+__builtin_file_catch_assert_eq(inner()),
 =(inner2, outer(2)),
-assert_eq(catch(inner2()), "NameError: No variable named `x` found!")
+__builtin_file_catch_assert_eq(inner2()),

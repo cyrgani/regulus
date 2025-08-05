@@ -21,6 +21,7 @@ functions! {
         state.storage = import_state.storage;
         Ok(Atom::Null)
     }
+    // IDEA: TODO: consider adding `print_catch` instead of this, which does exactly what it says
     /// Evaluates the given argument, checks that it causes an exception and compares
     /// the exception and backtrace to the fitting `.exc_stderr` file.
     /// Not meant to be used outside of tests.

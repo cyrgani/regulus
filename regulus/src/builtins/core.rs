@@ -219,11 +219,11 @@ functions! {
         let msg = args[1].eval(state)?.string()?;
         Err(state.raise(Error::Other(kind), msg))
     }
-    // TODO: rename this to something that makes clear how niche it is, once most tests no longer use it
+    // TODO: move this to STL?
     /// Evaluates the given value and returns it.
     /// If an exception occurs while evaluating the argument, the exception is converted into a
     /// string and returned instead.
-    "catch"(1) => |state, args| {
+    "run_or_string_exception"(1) => |state, args| {
         Ok(match args[0].eval(state) {
             Ok(atom) => Cow::into_owned(atom),
             Err(exc) => Atom::String(exc.to_string())
