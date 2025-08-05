@@ -1,0 +1,31 @@
+RangeError: called randrange with an empty range
+at <stl:random>:21:26
+at <stl:random>:21:7
+at <stl:random>:19:28
+at programs/seeded_random.re:19:41
+at programs/seeded_random.re:19:31
+
+RangeError: called randrange with an empty range
+at <stl:random>:21:26
+at <stl:random>:21:7
+at <stl:random>:19:28
+at programs/seeded_random.re:20:41
+at programs/seeded_random.re:20:31
+
+RangeError: called randrange with an empty range
+at <stl:random>:21:26
+at <stl:random>:21:7
+at <stl:random>:19:28
+at programs/seeded_random.re:21:41
+at programs/seeded_random.re:21:31
+
+RangeError: called randrange with an empty range
+at <stl:random>:21:26
+at <stl:random>:21:7
+at <stl:random>:19:28
+at <stl:random>:27:21
+at <stl:random>:27:6
+at <stl:random>:26:19
+at programs/seeded_random.re:25:38
+at programs/seeded_random.re:25:31
+

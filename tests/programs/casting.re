@@ -7,4 +7,4 @@ assert_eq(true, bool(1)),
 assert_eq(string(int(bool(int("2")))), "1"),
 
 # disallowed
-assert_eq(catch(int("a")), "programs/casting.re:10:21: TypeError: Unable to cast a to int"),
+__builtin_file_catch_assert_eq(int("a")),
