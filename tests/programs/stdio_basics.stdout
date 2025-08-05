@@ -1,4 +1,4 @@
 hello world 1! 
-String("programs/stdio_basics.re:2:41: fooError: mistake")
+String("fooError: mistake\nat programs/stdio_basics.re:2:33\nat programs/stdio_basics.re:2:27\nat programs/stdio_basics.re:2:21")
 hello world 2! 
 foo bar[1, 2]

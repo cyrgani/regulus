@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::fmt::Display;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::str::Chars;
@@ -18,6 +19,22 @@ pub struct Span {
 impl Span {
     pub const fn new(start: Position, end: Position, file: Rc<PathBuf>) -> Self {
         Self { file, start, end }
+    }
+}
+
+impl Display for Span {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "{}:{}:{}",
+            if self.file.to_str() == Some("") {
+                "<file>".to_string()
+            } else {
+                self.file.display().to_string()
+            },
+            self.start.line - 1,
+            self.start.column,
+        )
     }
 }
 

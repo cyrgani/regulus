@@ -1,2 +1,3 @@
 
-programs/no_longer_optional_comma.re:2:14: SyntaxError: missing comma in argument list
+SyntaxError: missing comma in argument list
+at programs/no_longer_optional_comma.re:2:14
