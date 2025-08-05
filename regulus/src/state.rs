@@ -223,6 +223,10 @@ impl State {
         self.next_type_id += 1;
         old
     }
+
+    pub(crate) fn raise(&self, error: Error, msg: impl Into<String>) -> Exception {
+        Exception::spanned(msg, error, &self.current_span)
+    }
 }
 
 /// Helper trait for types that can both be read from and written to.

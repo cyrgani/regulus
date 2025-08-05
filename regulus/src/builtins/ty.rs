@@ -18,8 +18,8 @@ def(fictional_main, _(
 ))
 */
 
-use std::collections::{HashMap, HashSet};
 use crate::prelude::*;
+use std::collections::{HashMap, HashSet};
 
 functions! {
     /// Defines a new type.
@@ -90,7 +90,7 @@ functions! {
     "."(2) => |state, args| {
         let obj = args[0].eval(state)?.object()?;
         let field = args[1].variable("`.` takes a field identifier as second argument")?;
-        obj.data.get(field).cloned().ok_or_else(|| Exception::new(format!("object has no field named `{field}`"), Error::Name))
+        obj.data.get(field).cloned().ok_or_else(|| state.raise(Error::Name, format!("object has no field named `{field}`")))
     }
     /// Set the value of a field of an object to a new value and returns the updated object.
     ///
@@ -112,7 +112,7 @@ functions! {
     /// The object itself is implicitly added as the first argument to the method.
     ///
     /// The first argument is the object, the second the identifier of the method and all further arguments are the arguments to the method.
-    /// 
+    ///
     /// This method has an alias: `call_method`.
     "@"(_) => |state, args| {
         let [obj_arg, method, rest @ ..] = args else {
@@ -129,10 +129,10 @@ functions! {
         func.call(state, &args, &format!("<object>.{method_name}"))
     }
     /// Returns the type id corresponding to the given value.
-    /// 
+    ///
     /// A type id is a positive integer. Primitive types are currently represented with these IDs
     /// (note that this may change at any point):
-    /// 
+    ///
     /// * Int: 0
     /// * Bool: 1
     /// * Null: 2

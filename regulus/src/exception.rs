@@ -52,6 +52,8 @@ impl Exception {
         }
     }
 
+    /// If you hae a [`State`](crate::prelude::State) available,
+    /// consider using [`State::raise`](crate::prelude::State::raise) instead.
     pub fn spanned(msg: impl Into<String>, error: Error, span: &Span) -> Self {
         Self {
             msg: msg.into(),

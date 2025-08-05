@@ -14,7 +14,7 @@ functions! {
     "__builtin_now"(0) => |state, _| {
         Ok(Atom::Int(
             i64::try_from(epoch_duration().as_secs())
-                .map_err(|e| Exception::spanned(format!("time overflow: {e}"), Error::Overflow, &state.current_span))?
+                .map_err(|e| state.raise(Error::Overflow, format!("time overflow: {e}")))?
         ))
     }
     /// Returns the nanosecond part of the current time as an integer.
