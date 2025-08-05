@@ -40,7 +40,7 @@ pub struct Exception {
     pub msg: String,
     pub error: Error,
     // todo: this will eventually stop being optional
-    pub origin: Option<Span>,
+    pub backtrace: Option<Vec<Span>>,
 }
 
 impl Exception {
@@ -48,17 +48,28 @@ impl Exception {
         Self {
             msg: msg.into(),
             error,
-            origin: None,
+            backtrace: None,
         }
     }
 
+    // TODO: remove?
     /// If you hae a [`State`](crate::prelude::State) available,
     /// consider using [`State::raise`](crate::prelude::State::raise) instead.
     pub fn spanned(msg: impl Into<String>, error: Error, span: &Span) -> Self {
         Self {
             msg: msg.into(),
             error,
-            origin: Some(span.clone()),
+            backtrace: Some(vec![span.clone()]),
+        }
+    }
+
+    /// If you hae a [`State`](crate::prelude::State) available,
+    /// consider using [`State::raise`](crate::prelude::State::raise) instead.
+    pub fn with_trace(msg: impl Into<String>, error: Error, backtrace: &[Span]) -> Self {
+        Self {
+            msg: msg.into(),
+            error,
+            backtrace: Some(backtrace.to_vec()),
         }
     }
 }
@@ -93,23 +104,25 @@ macro_rules! raise_noreturn {
 
 impl fmt::Display for Exception {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(origin) = self.origin.as_ref() {
-            write!(
-                f,
-                "{}:{}:{}: {}: {}",
-                if origin.file.to_str() == Some("") {
-                    "<file>".to_string()
-                } else {
-                    origin.file.display().to_string()
-                },
-                origin.start.line - 1,
-                origin.start.column,
-                self.error,
-                self.msg
-            )
-        } else {
-            write!(f, "{}: {}", self.error, self.msg)
+        write!(f, "{}: {}", self.error, self.msg)?;
+        if let Some(backtrace) = self.backtrace.as_ref() {
+            // the first entry is the meaningless implicit `_` wrapper
+            for span in backtrace.iter().skip(1).rev() {
+                writeln!(f)?;
+                write!(
+                    f,
+                    "at {}:{}:{}",
+                    if span.file.to_str() == Some("") {
+                        "<file>".to_string()
+                    } else {
+                        span.file.display().to_string()
+                    },
+                    span.start.line - 1,
+                    span.start.column,
+                )?;
+            }
         }
+        Ok(())
     }
 }
 
