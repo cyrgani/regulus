@@ -1,21 +1,6 @@
-assert_eq(
-    catch(assert_eq(2, 4)),
-    "<stl:assertions>:4:116: AssertionError: Equality assertion failed! lhs: `2`, rhs: `4`!"
-),
-assert_eq(
-    catch(assert_eq(true, 1)),
-    "<stl:assertions>:4:116: AssertionError: Equality assertion failed! lhs: `true`, rhs: `1`!"
-),
-assert_eq(
-    catch(assert_eq(fn(_()), 1)),
-    "<stl:assertions>:4:116: AssertionError: Equality assertion failed! lhs: `<function>(0)`, rhs: `1`!"
-),
+__builtin_file_catch_assert_eq(assert_eq(2, 4)),
+__builtin_file_catch_assert_eq(assert_eq(true, 1)),
+__builtin_file_catch_assert_eq(assert_eq(fn(_()), 1)),
 type(F),
-assert_eq(
-    catch(assert_eq(F(), null)),
-    "<stl:assertions>:4:116: AssertionError: Equality assertion failed! lhs: `{}`, rhs: `null`!"
-),
-assert_eq(
-    catch(assert_eq(_, _)),
-    "<stl:assertions>:4:116: AssertionError: Equality assertion failed! lhs: `<function>(_)`, rhs: `<function>(_)`!"
-),
+__builtin_file_catch_assert_eq(assert_eq(F(), null)),
+__builtin_file_catch_assert_eq(assert_eq(_, _)),
