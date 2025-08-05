@@ -13,8 +13,6 @@ functions! {
         }
     }
     /// Returns the argument count for a function, or `null` if it has none.
-    ///
-    /// TODO: implement this for non-builtin functions as well.
     "argc"(1) => |state, args| {
         let arg = args[0].eval(state)?;
         if let Atom::Function(f) = &*arg {

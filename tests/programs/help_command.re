@@ -1,3 +1,7 @@
 import(help),
 =(x, help(doc)),
 assert_eq(x, null),
+def(f, a, _()),
+assert_eq(argc(f), 1),
+assert_eq(argc(_), null),
+assert_eq(argc(endl), 0),
