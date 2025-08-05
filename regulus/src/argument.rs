@@ -12,18 +12,20 @@ pub enum Argument {
 
 impl Argument {
     pub fn eval<'a>(&'a self, state: &'a mut State) -> Result<Cow<'a, Atom>> {
-        state.current_span = self.span().clone();
+        state.backtrace.push(self.span().clone());
         if state.exit_unwind_value.is_some() {
             return Ok(Cow::Owned(Atom::Null));
         }
-        match self {
+        let res = match self {
             Self::FunctionCall(call, _) => call.eval(state).map(Cow::Owned),
             Self::Atom(atom, _) => Ok(Cow::Borrowed(atom)),
             Self::Variable(var, _) => match state.storage.get(var) {
                 Some(value) => Ok(Cow::Borrowed(value)),
                 None => raise!(Error::Name, "No variable named `{var}` found!"),
             },
-        }
+        };
+        state.backtrace.pop();
+        res
     }
 
     /// Returns the identifier of this variable.
