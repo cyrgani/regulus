@@ -13,9 +13,15 @@ functions! {
         let code = INTERNED_STL[name];
         import_state = import_state.with_code(code);
         import_state.set_current_file_path(format!("<stl:{name}>"));
-        import_state.run().unwrap();
 
-        state.storage = import_state.storage;
+        import_state.storage.global_idents.clone_from(&state.storage.global_idents);
+        import_state.storage.data.extend(state.storage.global_items());
+        import_state.run()?;
+
+        for (k, v) in import_state.storage.data {
+            state.storage.insert(k, v);
+        }
+        state.storage.global_idents = import_state.storage.global_idents;
         Ok(Atom::Null)
     }
     /// Evaluates the given argument, extracts the exception and prints it to stderr.
