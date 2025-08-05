@@ -214,6 +214,11 @@ impl State {
         self.stdout.as_write().write_all(msg.as_bytes()).unwrap();
     }
 
+    /// Writes the given string to stdout, without any extra newline.
+    pub(crate) fn write_to_stderr(&mut self, msg: &str) {
+        self.stderr.as_write().write_all(msg.as_bytes()).unwrap();
+    }
+
     /// Only intended to be used by `import` internals for now.
     pub(crate) fn set_current_file_path(&mut self, path: impl AsRef<Path>) {
         self.current_file_path = Some(path.as_ref().to_owned());

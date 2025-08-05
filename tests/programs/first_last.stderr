@@ -1,16 +1,12 @@
 IndexError: invalid list index: out of range integral type conversion attempted
-
 IndexError: sequence index out of bounds
 at <stl:lists>:13:10
 at <stl:lists>:12:18
-at programs/first_last.re:6:37
-at programs/first_last.re:6:31
-
+at programs/first_last.re:6:28
+at programs/first_last.re:6:22
 IndexError: invalid list index: out of range integral type conversion attempted
-
 IndexError: sequence index out of bounds
 at <stl:lists>:13:10
 at <stl:lists>:12:18
-at programs/first_last.re:8:37
-at programs/first_last.re:8:31
-
+at programs/first_last.re:8:28
+at programs/first_last.re:8:22

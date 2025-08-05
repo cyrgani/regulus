@@ -6,7 +6,7 @@ assert_eq(frac_to_int(Fraction(3, 2)), 1),
 assert_eq(frac_to_int(Fraction(5, 2)), 2),
 assert_eq(frac_to_int(Fraction(-3, 2)), -1),
 assert_eq(frac_to_int(Fraction(-1, 2)), 0),
-__builtin_file_catch_assert_eq(frac_to_int(Fraction(0, 0))),
+__builtin_print_catch(frac_to_int(Fraction(0, 0))),
 
 =(a, Fraction(2, 3)),
 =(b, Fraction(4, 7)),

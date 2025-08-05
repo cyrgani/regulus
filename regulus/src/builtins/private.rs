@@ -25,8 +25,8 @@ functions! {
     /// Not meant to be used outside of tests.
     "__builtin_print_catch"(1) => |state, args| {
         let exc = args[0].eval(state).expect_err("`__builtin_print_catch` arg should cause exception");
-        state.write_to_stdout(&exc.to_string());
-        state.write_to_stdout("\n");
+        state.write_to_stderr(&exc.to_string());
+        state.write_to_stderr("\n");
         Ok(Atom::Null)
     }
     /// Evaluates the given argument, checks that it causes an exception and compares

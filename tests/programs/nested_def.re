@@ -6,6 +6,6 @@ def(outer, x, _(
 )),
 
 outer(2),
-__builtin_file_catch_assert_eq(inner()),
+__builtin_print_catch(inner()),
 =(inner2, outer(2)),
-__builtin_file_catch_assert_eq(inner2()),
+__builtin_print_catch(inner2()),

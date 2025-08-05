@@ -1,0 +1,3 @@
+IoError: missing newline after input() call
+at programs/no_newline_input.re:1:28
+at programs/no_newline_input.re:1:22

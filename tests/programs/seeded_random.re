@@ -16,13 +16,13 @@ for_in(..(0, 100), i, _(
     assert_eq(randrange(0, 1), 0),
     assert_eq(randrange(-2, -1), -2),
 )),
-__builtin_file_catch_assert_eq(randrange(5, 5)),
-__builtin_file_catch_assert_eq(randrange(-1, -1)),
-__builtin_file_catch_assert_eq(randrange(-3, -5)),
+__builtin_print_catch(randrange(5, 5)),
+__builtin_print_catch(randrange(-1, -1)),
+__builtin_print_catch(randrange(-3, -5)),
 
 assert_eq(choose("Hello, world!"), "d"),
 assert_eq(choose("Hello, world!"), ","),
-__builtin_file_catch_assert_eq(choose(list())),
+__builtin_print_catch(choose(list())),
 
 =(shuffled_alphabet, "YLIEPKRQBFWVNHSAMCZJXTUDGO"),
 

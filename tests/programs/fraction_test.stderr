@@ -4,6 +4,5 @@ at <stl:operators>:57:11
 at <stl:operators>:53:19
 at <stl:fraction>:11:6
 at <stl:fraction>:10:25
-at programs/fraction_test.re:9:43
-at programs/fraction_test.re:9:31
-
+at programs/fraction_test.re:9:34
+at programs/fraction_test.re:9:22

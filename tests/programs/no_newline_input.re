@@ -1,1 +1,1 @@
-__builtin_file_catch_assert_eq(input()),
+__builtin_print_catch(input()),

@@ -10,11 +10,13 @@ fn read_file_or_empty(base_path: &Path, extension: &str) -> String {
     fs::read_to_string(base_path.with_extension(extension)).unwrap_or_default()
 }
 
-fn write_file_if_nonempty(base_path: &Path, extension: &str, content: &str) {
+fn delete_then_write_file_if_nonempty(base_path: &Path, extension: &str, content: &str) {
+    let path = base_path.with_extension(extension);
+    let _ = fs::remove_file(&path);
     if content.is_empty() {
         return;
     }
-    fs::write(base_path.with_extension(extension), content).unwrap();
+    fs::write(&path, content).unwrap();
 }
 
 /// Run a test program, making sure it produces the expected stdout and stderr.
@@ -48,8 +50,8 @@ pub fn run_test(dir_path: &str, name: &str) {
     }
 
     if bless_stream_files {
-        write_file_if_nonempty(&base_path, "stdout", &stdout);
-        write_file_if_nonempty(&base_path, "stderr", &stderr);
+        delete_then_write_file_if_nonempty(&base_path, "stdout", &stdout);
+        delete_then_write_file_if_nonempty(&base_path, "stderr", &stderr);
     } else {
         let expected_stderr = read_file_or_empty(&base_path, "stderr");
         assert_eq!(stderr, expected_stderr);

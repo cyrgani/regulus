@@ -1,8 +1,8 @@
 assert_eq(eval("+(2,2)"), 4),
-__builtin_file_catch_assert_eq(eval("(")),
+__builtin_print_catch(eval("(")),
 =(x, "_("),
 =(y, strconcat(x, "/(1, 0))")),
-__builtin_file_catch_assert_eq(eval(y)),
+__builtin_print_catch(eval(y)),
 
 eval("=(aaaaa, 2)"),
-__builtin_file_catch_assert_eq(aaaaa),
+__builtin_print_catch(aaaaa),

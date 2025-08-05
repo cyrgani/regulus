@@ -1,4 +1,0 @@
-IoError: missing newline after input() call
-at programs/no_newline_input.re:1:37
-at programs/no_newline_input.re:1:31
-
