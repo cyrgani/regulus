@@ -125,10 +125,11 @@ impl fmt::Display for Atom {
             ),
             Self::Null => write!(f, "null"),
             Self::String(val) => write!(f, "{val}"),
-            // TODO: format is unstable, since iteration order is not guaranteed
             Self::Object(obj) => {
                 write!(f, "{{")?;
-                for (idx, (key, val)) in obj.data.iter().enumerate() {
+                let mut ordered = obj.data.iter().collect::<Vec<_>>();
+                ordered.sort_by_key(|(field, _)| *field);
+                for (idx, (key, val)) in ordered.iter().enumerate() {
                     write!(f, "{key}: {val}")?;
                     if idx != obj.data.len() - 1 {
                         write!(f, ", ")?;
