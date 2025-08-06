@@ -1,11 +1,19 @@
+def(numerator, frac, .(frac, numerator)),
+def(denominator, frac, .(frac, denominator)),
+
 type(
     Fraction,
     numerator,
     denominator,
-),
 
-def(numerator, frac, .(frac, numerator)),
-def(denominator, frac, .(frac, denominator)),
+    =(==, fn(f1, f2, _(
+        # TODO: use simplify here first
+        &&(
+            ==(numerator(f1), numerator(f2)),
+            ==(denominator(f1), denominator(f2)),
+        )
+    ))),
+),
 
 def(frac_to_int, frac, _(
     /(
