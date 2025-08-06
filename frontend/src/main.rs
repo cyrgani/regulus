@@ -1,26 +1,20 @@
-use clap::Parser;
 use colored::Colorize;
 use regulus::prelude::{Atom, State};
-use std::path::PathBuf;
+use std::env;
 use std::process::exit;
 
-/// An interpreter for the Regulus language.
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-    /// The path of the program
-    path: PathBuf,
-
-    /// Show the final storage
-    #[arg(short = 'S', long, default_value_t = false)]
-    dump_storage: bool,
-}
-
 fn main() {
-    let args = Args::parse();
+    let Some(path) = env::args().nth(1) else {
+        eprintln!(
+            "{} program file not provided\n{} cargo run -- PATH",
+            "error:".red(),
+            "usage:".underline().bold()
+        );
+        exit(1);
+    };
 
     let mut state = State::new();
-    match state.with_source_file(args.path) {
+    match state.with_source_file(path) {
         Ok(updated) => {
             state = updated;
         }
@@ -39,9 +33,6 @@ fn main() {
                 Atom::Null => (),
                 _ => println!("{atom}"),
             };
-            if args.dump_storage {
-                println!("{:?}", state.storage.data)
-            }
         }
         Err(error) => {
             eprintln!("{}", error.to_string().red());
