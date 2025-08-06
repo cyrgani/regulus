@@ -133,21 +133,15 @@ mod tests {
         let prog = build_program(tokenize("_((2))", no_path()).unwrap());
 
         assert_eq!(
-            prog,
-            Err(Exception::new(
-                "missing or invalid tokens for s_step",
-                Error::Syntax
-            ))
+            prog.unwrap_err(),
+            Exception::new("missing or invalid tokens for s_step", Error::Syntax)
         );
 
         let prog = build_program(tokenize("(print(2)), print(3)", no_path()).unwrap());
 
         assert_eq!(
-            prog,
-            Err(Exception::new(
-                "missing or invalid tokens for s_step",
-                Error::Syntax
-            ))
+            prog.unwrap_err(),
+            Exception::new("missing or invalid tokens for s_step", Error::Syntax)
         );
     }
 }

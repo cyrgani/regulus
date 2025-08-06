@@ -162,32 +162,41 @@ fn last_pos(code: &str) -> Position {
         .0
 }
 
-// TODO: reenable or remove
-#[cfg(false)]
-/// Returns all characters of the text that the given indices enclose.
-/// Returns `None` if the indices are invalid (end before start or out of bounds).
+/// Returns all characters of the text that the given span encloses.
+/// Returns `None` if the span is invalid (end before start or out of bounds).
 pub fn extract(text: &str, span: Span) -> Option<String> {
-    if span.start > span.end || span.end as usize >= text.chars().count() {
-        return None;
-    }
+    let mut start_found = false;
 
-    Some(
-        text.chars()
-            .skip(span.start as usize)
-            .take(span.len() as usize)
-            .collect::<String>(),
-    )
+    let mut s = String::new();
+    for (pos, c) in CharPositions::new(text) {
+        if pos == span.start {
+            start_found = true;
+        }
+        if start_found {
+            s.push(c);
+        }
+
+        if pos == span.end {
+            if !start_found {
+                return None;
+            }
+            return Some(s);
+        }
+    }
+    None
 }
 
-// TODO: reenable or remove
-#[cfg(false)]
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::no_path;
 
-    fn sp(start: u32, end: u32) -> Span {
-        Span::new(start, end, no_path())
+    fn sp(start_line: u32, start_col: u32, end_line: u32, end_col: u32) -> Span {
+        Span::new(
+            Position::new(start_line, start_col),
+            Position::new(end_line, end_col),
+            no_path(),
+        )
     }
 
     #[expect(clippy::unnecessary_wraps)]
@@ -198,20 +207,20 @@ mod tests {
     #[test]
     fn extract_1() {
         let t = "abc\nde\nf\n";
-        assert_eq!(extract(t, sp(0, 3)), so("abc\n"));
-        assert_eq!(extract(t, sp(0, 5)), so("abc\nde"));
-        assert_eq!(extract(t, sp(0, 4)), so("abc\nd"));
-        assert_eq!(extract(t, sp(2, 5)), so("c\nde"));
-        assert_eq!(extract(t, sp(0, 1)), so("ab"));
-        assert_eq!(extract(t, sp(0, 0)), so("a"));
-        assert_eq!(extract(t, sp(0, 1000)), None);
-        assert_eq!(extract(t, sp(2, 1)), None);
-        assert_eq!(extract(t, sp(5, 8)), so("e\nf\n"));
-        assert_eq!(extract(t, sp(5, 0)), None);
-        assert_eq!(extract(t, sp(5, 4)), None);
-        assert_eq!(extract(t, sp(5, 5)), so("e"));
-        assert_eq!(extract(t, sp(8, 8)), so("\n"));
-        assert_eq!(extract(t, sp(9, 9)), None);
+        assert_eq!(extract(t, sp(1, 1, 1, 4)), so("abc\n"));
+        assert_eq!(extract(t, sp(1, 1, 2, 2)), so("abc\nde"));
+        assert_eq!(extract(t, sp(1, 1, 2, 1)), so("abc\nd"));
+        assert_eq!(extract(t, sp(1, 3, 2, 2)), so("c\nde"));
+        assert_eq!(extract(t, sp(1, 1, 1, 2)), so("ab"));
+        assert_eq!(extract(t, sp(1, 1, 1, 1)), so("a"));
+        assert_eq!(extract(t, sp(1, 1, 1, 1000)), None);
+        assert_eq!(extract(t, sp(1, 2, 1, 1)), None);
+        assert_eq!(extract(t, sp(2, 2, 3, 2)), so("e\nf\n"));
+        assert_eq!(extract(t, sp(3, 1, 1, 1)), None);
+        assert_eq!(extract(t, sp(2, 1, 1, 4)), None);
+        assert_eq!(extract(t, sp(2, 2, 2, 2)), so("e"));
+        assert_eq!(extract(t, sp(3, 2, 3, 2)), so("\n"));
+        assert_eq!(extract(t, sp(3, 3, 3, 3)), None);
     }
 
     #[test]

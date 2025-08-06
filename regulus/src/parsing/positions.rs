@@ -48,6 +48,10 @@ pub struct Position {
 
 impl Position {
     pub const ONE: Self = Self { line: 1, column: 1 };
+
+    pub const fn new(line: u32, column: u32) -> Self {
+        Self { line, column }
+    }
 }
 
 impl PartialOrd for Position {

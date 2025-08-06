@@ -3,7 +3,6 @@ use crate::prelude::*;
 use std::borrow::Cow;
 
 #[derive(Debug, Clone)]
-#[cfg_attr(test, derive(PartialEq))]
 pub enum Argument {
     FunctionCall(FunctionCall, Span),
     Atom(Atom, Span),
