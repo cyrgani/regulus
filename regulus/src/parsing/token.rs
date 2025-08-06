@@ -8,7 +8,6 @@ use std::result;
 
 /// A token of source code with location information.
 #[derive(Debug)]
-#[cfg_attr(test, derive(PartialEq))]
 pub struct Token {
     /// The actual token.
     pub data: TokenData,
@@ -39,7 +38,6 @@ impl Token {
 }
 
 #[derive(Debug)]
-#[cfg_attr(test, derive(PartialEq))]
 pub enum TokenData {
     LeftParen,
     Comma,
@@ -47,8 +45,7 @@ pub enum TokenData {
     Atom(Atom),
     Name(String),
     // TODO: use or remove
-    #[expect(clippy::allow_attributes, reason = "#[expect(dead_code)] is broken")]
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     Comment(String),
 }
 
@@ -164,6 +161,8 @@ fn last_pos(code: &str) -> Position {
 
 /// Returns all characters of the text that the given span encloses.
 /// Returns `None` if the span is invalid (end before start or out of bounds).
+// TODO: use or remove
+#[cfg_attr(not(test), expect(dead_code))]
 pub fn extract(text: &str, span: Span) -> Option<String> {
     let mut start_found = false;
 
@@ -265,165 +264,4 @@ mod tests {
 
         assert_eq!(parts.join(""), code.replace(['\n', '\t', ' '], ""));
     }
-
-    /*
-    use TokenData::*;
-
-    #[expect(non_snake_case)]
-    fn Int(val: i64) -> crate::atom::Atom {
-        crate::atom::Atom::Int(val)
-    }
-
-    #[expect(non_snake_case)]
-    fn Name(name: &str) -> TokenData {
-        TokenData::Name(name.to_string())
-    }
-
-    #[test]
-    fn extra_parens() {
-        assert_eq!(
-            tokenize("_((2))"),
-            Ok(vec![
-                Token {
-                    data: Name("_"),
-                    indices: 0..=0
-                },
-                Token {
-                    data: LeftParen,
-                    indices: 1..=1
-                },
-                Token {
-                    data: LeftParen,
-                    indices: 2..=2
-                },
-                Token {
-                    data: Atom(Int(2)),
-                    indices: 3..=3
-                },
-                Token {
-                    data: RightParen,
-                    indices: 4..=4
-                },
-                Token {
-                    data: RightParen,
-                    indices: 5..=5
-                }
-            ])
-        );
-    }
-
-    #[test]
-    fn inline_whitespace() {
-        assert_eq!(
-            tokenize("_(2 3)"),
-            Ok(vec![
-                Token {
-                    data: Name("_"),
-                    indices: 0..=0
-                },
-                Token {
-                    data: LeftParen,
-                    indices: 1..=1
-                },
-                Token {
-                    data: Atom(Int(2)),
-                    indices: 2..=2
-                },
-                Token {
-                    data: Atom(Int(3)),
-                    indices: 4..=4
-                },
-                Token {
-                    data: RightParen,
-                    indices: 5..=5
-                }
-            ])
-        );
-        assert_eq!(
-            tokenize("=(a a, 3)"),
-            Ok(vec![
-                Token {
-                    data: Name("="),
-                    indices: 0..=0
-                },
-                Token {
-                    data: LeftParen,
-                    indices: 1..=1
-                },
-                Token {
-                    data: Name("a"),
-                    indices: 2..=2
-                },
-                Token {
-                    data: Name("a"),
-                    indices: 4..=4
-                },
-                Token {
-                    data: Comma,
-                    indices: 5..=5
-                },
-                Token {
-                    data: Atom(Int(3)),
-                    indices: 7..=7
-                },
-                Token {
-                    data: RightParen,
-                    indices: 8..=8
-                }
-            ])
-        );
-    }
-
-    #[test]
-    fn extra_parens_2() {
-        assert_eq!(
-            tokenize("(print(2)), print(3)"),
-            Ok(vec![
-                Token {
-                    data: LeftParen,
-                    indices: 0..=0
-                },
-                Token {
-                    data: Name("print"),
-                    indices: 1..=5
-                },
-                Token {
-                    data: LeftParen,
-                    indices: 6..=6
-                },
-                Token {
-                    data: Atom(Int(2)),
-                    indices: 7..=7
-                },
-                Token {
-                    data: RightParen,
-                    indices: 8..=8
-                },
-                Token {
-                    data: RightParen,
-                    indices: 9..=9
-                },
-                Token {
-                    data: Comma,
-                    indices: 10..=10
-                },
-                Token {
-                    data: Name("print"),
-                    indices: 12..=16
-                },
-                Token {
-                    data: LeftParen,
-                    indices: 17..=17
-                },
-                Token {
-                    data: Atom(Int(3)),
-                    indices: 18..=18
-                },
-                Token {
-                    data: RightParen,
-                    indices: 19..=19
-                }
-            ])
-        );
-    }*/
 }
