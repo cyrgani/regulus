@@ -16,6 +16,12 @@ fn make_tests_for_dir(dir_path: PathBuf) -> TokenStream {
         if file_type.is_file() {
             let name = entry.file_name().into_string().unwrap();
             if let Some(name) = name.strip_suffix(".re") {
+                for c in name.chars() {
+                    if !matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_') {
+                        panic!("invalid character `{c}` found in test name `{name}`")
+                    }
+                }
+
                 let path_display = dir_path.components().skip(1).collect::<PathBuf>();
                 let tfn_prefix = dir_path
                     .components()
