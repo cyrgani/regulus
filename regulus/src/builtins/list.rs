@@ -154,10 +154,7 @@ functions! {
     }
     /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {
-        Ok(Atom::Int(
-            i64::try_from(args[0].eval(state)?.str_or_slice()?.len())
-                .map_err(|e| state.raise(Error::Overflow, format!("list is too long: {e}")))?
-        ))
+        Atom::int_from_rust_int(args[0].eval(state)?.str_or_slice()?.len())
     }
     /// Iterates over the given list elements or string characters.
     /// The first argument is the list, the second the loop variable name for each element and the

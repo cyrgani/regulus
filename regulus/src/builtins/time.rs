@@ -11,16 +11,13 @@ functions! {
     /// Returns the current time in seconds (Unix epoch) as an integer.
     ///
     /// The stable version of this function is in the `time` STL module.
-    "__builtin_now"(0) => |state, _| {
-        Ok(Atom::Int(
-            i64::try_from(epoch_duration().as_secs())
-                .map_err(|e| state.raise(Error::Overflow, format!("time overflow: {e}")))?
-        ))
+    "__builtin_now"(0) => |_, _| {
+        Atom::int_from_rust_int(epoch_duration().as_secs())
     }
     /// Returns the nanosecond part of the current time as an integer.
     ///
     /// The stable version of this function is in the `time` STL module.
     "__builtin_now_nanos_part"(0) => |_, _| {
-        Ok(Atom::Int(i64::from(epoch_duration().subsec_nanos())))
+        Atom::int_from_rust_int(epoch_duration().subsec_nanos())
     }
 }
