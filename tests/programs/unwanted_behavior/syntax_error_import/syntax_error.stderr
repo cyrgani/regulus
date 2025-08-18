@@ -1,3 +1,0 @@
-
-SyntaxError: missing comma in argument list
-at programs/unwanted_behavior/syntax_error_import/syntax_error.re:3:1
