@@ -1,0 +1,8 @@
+OverflowError: overflow occured during -
+at <stl:operators>:27:26
+at <stl:operators>:25:11
+at <stl:operators>:22:19
+at <stl:math>:1:34
+at <stl:math>:1:19
+at programs/math_tests.re:10:26
+at programs/math_tests.re:10:22
