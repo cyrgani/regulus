@@ -29,10 +29,9 @@ fn main() {
 
     match state.run() {
         Ok(atom) => {
-            match atom {
-                Atom::Null => (),
-                _ => println!("{atom}"),
-            };
+            if atom != Atom::Null {
+                println!("{atom}");
+            }
         }
         Err(error) => {
             eprintln!("{}", error.to_string().red());

@@ -205,7 +205,7 @@ mod tests {
 
     #[test]
     fn extract_1() {
-        let t = "abc\nde\nf\n";
+        let t = "abc\nde\nf\nghi\n";
         assert_eq!(extract(t, sp(1, 1, 1, 4)), so("abc\n"));
         assert_eq!(extract(t, sp(1, 1, 2, 2)), so("abc\nde"));
         assert_eq!(extract(t, sp(1, 1, 2, 1)), so("abc\nd"));
@@ -219,7 +219,11 @@ mod tests {
         assert_eq!(extract(t, sp(2, 1, 1, 4)), None);
         assert_eq!(extract(t, sp(2, 2, 2, 2)), so("e"));
         assert_eq!(extract(t, sp(3, 2, 3, 2)), so("\n"));
-        assert_eq!(extract(t, sp(3, 3, 3, 3)), None);
+        assert_eq!(extract(t, sp(4, 5, 4, 5)), None);
+        assert_eq!(extract(t, sp(4, 5, 4, 4)), None);
+        assert_eq!(extract(t, sp(3, 2, 4, 1)), so("\ng"));
+        assert_eq!(extract(t, sp(3, 2, 6, 1)), None);
+        assert_eq!(extract(t, sp(3, 3, 4, 1)), None);
     }
 
     #[test]
