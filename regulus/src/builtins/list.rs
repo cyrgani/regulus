@@ -20,7 +20,7 @@ impl Atom {
         }
     }
 
-    fn str_or_slice(&self) -> Result<StrOrSlice> {
+    fn str_or_slice(&self) -> Result<StrOrSlice<'_>> {
         match self {
             Self::String(s) => Ok(StrOrSlice::Str(s)),
             Self::List(v) => Ok(StrOrSlice::Slice(v)),
