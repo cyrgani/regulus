@@ -33,7 +33,7 @@ pub mod prelude {
         FILE_EXTENSION,
         argument::Argument,
         atom::{Atom, Object},
-        exception::{Error, Exception, Result},
+        exception::{Exception, Result},
         function::{Function, FunctionBody, FunctionCall},
         functions, raise, run, run_file,
         state::{State, WriteHandle},

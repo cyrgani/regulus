@@ -226,7 +226,7 @@ functions! {
     "error"(2) => |state, args| {
         let kind = args[0].eval(state)?.string()?;
         let msg = args[1].eval(state)?.string()?;
-        Err(state.raise(Error(kind), msg))
+        Err(state.raise(kind, msg))
     }
     /// Evaluates the given value and returns it.
     /// If an exception occurs while evaluating the argument, the exception is converted into a

@@ -1,4 +1,4 @@
-use crate::exception::{OverflowError, TypeError, SyntaxError};
+use crate::exception::{OverflowError, SyntaxError, TypeError};
 use crate::prelude::*;
 use std::collections::HashMap;
 use std::fmt;

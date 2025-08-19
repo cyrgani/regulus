@@ -220,7 +220,7 @@ impl State {
         old
     }
 
-    pub(crate) fn raise(&self, error: impl Into<Error>, msg: impl Into<String>) -> Exception {
+    pub(crate) fn raise(&self, error: impl Into<String>, msg: impl Into<String>) -> Exception {
         Exception::with_trace(error, msg, &self.backtrace)
     }
 }

@@ -1,9 +1,6 @@
 use crate::parsing::positions::Span;
 use std::{error, fmt, result};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Error(pub String);
-
 #[expect(non_upper_case_globals)]
 mod errors {
     pub(crate) const TypeError: &str = "Type";
@@ -19,35 +16,17 @@ mod errors {
 
 pub(crate) use errors::*;
 
-impl From<String> for Error {
-    fn from(s: String) -> Self {
-        Self(s)
-    }
-}
-
-impl From<&str> for Error {
-    fn from(s: &str) -> Self {
-        Self(s.to_string())
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}Error", self.0)
-    }
-}
-
 #[derive(Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq, Eq))]
 pub struct Exception {
     pub msg: String,
-    pub error: Error,
+    pub error: String,
     // todo: this will eventually stop being optional
     pub backtrace: Option<Vec<Span>>,
 }
 
 impl Exception {
-    pub fn new(error: impl Into<Error>, msg: impl Into<String>) -> Self {
+    pub fn new(error: impl Into<String>, msg: impl Into<String>) -> Self {
         Self {
             msg: msg.into(),
             error: error.into(),
@@ -58,7 +37,7 @@ impl Exception {
     // TODO: remove?
     /// If you have a [`State`](crate::prelude::State) available,
     /// consider using [`State::raise`](crate::prelude::State::raise) instead.
-    pub fn spanned(error: impl Into<Error>, msg: impl Into<String>, span: &Span) -> Self {
+    pub fn spanned(error: impl Into<String>, msg: impl Into<String>, span: &Span) -> Self {
         Self {
             msg: msg.into(),
             error: error.into(),
@@ -68,7 +47,11 @@ impl Exception {
 
     /// If you have a [`State`](crate::prelude::State) available,
     /// consider using [`State::raise`](crate::prelude::State::raise) instead.
-    pub fn with_trace(error: impl Into<Error>, msg: impl Into<String>, backtrace: &[Span]) -> Self {
+    pub fn with_trace(
+        error: impl Into<String>,
+        msg: impl Into<String>,
+        backtrace: &[Span],
+    ) -> Self {
         Self {
             msg: msg.into(),
             error: error.into(),
@@ -116,7 +99,7 @@ macro_rules! raise_noreturn {
 
 impl fmt::Display for Exception {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}: {}", self.error, self.msg)?;
+        write!(f, "{}Error: {}", self.error, self.msg)?;
         if let Some(backtrace) = self.backtrace.as_ref() {
             if backtrace.len() == 1 {
                 // in the case of a syntax error, the backtrace it just the error location
