@@ -1,3 +1,4 @@
+use crate::exception::{ArgumentError, NameError};
 use crate::parsing::positions::Span;
 use crate::prelude::*;
 use std::borrow::Cow;
@@ -20,7 +21,7 @@ impl Argument {
             Self::Atom(atom, _) => Ok(Cow::Borrowed(atom)),
             Self::Variable(var, _) => match state.storage.get(var) {
                 Some(value) => Ok(Cow::Borrowed(value)),
-                None => raise!(Error::Name, "No variable named `{var}` found!"),
+                None => raise!(NameError, "No variable named `{var}` found!"),
             },
         };
         state.backtrace.pop();
@@ -32,7 +33,7 @@ impl Argument {
     pub fn variable(&self, error_msg: &str) -> Result<&String> {
         match self {
             Self::Variable(var, _) => Ok(var),
-            _ => raise!(Error::Argument, error_msg),
+            _ => raise!(ArgumentError, error_msg),
         }
     }
 

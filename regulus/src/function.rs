@@ -1,3 +1,4 @@
+use crate::exception::ArgumentError;
 use crate::prelude::*;
 use std::fmt;
 use std::rc::Rc;
@@ -20,7 +21,7 @@ impl FunctionCall {
             if argc != arg_len {
                 raise!(
                     state,
-                    Error::Argument,
+                    ArgumentError,
                     "expected `{argc}` args, found `{arg_len}` args for `{}`",
                     self.name
                 );
@@ -81,7 +82,7 @@ impl Function {
             let arg_len = args.len();
             if argc != arg_len {
                 raise!(
-                    Error::Argument,
+                    ArgumentError,
                     "expected `{argc}` args, found `{arg_len}` args for `{fn_name_hint}`",
                 );
             }

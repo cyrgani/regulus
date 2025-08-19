@@ -1,9 +1,11 @@
+use crate::exception::ArgumentError;
 use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
 use crate::state::Directory;
 use std::borrow::Cow;
 use std::fs;
 use std::path::{Path, PathBuf};
+use crate::exception::ImportError;
 
 fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
     let body = body.clone();
@@ -143,7 +145,7 @@ functions! {
         let [var, fn_args @ .., body] = args else {
             raise!(
                 state,
-                Error::Argument,
+                ArgumentError,
                 "too few arguments passed to `def`: expected at least 2, found {}", args.len()
             );
         };
@@ -160,7 +162,7 @@ functions! {
     /// Values defined in the function are scoped and cannot be accessed outside of the function body.
     "fn"(_) => |state, args| {
         let Some((body, fn_args)) = args.split_last() else {
-            raise!(state, Error::Argument, "`fn` invocation is missing body");
+            raise!(state, ArgumentError, "`fn` invocation is missing body");
         };
         define_function(body, fn_args)
     }
@@ -171,7 +173,7 @@ functions! {
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
             raise!(
                 state,
-                Error::Import,
+                ImportError,
                 "invalid characters in import name `{name}`, only a-Z, 0-9 and _ are allowed",
             );
         }
@@ -195,7 +197,7 @@ functions! {
             }
         }
         if !found {
-            raise!(state, Error::Import, "failed to find file for importing `{name}`");
+            raise!(state, ImportError, "failed to find file for importing `{name}`");
         }
 
         import_state.storage.global_idents.clone_from(&state.storage.global_idents);

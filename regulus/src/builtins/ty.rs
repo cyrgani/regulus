@@ -20,6 +20,7 @@ def(fictional_main, _(
 
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
+use crate::exception::{ArgumentError, NameError, SyntaxError};
 
 functions! {
     /// Defines a new type.
@@ -27,7 +28,7 @@ functions! {
     /// All further arguments are its fields.
     "type"(_) => |state, args| {
         let Some((ident, fields)) = args.split_first() else {
-            raise!(state, Error::Argument, "`type` takes at least one argument");
+            raise!(state, ArgumentError, "`type` takes at least one argument");
         };
         let var = ident.variable("`type` must take a variable as first argument")?;
 
@@ -37,23 +38,23 @@ functions! {
 
         for field in fields {
             match field {
-                Argument::Atom(..) => raise!(state, Error::Syntax, "`type` field arguments should be variables or `=` calls"),
+                Argument::Atom(..) => raise!(state, SyntaxError, "`type` field arguments should be variables or `=` calls"),
                 Argument::FunctionCall(call, _) => {
                     if call.name != "=" {
-                        raise!(state, Error::Syntax, "defaulted `type` values must use `=`");
+                        raise!(state, SyntaxError, "defaulted `type` values must use `=`");
                     }
                     let [Argument::Variable(name, _), value] = call.args.as_slice() else {
-                        raise!(state, Error::Syntax, "defaulted `type` values must have the form `=(name, value)`");
+                        raise!(state, SyntaxError, "defaulted `type` values must have the form `=(name, value)`");
                     };
                     if found_fields.contains(name) {
-                        raise!(state, Error::Syntax, "duplicate `type` field `{name}`");
+                        raise!(state, SyntaxError, "duplicate `type` field `{name}`");
                     }
                     found_fields.insert(name);
                     defaulted_fields.push((name.clone(), value.eval(state)?.into_owned()));
                 },
                 Argument::Variable(name, _) => {
                     if found_fields.contains(name) {
-                        raise!(state, Error::Syntax, "duplicate `type` field `{name}`");
+                        raise!(state, SyntaxError, "duplicate `type` field `{name}`");
                     }
                     found_fields.insert(name);
                     required_fields.push(name.clone());
@@ -90,7 +91,7 @@ functions! {
     "."(2) => |state, args| {
         let obj = args[0].eval(state)?.object()?;
         let field = args[1].variable("`.` takes a field identifier as second argument")?;
-        obj.data.get(field).cloned().ok_or_else(|| state.raise(Error::Name, format!("object has no field named `{field}`")))
+        obj.data.get(field).cloned().ok_or_else(|| state.raise(NameError, format!("object has no field named `{field}`")))
     }
     /// Set the value of a field of an object to a new value and returns the updated object.
     ///
@@ -105,7 +106,7 @@ functions! {
         let mut obj = args[0].eval(state)?.object()?;
         let field = args[1].variable("`.` takes a field identifier as second argument")?;
         let value = args[2].eval(state)?;
-        *obj.data.get_mut(field).ok_or_else(|| state.raise(Error::Name, format!("object has no field named `{field}`")))? = value.into_owned();
+        *obj.data.get_mut(field).ok_or_else(|| state.raise(NameError, format!("object has no field named `{field}`")))? = value.into_owned();
         Ok(Atom::Object(obj))
     }
     /// Calls a method on an object with the given arguments.
@@ -116,12 +117,12 @@ functions! {
     /// This method has an alias: `call_method`.
     "@"(_) => |state, args| {
         let [obj_arg, method, rest @ ..] = args else {
-            raise!(state, Error::Syntax, "too few arguments for `@`");
+            raise!(state, SyntaxError, "too few arguments for `@`");
         };
         let obj = obj_arg.eval(state)?.object()?;
         let method_name = method.variable("`@` expected the name of a method as second arg")?;
         let Some(func) = obj.data.get(method_name) else {
-            raise!(state, Error::Name, "object has no method `{method_name}`");
+            raise!(state, NameError, "object has no method `{method_name}`");
         };
         let func = func.function()?;
         let mut args = vec![obj_arg.clone()];

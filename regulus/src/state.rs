@@ -1,4 +1,5 @@
 use crate::builtins::all_functions;
+use crate::exception::NameError;
 use crate::no_path;
 use crate::parsing::positions::Span;
 use crate::parsing::{build_program, tokenize};
@@ -62,10 +63,10 @@ impl Storage {
                 if let Atom::Function(func) = atom {
                     Ok(func.clone())
                 } else {
-                    raise!(Error::Name, "`{name}` is not a function!")
+                    raise!(NameError, "`{name}` is not a function!")
                 }
             }
-            None => raise!(Error::Name, "No function `{name}` found!"),
+            None => raise!(NameError, "No function `{name}` found!"),
         }
     }
 }
@@ -219,7 +220,7 @@ impl State {
         old
     }
 
-    pub(crate) fn raise(&self, error: Error, msg: impl Into<String>) -> Exception {
+    pub(crate) fn raise(&self, error: impl Into<Error>, msg: impl Into<String>) -> Exception {
         Exception::with_trace(error, msg, &self.backtrace)
     }
 }

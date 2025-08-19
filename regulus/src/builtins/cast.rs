@@ -1,7 +1,8 @@
+use crate::exception::TypeError;
 use crate::prelude::*;
 
 fn cast_error_builder(atom: &Atom, new_type: &str, state: &State) -> Exception {
-    state.raise(Error::Type, format!("Unable to cast {atom} to {new_type}"))
+    state.raise(TypeError, format!("Unable to cast {atom} to {new_type}"))
 }
 
 functions! {

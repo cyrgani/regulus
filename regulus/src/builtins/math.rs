@@ -1,3 +1,4 @@
+use crate::exception::{ArgumentError, DivideByZeroError, OverflowError};
 use crate::prelude::*;
 
 fn arithmetic_operation(
@@ -13,9 +14,9 @@ fn arithmetic_operation(
         Ok(Atom::Int(i))
     } else {
         if name == "/" && rhs == 0 {
-            raise!(state, Error::DivideByZero, "attempted to divide by zero")
+            raise!(state, DivideByZeroError, "attempted to divide by zero")
         }
-        raise!(state, Error::Overflow, "overflow occured during {name}")
+        raise!(state, OverflowError, "overflow occured during {name}")
     }
 }
 
@@ -28,14 +29,14 @@ fn shift_operation(
     let lhs = args[0].eval(state)?.int()?;
     let rhs = u32::try_from(args[1].eval(state)?.int()?).map_err(|err| {
         state.raise(
-            Error::Argument,
+            ArgumentError,
             format!("invalid arithmetic argument for `{name}`: `{err}`"),
         )
     })?;
     if let Some(i) = f(lhs, rhs) {
         Ok(Atom::Int(i))
     } else {
-        raise!(state, Error::Overflow, "{name} operation failed")
+        raise!(state, OverflowError, "{name} operation failed")
     }
 }
 

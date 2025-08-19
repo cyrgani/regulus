@@ -1,3 +1,4 @@
+use crate::exception::{OverflowError, SyntaxError};
 use crate::prelude::*;
 use std::collections::HashMap;
 use std::fmt;
@@ -26,7 +27,7 @@ impl Atom {
                 Ok(int) => Ok(Some(Self::Int(int))),
                 Err(err) => match err.kind() {
                     IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => raise!(
-                        Error::Syntax,
+                        SyntaxError,
                         "integer {value} cannot be parsed as an integer due to overflow",
                     ),
                     _ => Ok(None),
@@ -43,7 +44,7 @@ impl Atom {
     {
         match i64::try_from(val) {
             Ok(int) => Ok(Self::Int(int)),
-            Err(e) => raise!(Error::Overflow, "invalid integer: {e}"),
+            Err(e) => raise!(OverflowError, "invalid integer: {e}"),
         }
     }
 

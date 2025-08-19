@@ -1,5 +1,7 @@
+use crate::exception::TypeError;
 use crate::prelude::*;
 use std::borrow::Cow;
+use crate::exception::IndexError;
 
 enum StringOrVec {
     String(String),
@@ -16,7 +18,7 @@ impl Atom {
         match self {
             Self::String(s) => Ok(StringOrVec::String(s.clone())),
             Self::List(v) => Ok(StringOrVec::Vec(v.clone())),
-            _ => raise!(Error::Type, "{self} should be a string or list"),
+            _ => raise!(TypeError, "{self} should be a string or list"),
         }
     }
 
@@ -24,7 +26,7 @@ impl Atom {
         match self {
             Self::String(s) => Ok(StrOrSlice::Str(s)),
             Self::List(v) => Ok(StrOrSlice::Slice(v)),
-            _ => raise!(Error::Type, "{self} should be a string or list"),
+            _ => raise!(TypeError, "{self} should be a string or list"),
         }
     }
 }
@@ -46,12 +48,12 @@ impl StringOrVec {
             Self::String(s) => {
                 let mut chars = s.chars().collect::<Vec<_>>();
                 *chars.get_mut(index).ok_or_else(|| {
-                    state.raise(Error::Index, "Unable to insert at index into list!")
+                    state.raise(IndexError, "Unable to insert at index into list!")
                 })? = atom_to_char(val)?;
             }
             Self::Vec(v) => {
                 *v.get_mut(index).ok_or_else(|| {
-                    state.raise(Error::Index, "Unable to insert at index into list!")
+                    state.raise(IndexError, "Unable to insert at index into list!")
                 })? = val;
             }
         }
@@ -104,14 +106,14 @@ fn atom_to_char(atom: Atom) -> Result<char> {
     if s.chars().count() == 1 {
         Ok(s.chars().next().unwrap())
     } else {
-        raise!(Error::Index, "atom is not a single character")
+        raise!(IndexError, "atom is not a single character")
     }
 }
 
 #[expect(clippy::needless_pass_by_value, reason = "helper function")]
 fn atom_to_index(atom: Cow<'_, Atom>) -> Result<usize> {
     usize::try_from(atom.int()?)
-        .map_err(|e| Exception::new(format!("invalid list index: {e}"), Error::Index))
+        .map_err(|e| Exception::new(format!("invalid list index: {e}"), IndexError))
 }
 
 functions! {
@@ -150,7 +152,7 @@ functions! {
             .eval(state)?
             .str_or_slice()?
             .get(index)
-            .ok_or_else(|| state.raise(Error::Index, "sequence index out of bounds"))
+            .ok_or_else(|| state.raise(IndexError, "sequence index out of bounds"))
     }
     /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {

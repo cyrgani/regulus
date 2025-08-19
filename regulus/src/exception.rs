@@ -18,6 +18,33 @@ pub enum Error {
     Other(String),
 }
 
+#[expect(non_upper_case_globals)]
+mod errors {
+    pub(crate) const TypeError: &str = "Type";
+    pub(crate) const OverflowError: &str = "Overflow";
+    pub(crate) const NameError: &str = "Name";
+    pub(crate) const SyntaxError: &str = "Syntax";
+    pub(crate) const ArgumentError: &str = "Argument";
+    pub(crate) const IndexError: &str = "Index";
+    pub(crate) const IoError: &str = "Io";
+    pub(crate) const ImportError: &str = "Import";
+    pub(crate) const DivideByZeroError: &str = "DivideByZero";
+}
+
+pub(crate) use errors::*;
+
+impl From<String> for Error {
+    fn from(s: String) -> Self {
+        Self::Other(s)
+    }
+}
+
+impl From<&str> for Error {
+    fn from(s: &str) -> Self {
+        Self::Other(s.to_string())
+    }
+}
+
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Self::Other(s) = self {
@@ -38,10 +65,10 @@ pub struct Exception {
 }
 
 impl Exception {
-    pub fn new(msg: impl Into<String>, error: Error) -> Self {
+    pub fn new(msg: impl Into<String>, error: impl Into<Error>) -> Self {
         Self {
             msg: msg.into(),
-            error,
+            error: error.into(),
             backtrace: None,
         }
     }
@@ -49,20 +76,20 @@ impl Exception {
     // TODO: remove?
     /// If you have a [`State`](crate::prelude::State) available,
     /// consider using [`State::raise`](crate::prelude::State::raise) instead.
-    pub fn spanned(msg: impl Into<String>, error: Error, span: &Span) -> Self {
+    pub fn spanned(msg: impl Into<String>, error: impl Into<Error>, span: &Span) -> Self {
         Self {
             msg: msg.into(),
-            error,
+            error: error.into(),
             backtrace: Some(vec![span.clone()]),
         }
     }
 
     /// If you have a [`State`](crate::prelude::State) available,
     /// consider using [`State::raise`](crate::prelude::State::raise) instead.
-    pub fn with_trace(error: Error, msg: impl Into<String>, backtrace: &[Span]) -> Self {
+    pub fn with_trace(error: impl Into<Error>, msg: impl Into<String>, backtrace: &[Span]) -> Self {
         Self {
             msg: msg.into(),
-            error,
+            error: error.into(),
             backtrace: Some(backtrace.to_vec()),
         }
     }

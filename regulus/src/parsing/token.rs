@@ -1,5 +1,5 @@
 use crate::atom::Atom;
-use crate::exception::{Error, Exception, Result};
+use crate::exception::{Error, Exception, Result, SyntaxError};
 use crate::parsing::positions::{CharPositions, Position, Span};
 use crate::raise;
 use std::path::PathBuf;
@@ -120,7 +120,7 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
             }
             '"' => {
                 let Ok((end_pos, body)) = take_until(chars.by_ref(), '"') else {
-                    raise!(Error::Syntax, "unclosed string literal");
+                    raise!(SyntaxError, "unclosed string literal");
                 };
                 add_token(TokenData::Atom(Atom::String(body)), char_pos, end_pos);
             }
