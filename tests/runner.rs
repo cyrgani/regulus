@@ -24,7 +24,7 @@ pub fn run_test(dir_path: &str, name: &str) {
     //let mut overwrite_stream_files = env::args().any(|arg| arg == "--bless");
     let mut bless_stream_files = false;
     if let Some(var) = BLESS {
-        if ["y", "yes", "true"].contains(&var) {
+        if ["Y", "y", "yes", "true"].contains(&var) {
             bless_stream_files = true;
         }
     }

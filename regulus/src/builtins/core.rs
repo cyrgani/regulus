@@ -31,9 +31,16 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
             //      problem: `body.eval(state);` can only take one state, not two
             let mut old_storage_data = state.storage.data.clone();
 
+            // prevent arguments from overwriting each other, ex. f(a,b) calls f(b,a)
+            let mut arg_values = Vec::with_capacity(args.len());
+
             for (idx, arg) in function_arg_names.iter().enumerate() {
                 let arg_result = args[idx].eval(state)?.into_owned();
-                state.storage.insert(arg.clone(), arg_result);
+                arg_values.push((arg.clone(), arg_result));
+            }
+
+            for (name, value) in arg_values {
+                state.storage.insert(name, value);
             }
 
             let function_result = body.eval(state).map(Cow::into_owned);
