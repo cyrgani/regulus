@@ -20,8 +20,8 @@ pub fn build_program(mut tokens: Vec<Token>) -> Result<Argument> {
 
     if !rest.is_empty() {
         return Err(Exception::spanned(
-            "trailing unparsed tokens detected",
             SyntaxError,
+            "trailing unparsed tokens detected",
             &rest[0].span,
         ));
     }
@@ -32,7 +32,7 @@ pub fn build_program(mut tokens: Vec<Token>) -> Result<Argument> {
 fn get_token(tokens: &[Token], idx: usize) -> Result<&Token> {
     tokens
         .get(idx)
-        .ok_or_else(|| Exception::new("missing token", SyntaxError))
+        .ok_or_else(|| Exception::new(SyntaxError, "missing token"))
 }
 
 /// given `_(foo(), bar(baz()))`, this would take `foo(), bar(baz()))` (no start paren, but with end paren)
@@ -96,15 +96,15 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
     }
     // TODO: better error message
     Err(Exception::new(
-        "missing or invalid tokens for s_step",
         SyntaxError,
+        "missing or invalid tokens for s_step",
     ))
 }
 
 fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
     if tokens.is_empty() {
         // TODO: better error message
-        return Err(Exception::new("missing tokens for x_step", SyntaxError));
+        return Err(Exception::new(SyntaxError, "missing tokens for x_step"));
     }
     let (first_arg, remaining) = next_s_step(tokens)?;
     let mut args = vec![first_arg];
@@ -113,8 +113,8 @@ fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
     }
     if !remaining[0].is_comma() {
         return Err(Exception::spanned(
-            "missing comma in argument list",
             SyntaxError,
+            "missing comma in argument list",
             &remaining[0].span,
         ));
     }
@@ -135,14 +135,14 @@ mod tests {
 
         assert_eq!(
             prog.unwrap_err(),
-            Exception::new("missing or invalid tokens for s_step", SyntaxError)
+            Exception::new(SyntaxError, "missing or invalid tokens for s_step")
         );
 
         let prog = build_program(tokenize("(print(2)), print(3)", no_path()).unwrap());
 
         assert_eq!(
             prog.unwrap_err(),
-            Exception::new("missing or invalid tokens for s_step", SyntaxError)
+            Exception::new(SyntaxError, "missing or invalid tokens for s_step")
         );
     }
 }

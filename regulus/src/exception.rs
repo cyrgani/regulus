@@ -47,7 +47,7 @@ pub struct Exception {
 }
 
 impl Exception {
-    pub fn new(msg: impl Into<String>, error: impl Into<Error>) -> Self {
+    pub fn new(error: impl Into<Error>, msg: impl Into<String>) -> Self {
         Self {
             msg: msg.into(),
             error: error.into(),
@@ -58,7 +58,7 @@ impl Exception {
     // TODO: remove?
     /// If you have a [`State`](crate::prelude::State) available,
     /// consider using [`State::raise`](crate::prelude::State::raise) instead.
-    pub fn spanned(msg: impl Into<String>, error: impl Into<Error>, span: &Span) -> Self {
+    pub fn spanned(error: impl Into<Error>, msg: impl Into<String>, span: &Span) -> Self {
         Self {
             msg: msg.into(),
             error: error.into(),
@@ -101,7 +101,7 @@ macro_rules! raise_noreturn {
         $crate::raise_noreturn!($kind, "{}", $msg)
     };
     ($kind: expr, $string: literal, $($fmt_args: expr),*) => {
-        Err(Exception::new(format!($string, $($fmt_args),*), $kind))
+        Err(Exception::new($kind, format!($string, $($fmt_args),*)))
     };
     ($state: expr, $kind: expr, $string: literal) => {
         $crate::raise_noreturn!($state, $kind, $string,)

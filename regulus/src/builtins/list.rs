@@ -112,7 +112,7 @@ fn atom_to_char(atom: Atom) -> Result<char> {
 #[expect(clippy::needless_pass_by_value, reason = "helper function")]
 fn atom_to_index(atom: Cow<'_, Atom>) -> Result<usize> {
     usize::try_from(atom.int()?)
-        .map_err(|e| Exception::new(format!("invalid list index: {e}"), IndexError))
+        .map_err(|e| Exception::new(IndexError, format!("invalid list index: {e}")))
 }
 
 functions! {
