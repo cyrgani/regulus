@@ -1,11 +1,11 @@
 use crate::exception::ArgumentError;
+use crate::exception::ImportError;
 use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
 use crate::state::Directory;
 use std::borrow::Cow;
 use std::fs;
 use std::path::{Path, PathBuf};
-use crate::exception::ImportError;
 
 fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
     let body = body.clone();
@@ -219,14 +219,14 @@ functions! {
     /// Raises an exception.
     /// The first argument is a string that describes the error kind.
     /// The second argument is a string error message.
-    /// 
+    ///
     /// The error kind should be a captialized word.
     /// When displaying the error kind, `Error` will be appended implicitly, so the error kind given
     /// here should not end in `Error`, `Exception` or similar.
     "error"(2) => |state, args| {
         let kind = args[0].eval(state)?.string()?;
         let msg = args[1].eval(state)?.string()?;
-        Err(state.raise(Error::Other(kind), msg))
+        Err(state.raise(Error(kind), msg))
     }
     /// Evaluates the given value and returns it.
     /// If an exception occurs while evaluating the argument, the exception is converted into a
@@ -279,7 +279,7 @@ functions! {
     /// propagate further.
     ///
     /// Returns `null`.
-    /// 
+    ///
     /// TODO: consider instead returning what the first argument evaluates to (if successfull),
     ///  otherwise returning the eval of the second arg.
     "try_except"(2) => |state, args| {

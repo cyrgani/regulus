@@ -1,4 +1,4 @@
-use crate::exception::{OverflowError, SyntaxError};
+use crate::exception::{OverflowError, TypeError, SyntaxError};
 use crate::prelude::*;
 use std::collections::HashMap;
 use std::fmt;
@@ -83,7 +83,7 @@ macro_rules! atom_try_as_variant_methods {
                     match self {
                         Self::$variant(v) => Ok(v.clone()),
                         _ => raise!(
-                            Error::Type,
+                            TypeError,
                             "{self} is not a {}!", stringify!($variant)
                         ),
                     }

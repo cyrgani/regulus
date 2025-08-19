@@ -1,5 +1,5 @@
 use crate::atom::Atom;
-use crate::exception::{Error, Exception, Result, SyntaxError};
+use crate::exception::{Exception, Result, SyntaxError};
 use crate::parsing::positions::{CharPositions, Position, Span};
 use crate::raise;
 use std::path::PathBuf;

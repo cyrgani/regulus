@@ -1,22 +1,8 @@
 use crate::parsing::positions::Span;
 use std::{error, fmt, result};
 
-/// NOTE: This type will be gradually removed by replacing more and more variants with `Other()` uses
-/// and will eventually stop being an enum.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum Error {
-    Type,
-    Overflow,
-    Name,
-    Syntax,
-    Argument,
-    Index,
-    Io,
-    Import,
-    DivideByZero,
-    Other(String),
-}
+pub struct Error(pub String);
 
 #[expect(non_upper_case_globals)]
 mod errors {
@@ -35,23 +21,19 @@ pub(crate) use errors::*;
 
 impl From<String> for Error {
     fn from(s: String) -> Self {
-        Self::Other(s)
+        Self(s)
     }
 }
 
 impl From<&str> for Error {
     fn from(s: &str) -> Self {
-        Self::Other(s.to_string())
+        Self(s.to_string())
     }
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if let Self::Other(s) = self {
-            write!(f, "{s}Error")
-        } else {
-            write!(f, "{self:?}Error")
-        }
+        write!(f, "{}Error", self.0)
     }
 }
 

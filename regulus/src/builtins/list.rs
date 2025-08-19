@@ -1,7 +1,6 @@
-use crate::exception::TypeError;
+use crate::exception::{IndexError, TypeError};
 use crate::prelude::*;
 use std::borrow::Cow;
-use crate::exception::IndexError;
 
 enum StringOrVec {
     String(String),

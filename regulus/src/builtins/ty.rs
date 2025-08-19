@@ -18,9 +18,9 @@ def(fictional_main, _(
 ))
 */
 
+use crate::exception::{ArgumentError, NameError, SyntaxError};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
-use crate::exception::{ArgumentError, NameError, SyntaxError};
 
 functions! {
     /// Defines a new type.
