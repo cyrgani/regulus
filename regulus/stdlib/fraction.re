@@ -1,3 +1,4 @@
+# TODO: make the functions methods
 def(numerator, frac, .(frac, numerator)),
 def(denominator, frac, .(frac, denominator)),
 

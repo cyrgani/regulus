@@ -7,25 +7,25 @@ at <stl:math>:1:19
 at programs/math_tests.re:10:26
 at programs/math_tests.re:10:22
 OverflowError: overflow occured during %
-at <stl:math>:7:13
+at <stl:math>:8:13
+at <stl:math>:8:11
 at <stl:math>:7:11
-at <stl:math>:6:11
-at <stl:math>:3:22
+at <stl:math>:4:22
 at programs/math_tests.re:18:26
 at programs/math_tests.re:18:22
 OverflowError: overflow occured during %
-at <stl:math>:7:13
+at <stl:math>:8:13
+at <stl:math>:8:11
 at <stl:math>:7:11
-at <stl:math>:6:11
-at <stl:math>:3:22
-at <stl:math>:5:8
-at <stl:math>:3:22
+at <stl:math>:4:22
+at <stl:math>:6:8
+at <stl:math>:4:22
 at programs/math_tests.re:19:26
 at programs/math_tests.re:19:22
 OverflowError: overflow occured during %
-at <stl:math>:7:13
+at <stl:math>:8:13
+at <stl:math>:8:11
 at <stl:math>:7:11
-at <stl:math>:6:11
-at <stl:math>:3:22
+at <stl:math>:4:22
 at programs/math_tests.re:20:26
 at programs/math_tests.re:20:22

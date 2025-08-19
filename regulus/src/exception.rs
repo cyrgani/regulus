@@ -1,6 +1,8 @@
 use crate::parsing::positions::Span;
 use std::{error, fmt, result};
 
+/// NOTE: This type will be gradually removed by replacing more and more variants with `Other()` uses
+/// and will eventually stop being an enum.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum Error {
@@ -9,13 +11,9 @@ pub enum Error {
     Name,
     Syntax,
     Argument,
-    Assign,
     Index,
     Io,
     Import,
-    UserRaised,
-    Assertion,
-    Unimplemented,
     DivideByZero,
     Other(String),
 }
@@ -49,7 +47,7 @@ impl Exception {
     }
 
     // TODO: remove?
-    /// If you hae a [`State`](crate::prelude::State) available,
+    /// If you have a [`State`](crate::prelude::State) available,
     /// consider using [`State::raise`](crate::prelude::State::raise) instead.
     pub fn spanned(msg: impl Into<String>, error: Error, span: &Span) -> Self {
         Self {
@@ -59,7 +57,7 @@ impl Exception {
         }
     }
 
-    /// If you hae a [`State`](crate::prelude::State) available,
+    /// If you have a [`State`](crate::prelude::State) available,
     /// consider using [`State::raise`](crate::prelude::State::raise) instead.
     pub fn with_trace(error: Error, msg: impl Into<String>, backtrace: &[Span]) -> Self {
         Self {
