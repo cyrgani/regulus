@@ -2,12 +2,16 @@
 
 use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
+use crate::state::Directory;
 
 functions! {
     /// Imports the prelude from the STL.
     /// This is implicitly done on startup.
     /// Calling this function manually is not supported.
     "__builtin_prelude_import"(0) => |state, _| {
+        if matches!(state.file_directory, Directory::InternedSTL) {
+            return Ok(Atom::Null);
+        }
         let name = "prelude";
         let mut import_state = State::new();
         let code = INTERNED_STL[name];

@@ -1,4 +1,4 @@
-use crate::parsing::positions::Span;
+use crate::parsing::Span;
 use std::{error, fmt, result};
 
 #[expect(non_upper_case_globals)]

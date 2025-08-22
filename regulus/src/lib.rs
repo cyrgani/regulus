@@ -35,7 +35,9 @@ pub mod prelude {
         atom::{Atom, Object},
         exception::{Exception, Result},
         function::{Function, FunctionBody, FunctionCall},
-        functions, raise, run, run_file,
+        functions,
+        parsing::{Position, Span},
+        raise, run, run_file,
         state::{State, WriteHandle},
     };
 }

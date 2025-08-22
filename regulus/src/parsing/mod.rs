@@ -9,9 +9,9 @@ pub mod positions;
 pub mod token;
 
 use crate::exception::SyntaxError;
-use crate::parsing::positions::Span;
 use crate::parsing::token::Token;
 use crate::prelude::*;
+pub use positions::{Position, Span};
 pub use token::{TokenData, tokenize};
 
 pub fn build_program(mut tokens: Vec<Token>) -> Result<Argument> {

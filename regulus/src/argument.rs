@@ -1,5 +1,5 @@
 use crate::exception::{ArgumentError, NameError};
-use crate::parsing::positions::Span;
+use crate::parsing::Span;
 use crate::prelude::*;
 use std::borrow::Cow;
 

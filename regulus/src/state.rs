@@ -1,7 +1,7 @@
 use crate::builtins::all_functions;
 use crate::exception::NameError;
 use crate::no_path;
-use crate::parsing::positions::Span;
+use crate::parsing::Span;
 use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
@@ -166,14 +166,9 @@ impl State {
     /// Panics if `code` was not set.
     pub fn run(&mut self) -> Result<Atom> {
         // newlines are needed to avoid interaction with comments
-        // might also help with calculating the actual spans (just do line - 1)
-        let prelude_import = match self.file_directory {
-            Directory::Regular(_) | Directory::FromEval => "__builtin_prelude_import(),",
-            Directory::InternedSTL => "",
-        };
-
+        // and also help with calculating the actual spans (just do line - 1)
         let code = format!(
-            "_({prelude_import}\n{}\n)",
+            "_(__builtin_prelude_import(),\n{}\n)",
             self.code
                 .as_ref()
                 .expect("setting the source code is required")
