@@ -7,7 +7,7 @@ use std::borrow::Cow;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
+pub(crate) fn define_function(doc: impl Into<String>, body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
     let body = body.clone();
     let function_arg_names = fn_args
         .iter()
@@ -19,7 +19,7 @@ fn define_function(body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
         .collect::<Result<Vec<_>>>()?;
 
     let function = Function::new(
-        String::new(),
+        doc,
         Some(function_arg_names.len()),
         Box::new(move |state, args| {
             // a function call should have its own scope and not leak variables
@@ -151,7 +151,7 @@ functions! {
         };
         let var = var.variable("Error during function definition: no valid variable was given to define to!")?;
 
-        state.storage.insert(var, define_function(body, fn_args)?);
+        state.storage.insert(var, define_function("", body, fn_args)?);
         Ok(Atom::Null)
     }
     /// Creates a new function and returns it.
@@ -164,7 +164,7 @@ functions! {
         let Some((body, fn_args)) = args.split_last() else {
             raise!(state, ArgumentError, "`fn` invocation is missing body");
         };
-        define_function(body, fn_args)
+        define_function("", body, fn_args)
     }
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the return value of this function

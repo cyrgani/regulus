@@ -1,5 +1,7 @@
 //! Builtin functions which will never have a stable equivalent and are for internal use only.
 
+use crate::builtins::core::define_function;
+use crate::exception::ArgumentError;
 use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
 use crate::state::Directory;
@@ -34,6 +36,22 @@ functions! {
         let exc = args[0].eval(state).expect_err("`__builtin_print_catch` arg should cause exception");
         state.write_to_stderr(&exc.to_string());
         state.write_to_stderr("\n");
+        Ok(Atom::Null)
+    }
+    /// Like `def`, but the first argument is the doc string.
+    /// NOTE: This function is a workaround and will be removed soon in favor of proper doc comments.
+    "__builtin_doc_def"(_) => |state, args| {
+         let [doc, var, fn_args @ .., body] = args else {
+            raise!(
+                state,
+                ArgumentError,
+                "too few arguments passed to `__builtin_doc_def`: expected at least 3, found {}", args.len()
+            );
+        };
+        let doc = doc.eval(state)?.string()?;
+        let var = var.variable("Error during function definition: no valid variable was given to define to!")?;
+
+        state.storage.insert(var, define_function(doc, body, fn_args)?);
         Ok(Atom::Null)
     }
 }

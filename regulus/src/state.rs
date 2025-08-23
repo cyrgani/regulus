@@ -19,7 +19,6 @@ pub(crate) enum Directory {
 }
 
 pub struct Storage {
-    // TODO: consider a HashMap<String, (bool, Atom)> instead, the bool means local / global
     pub data: HashMap<String, Atom>,
     pub global_idents: HashSet<String>,
 }
