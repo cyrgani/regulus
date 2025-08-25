@@ -1,12 +1,12 @@
 use std::cmp::Ordering;
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::str::Chars;
 
 /// A region of source code.
 /// Both start and end are inclusive.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Span {
     /// The file path this span points to.
     pub file: Rc<PathBuf>,
@@ -32,9 +32,15 @@ impl Display for Span {
             } else {
                 self.file.display().to_string()
             },
-            self.start.line - 1,
+            self.start.line,
             self.start.column,
         )
+    }
+}
+
+impl Debug for Span {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
     }
 }
 
@@ -107,7 +113,7 @@ impl<'a> CharPositions<'a> {
     pub fn new(text: &'a str) -> Self {
         Self {
             text: text.chars(),
-            pos: Position { line: 1, column: 1 },
+            pos: Position { line: 0, column: 1 },
         }
     }
 }
@@ -123,7 +129,7 @@ mod tests {
     }
 
     const fn p(line: u32, column: u32) -> Position {
-        Position { line, column }
+        Position::new(line - 1, column)
     }
 
     const fn pc(line: u32, column: u32, ch: char) -> (Position, char) {

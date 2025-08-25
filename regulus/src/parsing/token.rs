@@ -194,8 +194,8 @@ mod tests {
 
     fn sp(start_line: u32, start_col: u32, end_line: u32, end_col: u32) -> Span {
         Span::new(
-            Position::new(start_line, start_col),
-            Position::new(end_line, end_col),
+            Position::new(start_line - 1, start_col),
+            Position::new(end_line - 1, end_col),
             no_path(),
         )
     }
