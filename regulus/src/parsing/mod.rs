@@ -32,25 +32,22 @@ fn without_comments(tokens: &[Token]) -> impl DoubleEndedIterator<Item = &Token>
     tokens.iter().filter(|t| !t.is_comment())
 }
 
-/// Returns the leading comments, then the rest of the tokens.
-fn split_leading_comments(tokens: &[Token]) -> (&[Token], &[Token]) {
-    let idx = tokens
-        .iter()
-        .enumerate()
-        .find_map(|(idx, token)| if token.is_comment() { Some(idx) } else { None });
-
-    if let Some(idx) = idx {
-        tokens.split_at(idx)
-    } else {
-        (&[], tokens)
-    }
-}
-
 /// Returns the token with the given index, not counting comments.
 fn get_token(tokens: &[Token], idx: usize) -> Result<&Token> {
     without_comments(tokens)
         .nth(idx)
         .ok_or_else(|| Exception::new(SyntaxError, "missing token"))
+}
+
+/// Returns all comments before the first non-comment token, then the token itself.
+fn get_first_token_and_doc_comments(tokens: &[Token]) -> Result<(&[Token], &Token)> {
+    for i in 0..tokens.len() {
+        if !tokens[i].is_comment() {
+            return Ok((&tokens[0..i], &tokens[i]));
+        }
+    }
+
+    raise!(SyntaxError, "missing token")
 }
 
 fn non_comment_len(tokens: &[Token]) -> usize {
@@ -104,9 +101,22 @@ fn find_within_parens(tokens: &[Token]) -> Option<(&[Token], &[Token])> {
     None
 }
 
+/// Takes the given tokens, asserts that they are all comments and
+/// returns their concatenated string representation.
+fn concat_doc_comments(tokens: &[Token]) -> String {
+    let mut s = String::new();
+    for t in tokens {
+        let TokenData::Comment(doc) = &t.data else {
+            unreachable!()
+        };
+        s.push_str(doc);
+    }
+    s
+}
+
 /// returns the constructed argument and all remaining tokens
 fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
-    let first_token = get_token(tokens, 0)?;
+    let (doc_comments, first_token) = get_first_token_and_doc_comments(tokens)?;
     if let Some(atom) = first_token.to_atom() {
         return Ok((
             Argument::Atom(atom, first_token.span.clone()),
@@ -133,7 +143,7 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
                             get_last_token(tokens)?.span.end,
                             token_1.span.file.clone(),
                         ),
-                        String::new(),
+                        concat_doc_comments(doc_comments),
                     ),
                     rest,
                 ));
