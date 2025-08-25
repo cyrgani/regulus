@@ -3,8 +3,6 @@ use crate::prelude::*;
 
 functions! {
     /// Returns the documentation string for a function.
-    ///
-    /// TODO: implement this for non-builtin functions as well.
     "doc"(1) => |state, args| {
         let arg = args[0].eval(state)?;
         if let Atom::Function(f) = &*arg {
