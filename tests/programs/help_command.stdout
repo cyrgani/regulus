@@ -1,8 +1,6 @@
 <function>(1): 
 
 Returns the documentation string for a function.
-
-TODO: implement this for non-builtin functions as well.
 <function>(1): 
 
 Prints the documentation string for a function as well its argc.

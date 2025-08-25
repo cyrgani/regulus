@@ -109,8 +109,10 @@ fn concat_doc_comments(tokens: &[Token]) -> String {
         let TokenData::Comment(doc) = &t.data else {
             unreachable!()
         };
-        s.push_str(doc);
+        s.push_str(doc.strip_prefix(' ').unwrap_or(doc));
+        s.push('\n');
     }
+    s.pop();
     s
 }
 
