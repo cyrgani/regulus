@@ -14,24 +14,72 @@ use crate::prelude::*;
 pub use positions::{Position, Span};
 pub use token::{TokenData, tokenize};
 
-pub fn build_program(mut tokens: Vec<Token>) -> Result<Argument> {
-    tokens.retain(|t| !matches!(t.data, TokenData::Comment(_)));
+pub fn build_program(tokens: Vec<Token>) -> Result<Argument> {
     let (arg, rest) = next_s_step(&tokens)?;
 
-    if !rest.is_empty() {
+    if !is_token_empty(rest) {
         return Err(Exception::spanned(
             SyntaxError,
             "trailing unparsed tokens detected",
-            &rest[0].span,
+            &get_token(rest, 0)?.span,
         ));
     }
 
     Ok(arg)
 }
 
+fn without_comments(tokens: &[Token]) -> impl DoubleEndedIterator<Item = &Token> {
+    tokens.iter().filter(|t| !t.is_comment())
+}
+
+/// Returns the leading comments, then the rest of the tokens.
+fn split_leading_comments(tokens: &[Token]) -> (&[Token], &[Token]) {
+    let idx = tokens
+        .iter()
+        .enumerate()
+        .find_map(|(idx, token)| if token.is_comment() { Some(idx) } else { None });
+
+    if let Some(idx) = idx {
+        tokens.split_at(idx)
+    } else {
+        (&[], tokens)
+    }
+}
+
+/// Returns the token with the given index, not counting comments.
 fn get_token(tokens: &[Token], idx: usize) -> Result<&Token> {
-    tokens
-        .get(idx)
+    without_comments(tokens)
+        .nth(idx)
+        .ok_or_else(|| Exception::new(SyntaxError, "missing token"))
+}
+
+fn non_comment_len(tokens: &[Token]) -> usize {
+    without_comments(tokens).count()
+}
+
+fn is_token_empty(tokens: &[Token]) -> bool {
+    without_comments(tokens).next().is_none()
+}
+
+/// Returns all the tokens from the given index and beyond, not counting comments before that index.
+/// Comments after the index are included.
+fn get_tokens_from(mut tokens: &[Token], mut start: usize) -> &[Token] {
+    for t in tokens {
+        if start == 0 {
+            return tokens;
+        }
+        if !t.is_comment() {
+            start -= 1;
+        }
+        tokens = &tokens[1..];
+    }
+    &[]
+}
+
+/// Returns the last token, not counting comments.
+fn get_last_token(tokens: &[Token]) -> Result<&Token> {
+    without_comments(tokens)
+        .next_back()
         .ok_or_else(|| Exception::new(SyntaxError, "missing token"))
 }
 
@@ -60,16 +108,18 @@ fn find_within_parens(tokens: &[Token]) -> Option<(&[Token], &[Token])> {
 fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
     let first_token = get_token(tokens, 0)?;
     if let Some(atom) = first_token.to_atom() {
-        return Ok((Argument::Atom(atom, first_token.span.clone()), &tokens[1..]));
+        return Ok((
+            Argument::Atom(atom, first_token.span.clone()),
+            get_tokens_from(tokens, 1),
+        ));
     }
     if let Some(name) = first_token.to_name() {
-        // we may not use `?` on the result of `get_token_data`, since that is valid in the `a` or `n` case
-        if matches!(
-            get_token(tokens, 1).map(|t| &t.data),
-            Ok(&TokenData::LeftParen)
-        ) {
-            if let Some((body, rest)) = find_within_parens(&tokens[2..]) {
-                let args = if body.is_empty() {
+        // we may not use `?` on the result of `get_token`, since that is valid in the `a` or `n` case
+        if let Ok(token_1) = get_token(tokens, 1)
+            && matches!(token_1.data, TokenData::LeftParen)
+        {
+            if let Some((body, rest)) = find_within_parens(get_tokens_from(tokens, 2)) {
+                let args = if is_token_empty(body) {
                     vec![]
                 } else {
                     next_x_step(body)?
@@ -79,10 +129,11 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
                     Argument::FunctionCall(
                         FunctionCall { args, name },
                         Span::new(
-                            tokens[1].span.start,
-                            tokens.last().unwrap().span.end,
-                            tokens[1].span.file.clone(),
+                            token_1.span.start,
+                            get_last_token(tokens)?.span.end,
+                            token_1.span.file.clone(),
                         ),
+                        String::new(),
                     ),
                     rest,
                 ));
@@ -90,7 +141,7 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
         } else {
             return Ok((
                 Argument::Variable(name, first_token.span.clone()),
-                &tokens[1..],
+                get_tokens_from(tokens, 1),
             ));
         }
     }
@@ -102,24 +153,24 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
 }
 
 fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
-    if tokens.is_empty() {
+    if is_token_empty(tokens) {
         // TODO: better error message
         return Err(Exception::new(SyntaxError, "missing tokens for x_step"));
     }
     let (first_arg, remaining) = next_s_step(tokens)?;
     let mut args = vec![first_arg];
-    if remaining.is_empty() {
+    if is_token_empty(remaining) {
         return Ok(args);
     }
-    if !remaining[0].is_comma() {
+    if !get_token(remaining, 0)?.is_comma() {
         return Err(Exception::spanned(
             SyntaxError,
             "missing comma in argument list",
-            &remaining[0].span,
+            &get_token(remaining, 0)?.span,
         ));
     }
-    if remaining.len() > 1 {
-        args.append(&mut next_x_step(&remaining[1..])?);
+    if non_comment_len(remaining) > 1 {
+        args.append(&mut next_x_step(get_tokens_from(remaining, 1))?);
     }
     Ok(args)
 }

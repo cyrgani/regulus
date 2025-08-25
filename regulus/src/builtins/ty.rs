@@ -39,7 +39,7 @@ functions! {
         for field in fields {
             match field {
                 Argument::Atom(..) => raise!(state, SyntaxError, "`type` field arguments should be variables or `=` calls"),
-                Argument::FunctionCall(call, _) => {
+                Argument::FunctionCall(call, _, _) => {
                     if call.name != "=" {
                         raise!(state, SyntaxError, "defaulted `type` values must use `=`");
                     }
