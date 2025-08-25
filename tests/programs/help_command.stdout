@@ -6,3 +6,11 @@ Returns the documentation string for a function.
 Prints the documentation string for a function as well its argc.
 
 Use `doc(1)` to return it instead.
+Very great function
+with
+
+newlines and
+foobar
+and
+unaligned
+ comments. 
