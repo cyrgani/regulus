@@ -80,6 +80,7 @@ pub struct State {
     pub(crate) current_file_path: Option<PathBuf>,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
     pub(crate) backtrace: Vec<Span>,
+    pub(crate) current_doc_comment: Option<String>,
     code: Option<String>,
     next_type_id: i64,
     // make sure this type can never be constructed from outside
@@ -107,6 +108,7 @@ impl State {
             current_file_path: None,
             exit_unwind_value: None,
             backtrace: Vec::new(),
+            current_doc_comment: None,
             code: None,
             next_type_id: Atom::MIN_OBJECT_TY_ID,
             __private: (),

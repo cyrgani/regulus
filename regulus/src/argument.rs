@@ -13,9 +13,14 @@ pub enum Argument {
 
 impl Argument {
     pub fn eval<'a>(&'a self, state: &'a mut State) -> Result<Cow<'a, Atom>> {
-        state.backtrace.push(self.span().clone());
         if state.exit_unwind_value.is_some() {
             return Ok(Cow::Owned(Atom::Null));
+        }
+        state.backtrace.push(self.span().clone());
+        if let Self::FunctionCall(_, _, doc) = self {
+            state.current_doc_comment = Some(doc.clone());
+        } else {
+            state.current_doc_comment = None;
         }
         let res = match self {
             Self::FunctionCall(call, _, _) => call.eval(state).map(Cow::Owned),

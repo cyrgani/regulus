@@ -151,7 +151,7 @@ functions! {
         };
         let var = var.variable("Error during function definition: no valid variable was given to define to!")?;
 
-        state.storage.insert(var, define_function("", body, fn_args)?);
+        state.storage.insert(var, define_function(state.current_doc_comment.as_ref().unwrap(), body, fn_args)?);
         Ok(Atom::Null)
     }
     /// Creates a new function and returns it.
@@ -164,7 +164,7 @@ functions! {
         let Some((body, fn_args)) = args.split_last() else {
             raise!(state, ArgumentError, "`fn` invocation is missing body");
         };
-        define_function("", body, fn_args)
+        define_function(state.current_doc_comment.as_ref().unwrap(), body, fn_args)
     }
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the return value of this function
