@@ -35,6 +35,10 @@ impl Token {
     pub(crate) const fn is_comma(&self) -> bool {
         matches!(self.data, TokenData::Comma)
     }
+
+    pub(crate) const fn is_comment(&self) -> bool {
+        matches!(self.data, TokenData::Comment(_))
+    }
 }
 
 #[derive(Debug)]
@@ -44,8 +48,6 @@ pub enum TokenData {
     RightParen,
     Atom(Atom),
     Name(String),
-    // TODO: use or remove
-    #[expect(dead_code)]
     Comment(String),
 }
 

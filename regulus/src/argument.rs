@@ -5,7 +5,8 @@ use std::borrow::Cow;
 
 #[derive(Debug, Clone)]
 pub enum Argument {
-    FunctionCall(FunctionCall, Span),
+    /// call, span, "doc comment"
+    FunctionCall(FunctionCall, Span, String),
     Atom(Atom, Span),
     Variable(String, Span),
 }
@@ -17,7 +18,7 @@ impl Argument {
             return Ok(Cow::Owned(Atom::Null));
         }
         let res = match self {
-            Self::FunctionCall(call, _) => call.eval(state).map(Cow::Owned),
+            Self::FunctionCall(call, _, _) => call.eval(state).map(Cow::Owned),
             Self::Atom(atom, _) => Ok(Cow::Borrowed(atom)),
             Self::Variable(var, _) => match state.storage.get(var) {
                 Some(value) => Ok(Cow::Borrowed(value)),
@@ -41,7 +42,7 @@ impl Argument {
     pub fn stringify(&self) -> String {
         match self {
             Self::Atom(atom, _) => atom.to_string(),
-            Self::FunctionCall(call, _) => call.stringify(),
+            Self::FunctionCall(call, _, _) => call.stringify(),
             Self::Variable(name, _) => name.to_string(),
         }
     }
@@ -49,7 +50,7 @@ impl Argument {
     /// Returns the span of this argument.
     pub const fn span(&self) -> &Span {
         match self {
-            Self::Atom(_, s) | Self::FunctionCall(_, s) | Self::Variable(_, s) => s,
+            Self::Atom(_, s) | Self::FunctionCall(_, s, _) | Self::Variable(_, s) => s,
         }
     }
 }
