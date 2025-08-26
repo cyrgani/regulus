@@ -5,8 +5,7 @@ use std::borrow::Cow;
 
 #[derive(Debug, Clone)]
 pub enum Argument {
-    /// call, span, "doc comment"
-    FunctionCall(FunctionCall, Span, String),
+    FunctionCall(FunctionCall, Span),
     Atom(Atom, Span),
     Variable(String, Span),
 }
@@ -17,13 +16,13 @@ impl Argument {
             return Ok(Cow::Owned(Atom::Null));
         }
         state.backtrace.push(self.span().clone());
-        if let Self::FunctionCall(_, _, doc) = self {
-            state.current_doc_comment = Some(doc.clone());
+        if let Self::FunctionCall(call, _) = self {
+            state.current_doc_comment = Some(call.doc_comment.clone());
         } else {
             state.current_doc_comment = None;
         }
         let res = match self {
-            Self::FunctionCall(call, _, _) => call.eval(state).map(Cow::Owned),
+            Self::FunctionCall(call, _) => call.eval(state).map(Cow::Owned),
             Self::Atom(atom, _) => Ok(Cow::Borrowed(atom)),
             Self::Variable(var, _) => match state.storage.get(var) {
                 Some(value) => Ok(Cow::Borrowed(value)),
@@ -47,7 +46,7 @@ impl Argument {
     pub fn stringify(&self) -> String {
         match self {
             Self::Atom(atom, _) => atom.to_string(),
-            Self::FunctionCall(call, _, _) => call.stringify(),
+            Self::FunctionCall(call, _) => call.stringify(),
             Self::Variable(name, _) => name.to_string(),
         }
     }
@@ -55,7 +54,7 @@ impl Argument {
     /// Returns the span of this argument.
     pub const fn span(&self) -> &Span {
         match self {
-            Self::Atom(_, s) | Self::FunctionCall(_, s, _) | Self::Variable(_, s) => s,
+            Self::Atom(_, s) | Self::FunctionCall(_, s) | Self::Variable(_, s) => s,
         }
     }
 }

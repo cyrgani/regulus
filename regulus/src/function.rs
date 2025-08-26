@@ -7,6 +7,7 @@ use std::rc::Rc;
 pub struct FunctionCall {
     pub args: Vec<Argument>,
     pub name: String,
+    pub doc_comment: String,
 }
 
 impl FunctionCall {

@@ -139,13 +139,16 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
 
                 return Ok((
                     Argument::FunctionCall(
-                        FunctionCall { args, name },
+                        FunctionCall {
+                            args,
+                            name,
+                            doc_comment: concat_doc_comments(doc_comments),
+                        },
                         Span::new(
                             token_1.span.start,
                             get_last_token(tokens)?.span.end,
                             token_1.span.file.clone(),
                         ),
-                        concat_doc_comments(doc_comments),
                     ),
                     rest,
                 ));
