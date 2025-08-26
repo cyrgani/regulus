@@ -29,4 +29,17 @@ def(filter, seq, function, _(
         )
     )),
     new_list
+)),
+
+# Swaps the values at two indices of a list or string and returns the new sequence.
+# The arguments are: list or string, first index, second index.
+#
+# The indices may be equal, in which case the returned sequence will not be changed.
+# If the indices are out of bounds or invalid, an exception is raised.
+def(swap, seq, idx1, idx2, _(
+    =(e1, index(seq, idx1)),
+    =(e2, index(seq, idx2)),
+    =(seq, overwrite_at_index(seq, idx2, e1)),
+    =(seq, overwrite_at_index(seq, idx1, e2)),
+    seq
 ))

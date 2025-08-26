@@ -1,27 +1,27 @@
 RangeError: called randrange with an empty range
-at <stl:random>:21:26
-at <stl:random>:21:7
-at <stl:random>:19:28
+at <stl:random>:22:26
+at <stl:random>:22:7
+at <stl:random>:20:28
 at programs/seeded_random.re:19:32
 at programs/seeded_random.re:19:22
 RangeError: called randrange with an empty range
-at <stl:random>:21:26
-at <stl:random>:21:7
-at <stl:random>:19:28
+at <stl:random>:22:26
+at <stl:random>:22:7
+at <stl:random>:20:28
 at programs/seeded_random.re:20:32
 at programs/seeded_random.re:20:22
 RangeError: called randrange with an empty range
-at <stl:random>:21:26
-at <stl:random>:21:7
-at <stl:random>:19:28
+at <stl:random>:22:26
+at <stl:random>:22:7
+at <stl:random>:20:28
 at programs/seeded_random.re:21:32
 at programs/seeded_random.re:21:22
 RangeError: called randrange with an empty range
-at <stl:random>:21:26
-at <stl:random>:21:7
-at <stl:random>:19:28
-at <stl:random>:27:21
-at <stl:random>:27:6
-at <stl:random>:26:19
+at <stl:random>:22:26
+at <stl:random>:22:7
+at <stl:random>:20:28
+at <stl:random>:28:21
+at <stl:random>:28:6
+at <stl:random>:27:19
 at programs/seeded_random.re:25:29
 at programs/seeded_random.re:25:22

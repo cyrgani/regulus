@@ -1,4 +1,5 @@
 import(math),
+import(lists),
 
 global(__stl_rng_state),
 =(__stl_rng_state, __builtin_now_nanos_part()),

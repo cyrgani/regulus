@@ -30,17 +30,6 @@ impl Atom {
 }
 
 impl StringOrVec {
-    fn swap(&mut self, a: usize, b: usize) {
-        match self {
-            Self::String(s) => {
-                let mut chars = s.chars().collect::<Vec<_>>();
-                chars.swap(a, b);
-                *self = Self::String(chars.into_iter().collect::<String>());
-            }
-            Self::Vec(v) => v.swap(a, b),
-        }
-    }
-
     fn overwrite_at_index(&mut self, index: usize, val: Atom, state: &State) -> Result<()> {
         match self {
             Self::String(s) => {
@@ -185,16 +174,6 @@ functions! {
     "overwrite_at_index"(3) => |state, args| {
         let mut seq = args[0].eval(state)?.string_or_list()?;
         seq.overwrite_at_index(atom_to_index(args[1].eval(state)?.into_owned(), state)?, args[2].eval(state)?.into_owned(), state)?;
-        Ok(seq.into_atom())
-    }
-    /// Swaps the values at two indices of a list or string and returns the new sequence.
-    /// The arguments are: list or string, first index, second index.
-    ///
-    /// The indices may be equal, in which case the returned sequence will not be changed.
-    /// If the indices are out of bounds or invalid, an exception is raised.
-    "swap"(3) => |state, args| {
-        let mut seq = args[0].eval(state)?.string_or_list()?;
-        seq.swap(atom_to_index(args[1].eval(state)?.into_owned(), state)?, atom_to_index(args[2].eval(state)?.into_owned(), state)?);
         Ok(seq.into_atom())
     }
 }
