@@ -1,6 +1,5 @@
 use crate::exception::{IndexError, TypeError};
 use crate::prelude::*;
-use std::borrow::Cow;
 
 enum StringOrVec {
     String(String),
@@ -110,9 +109,9 @@ fn atom_to_char(atom: Atom, state: &State) -> Result<char> {
 }
 
 #[expect(clippy::needless_pass_by_value, reason = "helper function")]
-fn atom_to_index(atom: Cow<'_, Atom>) -> Result<usize> {
+fn atom_to_index(atom: Atom, state: &State) -> Result<usize> {
     usize::try_from(atom.int()?)
-        .map_err(|e| Exception::new(IndexError, format!("invalid list index: {e}")))
+        .map_err(|e| state.raise(IndexError, format!("invalid list index: {e}")))
 }
 
 functions! {
@@ -146,7 +145,7 @@ functions! {
     ///
     /// If the index does not evalutate to an integer, the first argument will not be evaluated at all.
     "index"(2) => |state, args| {
-        let index = atom_to_index(args[1].eval(state)?)?;
+        let index = atom_to_index(args[1].eval(state)?.into_owned(), state)?;
         args[0]
             .eval(state)?
             .str_or_slice()?
@@ -194,7 +193,7 @@ functions! {
     /// TODO: give it a better name
     "overwrite_at_index"(3) => |state, args| {
         let mut seq = args[0].eval(state)?.string_or_list()?;
-        seq.overwrite_at_index(atom_to_index(args[1].eval(state)?)?, args[2].eval(state)?.into_owned(), state)?;
+        seq.overwrite_at_index(atom_to_index(args[1].eval(state)?.into_owned(), state)?, args[2].eval(state)?.into_owned(), state)?;
         Ok(seq.into_atom())
     }
     /// Swaps the values at two indices of a list or string and returns the new sequence.
@@ -204,7 +203,7 @@ functions! {
     /// If the indices are out of bounds or invalid, an exception is raised.
     "swap"(3) => |state, args| {
         let mut seq = args[0].eval(state)?.string_or_list()?;
-        seq.swap(atom_to_index(args[1].eval(state)?)?, atom_to_index(args[2].eval(state)?)?);
+        seq.swap(atom_to_index(args[1].eval(state)?.into_owned(), state)?, atom_to_index(args[2].eval(state)?.into_owned(), state)?);
         Ok(seq.into_atom())
     }
 }

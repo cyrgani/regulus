@@ -17,7 +17,6 @@ mod errors {
 pub(crate) use errors::*;
 
 #[derive(Debug, Clone)]
-#[cfg_attr(test, derive(PartialEq, Eq))]
 pub struct Exception {
     pub msg: String,
     pub error: String,
@@ -80,6 +79,11 @@ macro_rules! raise {
 /// be used to add a backtrace to the call.
 #[macro_export]
 macro_rules! raise_noreturn {
+    // TODO:
+    //  the first three arms should be removed (or at least not used internally anymore)
+    //  as part of making backtraces mandatory
+    //  current problems are functions like `Atom::int` or `Argument::variable`,
+    //  and also the exceptions thrown while parsing
     ($kind: expr, $string: literal) => {
         $crate::raise_noreturn!($kind, $string,)
     };
