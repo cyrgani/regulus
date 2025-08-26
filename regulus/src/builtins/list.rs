@@ -30,7 +30,7 @@ impl Atom {
 }
 
 impl StringOrVec {
-    fn overwrite_at_index(&mut self, index: usize, val: Atom, state: &State) -> Result<()> {
+    fn replace_at(&mut self, index: usize, val: Atom, state: &State) -> Result<()> {
         match self {
             Self::String(s) => {
                 let char = val.string()?;
@@ -112,6 +112,7 @@ functions! {
         seq.push(args[1].eval(state)?.into_owned())?;
         Ok(seq.into_atom())
     }
+    // TODO: This function is untested and unused. Reconsider its future.
     /// Takes any amount of lists and joins their elements together into a single list.
     "join"(_) => |state, args| {
         let mut list = vec![];
@@ -170,10 +171,9 @@ functions! {
     /// If the index is out of bounds, an exception is raised.
     /// If the first argument is a string instead, the new value must be a single character,
     /// otherwise an exception will be raised.
-    /// TODO: give it a better name
-    "overwrite_at_index"(3) => |state, args| {
+    "replace_at"(3) => |state, args| {
         let mut seq = args[0].eval(state)?.string_or_list()?;
-        seq.overwrite_at_index(atom_to_index(args[1].eval(state)?.into_owned(), state)?, args[2].eval(state)?.into_owned(), state)?;
+        seq.replace_at(atom_to_index(args[1].eval(state)?.into_owned(), state)?, args[2].eval(state)?.into_owned(), state)?;
         Ok(seq.into_atom())
     }
 }

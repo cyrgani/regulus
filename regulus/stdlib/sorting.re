@@ -54,13 +54,13 @@ def(quicksort, seq, _(
         for_in(
             range(0, step),
             i,
-            =(seq, overwrite_at_index(seq, i, index(left, i)))
+            =(seq, replace_at(seq, i, index(left, i)))
         ),
-        =(seq, overwrite_at_index(seq, step, pivot)),
+        =(seq, replace_at(seq, step, pivot)),
         for_in(
             range(0, len(right)),
             i,
-            =(seq, overwrite_at_index(
+            =(seq, replace_at(
                 seq,
                 +(+(i, 1), step),
                 index(right, i)

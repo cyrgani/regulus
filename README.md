@@ -15,8 +15,8 @@ def(bubblesort, seq, _(
             =(i_val, index(seq, i)),
             =(j_val, index(seq, j)),
             if(>(i_val, j_val), _(
-                =(seq, overwrite_at_index(seq, i, j_val)),
-                =(seq, overwrite_at_index(seq, j, i_val)),
+                =(seq, replace_at(seq, i, j_val)),
+                =(seq, replace_at(seq, j, i_val)),
             ))
         ))
     )),

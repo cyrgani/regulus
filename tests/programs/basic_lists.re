@@ -10,8 +10,8 @@ assert_eq(list(1, 5, 7), map(list(2, 10, 14), halve)),
 
 assert_eq(len("abc"), len(list(1, 2, 3))),
 
-assert_eq(overwrite_at_index(list("a", "b", "c"), 2, "b"), list("a", "b", "b")),
-assert_eq(overwrite_at_index("abc", 2, "b"), "abb"),
+assert_eq(replace_at(list("a", "b", "c"), 2, "b"), list("a", "b", "b")),
+assert_eq(replace_at("abc", 2, "b"), "abb"),
 
 assert_eq(swap("abc", 1, 2), "acb"),
 assert_eq(swap(list(1, null), 0, 0), list(1, null)),

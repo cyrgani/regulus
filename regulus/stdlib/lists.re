@@ -39,7 +39,7 @@ def(filter, seq, function, _(
 def(swap, seq, idx1, idx2, _(
     =(e1, index(seq, idx1)),
     =(e2, index(seq, idx2)),
-    =(seq, overwrite_at_index(seq, idx2, e1)),
-    =(seq, overwrite_at_index(seq, idx1, e2)),
+    =(seq, replace_at(seq, idx2, e1)),
+    =(seq, replace_at(seq, idx1, e2)),
     seq
 ))

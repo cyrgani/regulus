@@ -101,13 +101,13 @@ def(play_game, x_controller, o_controller, _(
         _(
             print_board(board),
             =(x_num, x_controller(board)),
-            =(board, overwrite_at_index(board, x_num, X)),
+            =(board, replace_at(board, x_num, X)),
             =(current_player, O),
         ),
         _(
             print_board(board),
             =(o_num, o_controller(board)),
-            =(board, overwrite_at_index(board, o_num, O)),
+            =(board, replace_at(board, o_num, O)),
             =(current_player, X),
         )
     )),
