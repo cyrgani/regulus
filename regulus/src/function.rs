@@ -15,7 +15,7 @@ impl FunctionCall {
         if state.exit_unwind_value.is_some() {
             return Ok(Atom::Null);
         }
-        let function = state.storage.get_function(&self.name)?;
+        let function = state.get_function(&self.name)?;
 
         if let Some(argc) = function.argc() {
             let arg_len = self.args.len();
@@ -83,6 +83,7 @@ impl Function {
             let arg_len = args.len();
             if argc != arg_len {
                 raise!(
+                    state,
                     ArgumentError,
                     "expected `{argc}` args, found `{arg_len}` args for `{fn_name_hint}`",
                 );

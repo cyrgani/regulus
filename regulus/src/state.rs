@@ -54,20 +54,6 @@ impl Storage {
         self.global_idents.insert(name.as_ref().to_owned());
         self.data.insert(name.as_ref().to_owned(), value);
     }
-
-    // TODO: this function is weird
-    pub(crate) fn get_function(&self, name: &str) -> Result<Function> {
-        match self.get(name) {
-            Some(atom) => {
-                if let Atom::Function(func) = atom {
-                    Ok(func.clone())
-                } else {
-                    raise!(NameError, "`{name}` is not a function!")
-                }
-            }
-            None => raise!(NameError, "No function `{name}` found!"),
-        }
-    }
 }
 
 // TODO: add and update all docs here!
@@ -218,6 +204,20 @@ impl State {
 
     pub(crate) fn raise(&self, error: impl Into<String>, msg: impl Into<String>) -> Exception {
         Exception::with_trace(error, msg, &self.backtrace)
+    }
+
+    // TODO: this function is weird
+    pub(crate) fn get_function(&self, name: &str) -> Result<Function> {
+        match self.storage.get(name) {
+            Some(atom) => {
+                if let Atom::Function(func) = atom {
+                    Ok(func.clone())
+                } else {
+                    raise!(self, NameError, "`{name}` is not a function!")
+                }
+            }
+            None => raise!(self, NameError, "No function `{name}` found!"),
+        }
     }
 }
 

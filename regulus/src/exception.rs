@@ -76,8 +76,8 @@ macro_rules! raise {
 /// The first argument is the kind of the exception, the second the message or format string.
 /// Any further arguments are passed into the `format!` string.
 ///
-/// Additionally, the first argument may alos be the current `State`, in which case it will
-/// be used to add a span to the call.
+/// Additionally, the first argument may also be the current `State`, in which case it will
+/// be used to add a backtrace to the call.
 #[macro_export]
 macro_rules! raise_noreturn {
     ($kind: expr, $string: literal) => {

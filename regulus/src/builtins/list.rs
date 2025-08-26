@@ -48,7 +48,7 @@ impl StringOrVec {
                 let mut chars = s.chars().collect::<Vec<_>>();
                 *chars.get_mut(index).ok_or_else(|| {
                     state.raise(IndexError, "Unable to insert at index into list!")
-                })? = atom_to_char(val)?;
+                })? = atom_to_char(val, state)?;
             }
             Self::Vec(v) => {
                 *v.get_mut(index).ok_or_else(|| {
@@ -100,12 +100,12 @@ fn char_to_atom(c: char) -> Atom {
 }
 
 #[expect(clippy::needless_pass_by_value, reason = "helper function")]
-fn atom_to_char(atom: Atom) -> Result<char> {
+fn atom_to_char(atom: Atom, state: &State) -> Result<char> {
     let s = atom.string()?;
     if s.chars().count() == 1 {
         Ok(s.chars().next().unwrap())
     } else {
-        raise!(IndexError, "atom is not a single character")
+        raise!(state, IndexError, "atom is not a single character")
     }
 }
 

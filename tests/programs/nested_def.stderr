@@ -1,4 +1,6 @@
 NameError: No function `inner` found!
+at programs/nested_def.re:9:28
+at programs/nested_def.re:9:22
 NameError: No variable named `x` found!
 at programs/nested_def.re:3:23
 at programs/nested_def.re:3:22
