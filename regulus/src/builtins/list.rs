@@ -44,10 +44,11 @@ impl StringOrVec {
     fn overwrite_at_index(&mut self, index: usize, val: Atom, state: &State) -> Result<()> {
         match self {
             Self::String(s) => {
-                let mut chars = s.chars().collect::<Vec<_>>();
-                *chars.get_mut(index).ok_or_else(|| {
-                    state.raise(IndexError, "Unable to insert at index into list!")
-                })? = atom_to_char(val, state)?;
+                let char = val.string()?;
+                if char.len() != 1 {
+                    raise!(state, IndexError, "atom is not a single character")
+                }
+                s.replace_range(index..=index, &char);
             }
             Self::Vec(v) => {
                 *v.get_mut(index).ok_or_else(|| {
@@ -96,16 +97,6 @@ impl StrOrSlice<'_> {
 
 fn char_to_atom(c: char) -> Atom {
     Atom::String(c.to_string())
-}
-
-#[expect(clippy::needless_pass_by_value, reason = "helper function")]
-fn atom_to_char(atom: Atom, state: &State) -> Result<char> {
-    let s = atom.string()?;
-    if s.chars().count() == 1 {
-        Ok(s.chars().next().unwrap())
-    } else {
-        raise!(state, IndexError, "atom is not a single character")
-    }
 }
 
 #[expect(clippy::needless_pass_by_value, reason = "helper function")]
