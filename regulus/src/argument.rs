@@ -26,7 +26,7 @@ impl Argument {
             Self::Atom(atom, _) => Ok(Cow::Borrowed(atom)),
             Self::Variable(var, _) => match state.storage.get(var) {
                 Some(value) => Ok(Cow::Borrowed(value)),
-                None => raise!(NameError, "No variable named `{var}` found!"),
+                None => raise!(state, NameError, "No variable named `{var}` found!"),
             },
         };
         state.backtrace.pop();

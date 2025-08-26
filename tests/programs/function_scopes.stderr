@@ -1,1 +1,3 @@
 NameError: No variable named `y` found!
+at programs/function_scopes.re:7:23
+at programs/function_scopes.re:7:22

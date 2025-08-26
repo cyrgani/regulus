@@ -75,6 +75,9 @@ macro_rules! raise {
 ///
 /// The first argument is the kind of the exception, the second the message or format string.
 /// Any further arguments are passed into the `format!` string.
+///
+/// Additionally, the first argument may alos be the current `State`, in which case it will
+/// be used to add a span to the call.
 #[macro_export]
 macro_rules! raise_noreturn {
     ($kind: expr, $string: literal) => {
@@ -102,7 +105,7 @@ impl fmt::Display for Exception {
         write!(f, "{}Error: {}", self.error, self.msg)?;
         if let Some(backtrace) = self.backtrace.as_ref() {
             if backtrace.len() == 1 {
-                // in the case of a syntax error, the backtrace it just the error location
+                // in the case of a syntax error, the backtrace is just the error location
                 write!(f, "\nat {}", backtrace[0])?;
             } else {
                 // otherwise, the first entry is the meaningless implicit `_` wrapper

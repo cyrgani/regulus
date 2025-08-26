@@ -6,3 +6,5 @@ at <stl:operators>:50:19
 at <file>:1:4
 at <file>:1:2
 NameError: No variable named `aaaaa` found!
+at programs/eval.re:8:23
+at programs/eval.re:8:22

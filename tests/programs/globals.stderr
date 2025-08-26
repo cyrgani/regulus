@@ -1,4 +1,20 @@
 NameError: No variable named `G` found!
+at programs/globals.re:9:23
+at programs/globals.re:9:22
 NameError: No variable named `G` found!
+at programs/globals.re:11:23
+at programs/globals.re:11:22
+at programs/globals.re:9:22
 NameError: No variable named `G` found!
+at programs/globals.re:13:23
+at programs/globals.re:13:22
+at programs/globals.re:11:22
+at programs/globals.re:9:22
 NameError: No variable named `GLOBALS_HELPER` found!
+at programs/globals_helper.re:3:27
+at programs/globals_helper.re:3:26
+at programs/globals.re:18:33
+at programs/globals.re:18:22
+at programs/globals.re:13:22
+at programs/globals.re:11:22
+at programs/globals.re:9:22

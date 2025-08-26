@@ -1,1 +1,4 @@
 NameError: No variable named `16i64` found!
+at programs/digits_in_ident.re:7:15
+at programs/digits_in_ident.re:7:14
+at programs/digits_in_ident.re:6:22
