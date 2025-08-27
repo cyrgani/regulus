@@ -2,7 +2,6 @@ DivideByZeroError: attempted to divide by zero
 at <stl:operators>:55:26
 at <stl:operators>:53:11
 at <stl:operators>:50:19
-at <stl:fraction>:75:6
 at <stl:fraction>:74:25
-at programs/fraction_test.re:9:34
+at programs/fraction_test.re:9:24
 at programs/fraction_test.re:9:22

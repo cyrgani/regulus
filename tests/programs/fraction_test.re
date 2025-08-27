@@ -1,12 +1,12 @@
 import(fraction),
 
 =(x, Fraction(2, 1)),
-assert_eq(frac_to_int(x), 2),
-assert_eq(frac_to_int(Fraction(3, 2)), 1),
-assert_eq(frac_to_int(Fraction(5, 2)), 2),
-assert_eq(frac_to_int(Fraction(-3, 2)), -1),
-assert_eq(frac_to_int(Fraction(-1, 2)), 0),
-__builtin_print_catch(frac_to_int(Fraction(0, 0))),
+assert_eq(@(x, to_int), 2),
+assert_eq(@(Fraction(3, 2), to_int), 1),
+assert_eq(@(Fraction(5, 2), to_int), 2),
+assert_eq(@(Fraction(-3, 2), to_int), -1),
+assert_eq(@(Fraction(-1, 2), to_int), 0),
+__builtin_print_catch(@(Fraction(0, 0), to_int)),
 
 =(a, Fraction(2, 3)),
 =(b, Fraction(4, 7)),

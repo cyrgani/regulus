@@ -1,6 +1,5 @@
 import(math),
 
-# TODO: make the functions methods
 def(numerator, frac, .(frac, numerator)),
 def(denominator, frac, .(frac, denominator)),
 
@@ -8,6 +7,8 @@ def(new_fraction, num, denom, _(
     if(==(num, 0), error("DivideByZero", "cannot construct fraction with denominator 0")),
     @(Fraction(num, denom), simplify)
 )),
+
+def(fraction_from_int, n, Fraction(n, 1)),
 
 type(
     Fraction,
@@ -69,12 +70,6 @@ type(
     ))),
 
     =(/, fn(f1, f2, *(f1, @(f2, reciprocal)))),
-),
 
-def(frac_to_int, frac, _(
-    /(
-        numerator(frac),
-        denominator(frac),
-    )
-)),
-def(frac_from_int, n, Fraction(n, 1)),
+    =(to_int, fn(self, /(numerator(self), denominator(self)))),
+),
