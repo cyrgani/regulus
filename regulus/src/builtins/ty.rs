@@ -25,7 +25,18 @@ use std::collections::{HashMap, HashSet};
 functions! {
     /// Defines a new type.
     /// The first argument must be given and is the ident of the type.
-    /// All further arguments are its fields.
+    /// All further arguments are its fields or its defaulted values.
+    ///
+    /// If the argument is just an identifier, it is a field.
+    /// If it is a function call of the form `=(name, value)`
+    /// (this must be `=` and not `assign` or another alias),
+    /// this adds a field `name` which has the value `value` by default.
+    /// Accordingly, this value must not and can not be set in the constructor.
+    ///
+    /// Methods can be added by using the defaulted value syntax as
+    /// `=(method_name, fn(self, arg1, arg2, function_body()))`.
+    ///
+    /// TODO: In the future, it will probably be supported to use `def` directly for this purpose.
     "type"(_) => |state, args| {
         let Some((ident, fields)) = args.split_first() else {
             raise!(state, ArgumentError, "`type` takes at least one argument");
