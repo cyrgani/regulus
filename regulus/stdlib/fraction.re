@@ -1,3 +1,5 @@
+import(math),
+
 # TODO: make the functions methods
 def(numerator, frac, .(frac, numerator)),
 def(denominator, frac, .(frac, denominator)),
@@ -7,8 +9,21 @@ type(
     numerator,
     denominator,
 
+    =(simplify, fn(self, ifelse(
+        ==(numerator, 0),
+        Fraction(0, 1),
+        _(
+            =(num, numerator(self)),
+            =(den, denominator(self)),
+            =(g, gcd(num, den)),
+            if(<(den, 0), =(g, *(-1, g))),
+            Fraction(/(num, g), /(den, g))
+        )
+    ))),
+
     =(==, fn(f1, f2, _(
-        # TODO: use simplify here first
+        =(f1, @(f1, simplify)),
+        =(f2, @(f2, simplify)),
         &&(
             ==(numerator(f1), numerator(f2)),
             ==(denominator(f1), denominator(f2)),
