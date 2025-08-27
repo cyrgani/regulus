@@ -41,7 +41,7 @@ functions! {
         let Some((ident, fields)) = args.split_first() else {
             raise!(state, ArgumentError, "`type` takes at least one argument");
         };
-        let var = ident.variable("`type` must take a variable as first argument")?;
+        let var = ident.variable("`type` must take a variable as first argument", state)?;
 
         let mut required_fields = vec![];
         let mut defaulted_fields = vec![];
@@ -102,7 +102,7 @@ functions! {
     /// This function has an alias: `getattr`.
     "."(2) => |state, args| {
         let obj = args[0].eval(state)?.object()?;
-        let field = args[1].variable("`.` takes a field identifier as second argument")?;
+        let field = args[1].variable("`.` takes a field identifier as second argument", state)?;
         obj.data.get(field).cloned().ok_or_else(|| state.raise(NameError, format!("object has no field named `{field}`")))
     }
     /// Set the value of a field of an object to a new value and returns the updated object.
@@ -116,7 +116,7 @@ functions! {
     /// This function has an alias: `setattr`.
     "->"(3) => |state, args| {
         let mut obj = args[0].eval(state)?.object()?;
-        let field = args[1].variable("`.` takes a field identifier as second argument")?;
+        let field = args[1].variable("`.` takes a field identifier as second argument", state)?;
         let value = args[2].eval(state)?;
         *obj.data.get_mut(field).ok_or_else(|| state.raise(NameError, format!("object has no field named `{field}`")))? = value.into_owned();
         Ok(Atom::Object(obj))
@@ -132,7 +132,7 @@ functions! {
             raise!(state, SyntaxError, "too few arguments for `@`");
         };
         let obj = obj_arg.eval(state)?.object()?;
-        let method_name = method.variable("`@` expected the name of a method as second arg")?;
+        let method_name = method.variable("`@` expected the name of a method as second arg", state)?;
         let Some(func) = obj.data.get(method_name) else {
             raise!(state, NameError, "object has no method `{method_name}`");
         };

@@ -7,19 +7,19 @@ use std::borrow::Cow;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-pub(crate) fn define_function(doc: impl Into<String>, body: &Argument, fn_args: &[Argument]) -> Result<Atom> {
+fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Result<Atom> {
     let body = body.clone();
     let function_arg_names = fn_args
         .iter()
         .map(|fn_arg| {
             fn_arg
-                .variable("Error during definition: invalid args were given!")
+                .variable("Error during definition: invalid args were given!", state)
                 .cloned()
         })
         .collect::<Result<Vec<_>>>()?;
 
     let function = Function::new(
-        doc,
+        state.current_doc_comment.as_ref().unwrap(),
         Some(function_arg_names.len()),
         Box::new(move |state, args| {
             // a function call should have its own scope and not leak variables
@@ -102,7 +102,7 @@ functions! {
     ///
     /// This function has an alias: `assign`.
     "="(2) => |state, args| {
-        let var = args[0].variable("Error during assignment: no variable was given to assign to!")?;
+        let var = args[0].variable("Error during assignment: no variable was given to assign to!", state)?;
         let value = args[1].eval(state)?.into_owned();
         state.storage.insert(var, value);
         Ok(Atom::Null)
@@ -149,9 +149,9 @@ functions! {
                 "too few arguments passed to `def`: expected at least 2, found {}", args.len()
             );
         };
-        let var = var.variable("Error during function definition: no valid variable was given to define to!")?;
+        let var = var.variable("Error during function definition: no valid variable was given to define to!", state)?;
 
-        state.storage.insert(var, define_function(state.current_doc_comment.as_ref().unwrap(), body, fn_args)?);
+        state.storage.insert(var, define_function(body, fn_args, state)?);
         Ok(Atom::Null)
     }
     /// Creates a new function and returns it.
@@ -164,12 +164,12 @@ functions! {
         let Some((body, fn_args)) = args.split_last() else {
             raise!(state, ArgumentError, "`fn` invocation is missing body");
         };
-        define_function(state.current_doc_comment.as_ref().unwrap(), body, fn_args)
+        define_function(body, fn_args, state)
     }
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the return value of this function
     "import"(1) => |state, args| {
-        let name = args[0].variable("`import` argument must be a variable, string syntax was removed")?;
+        let name = args[0].variable("`import` argument must be a variable, string syntax was removed", state)?;
         if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
             raise!(
                 state,
@@ -269,7 +269,7 @@ functions! {
     ///
     /// This does not require the identifier to be defined at this time.
     "global"(1) => |state, args| {
-        let var = args[0].variable("`global(1)` expects a variable argument")?;
+        let var = args[0].variable("`global(1)` expects a variable argument", state)?;
         state.storage.global_idents.insert(var.clone());
         Ok(Atom::Null)
     }

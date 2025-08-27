@@ -145,7 +145,7 @@ functions! {
     /// If the loop variable shadows an existing variable, that value can be used again after the loop.
     "for_in"(3) => |state, args| {
         let seq = args[0].eval(state)?.string_or_list()?;
-        let loop_var = args[1].variable("invalid loop variable given to `for_in`")?;
+        let loop_var = args[1].variable("invalid loop variable given to `for_in`", state)?;
         let loop_body = &args[2];
 
         let possibly_shadowed_value = state.storage.remove(loop_var);

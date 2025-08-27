@@ -6,3 +6,5 @@ at programs/simple_method.re:20:24
 at programs/simple_method.re:20:22
 TypeError: 5 is not a Object!
 ArgumentError: `@` expected the name of a method as second arg
+at programs/simple_method.re:22:24
+at programs/simple_method.re:22:22
