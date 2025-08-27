@@ -42,10 +42,19 @@ type(
 
     =(reciprocal, fn(self, new_fraction(denominator(self), numerator(self)))),
 
+    =(extend, fn(self, n, ifelse(
+        ==(n, 0),
+        Fraction(0, 1),
+        Fraction(
+            *(n, numerator(self)),
+            *(n, denominator(self))
+        )
+    ))),
+
     =(+, fn(f1, f2, _(
         =(f1_old_denom, denominator(f1)),
-        =(f1, frac_extend(f1, denominator(f2))),
-        =(f2, frac_extend(f2, f1_old_denom)),
+        =(f1, @(f1, extend, denominator(f2))),
+        =(f2, @(f2, extend, f1_old_denom)),
         new_fraction(
             +(numerator(f1), numerator(f2)),
             denominator(f1),
@@ -69,8 +78,3 @@ def(frac_to_int, frac, _(
     )
 )),
 def(frac_from_int, n, Fraction(n, 1)),
-
-def(frac_extend, frac, n, Fraction(
-    *(n, numerator(frac)),
-    *(n, denominator(frac))
-)),
