@@ -57,11 +57,17 @@ impl Storage {
 }
 
 // TODO: add and update all docs here!
+/// The central structure for running a program.
 pub struct State {
+    /// All values that can be accessed during the program's execution.
     pub storage: Storage,
+    /// Handle to the standard input. Defaults to [`std::io::stdin()`], but can be replaced.
     pub stdin: Box<dyn BufRead>,
+    /// Handle to the standard output. Defaults to [`std::io::stdout()`], but can be replaced.
     pub stdout: WriteHandle,
+    /// Handle to the standard error. Defaults to [`std::io::stderr()`], but can be replaced.
     pub stderr: WriteHandle,
+    /// The directory (or pseudo-directory) in which the current program is placed.
     pub(crate) file_directory: Directory,
     pub(crate) current_file_path: Option<PathBuf>,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
@@ -130,6 +136,8 @@ impl State {
     }
 
     /// Sets the source directory for resolving imports to the given directory.
+    ///
+    /// Note that this does not set or change the program code.
     #[must_use = "this returns the new state without modifying the original"]
     pub fn with_source_directory(mut self, dir_path: impl AsRef<Path>) -> Self {
         self.file_directory = Directory::Regular(dir_path.as_ref().to_path_buf());
@@ -137,6 +145,8 @@ impl State {
     }
 
     /// Sets the current directory to the operating systems current working directory.
+    ///
+    /// Note that this does not set or change the program code.
     ///
     /// # Panics
     /// Panics if [`env::current_dir`] returned an error.
