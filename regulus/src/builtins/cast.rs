@@ -7,7 +7,8 @@ fn cast_error_builder(atom: &Atom, new_type: &str, state: &State) -> Exception {
 
 functions! {
     /// Converts the given value into an integer, raising an exception if it is not possible to cast.
-    /// TODO document the exact conditions and rules
+    ///
+    /// It is only supported to cast ints, bools (false -> 0, true -> 1) and strings to ints.
     "int"(1) => |state, args| {
         let atom = args[0].eval(state)?.into_owned();
         Ok(Atom::Int(match atom {
@@ -20,9 +21,8 @@ functions! {
         }))
     }
     /// Converts the given value into a string, raising an exception if it is not possible to cast.
-    /// TODO document the exact conditions and rules
     ///
-    /// This method is fallible and is currently only able to cast ints, bools, strings and nulls.
+    /// This method is fallible and is currently only able to cast ints, bools, strings and nulls (to "null").
     /// If you want to display an arbitrary atom (such as for error messages), use `printable(1)`
     /// instead, which is infallible.
     "string"(1) => |state, args| {
@@ -36,7 +36,8 @@ functions! {
         })
     }
     /// Converts the given value into a boolean, raising an exception if it is not possible to cast.
-    /// TODO document the exact conditions and rules
+    ///
+    /// It is only supported to cast ints (0 -> false, all others -> 1), bools and nulls (returns false) to bools.
     "bool"(1) => |state, args| {
         let atom = args[0].eval(state)?.into_owned();
         Ok(Atom::Bool(match atom {
@@ -50,6 +51,8 @@ functions! {
     /// See the documentation of `string(1)` for a comparison of these two methods.
     /// Note that the exact output format is not yet stable and may change, especially regarding
     /// objects.
+    ///
+    /// This is identical to the output of `write`.
     "printable"(1) => |state, args| {
         Ok(Atom::String(args[0].eval(state)?.to_string()))
     }
