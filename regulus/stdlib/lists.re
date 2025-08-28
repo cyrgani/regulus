@@ -1,3 +1,7 @@
+# TODO: many things here can operate on list and string. consider moving those into `seq.re`, `sequence.re` or similar.
+# note: `null` is put here to avoid merging the above comment with the doc comment below.
+null,
+
 # Applies the second argument function to each element of the first argument list and returns
 # the updated list.
 def(map, seq, function, _(
@@ -43,3 +47,5 @@ def(swap, seq, idx1, idx2, _(
     =(seq, replace_at(seq, idx1, e2)),
     seq
 ))
+
+# TODO: add `flatten`: list[list[atom]] -> list[atom]
