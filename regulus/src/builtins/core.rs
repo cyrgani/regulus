@@ -57,6 +57,67 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
     Ok(Atom::Function(function))
 }
 
+fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
+    let name = args[0].variable(
+        "`import` argument must be a variable, string syntax was removed",
+        state,
+    )?;
+    if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+        raise!(
+            state,
+            ImportError,
+            "invalid characters in import name `{name}`, only a-Z, 0-9 and _ are allowed",
+        );
+    }
+
+    // lookup order:
+    // 1. look inside the programs current directory
+    // 2. look in the global stl directory
+    let mut import_state = State::new();
+    let mut found = false;
+    if let Directory::Regular(dir_path) = &state.file_directory
+        && let Some(path) = try_resolve_import_in_dir(name, dir_path)
+    {
+        import_state = import_state.with_source_file(path).unwrap();
+        found = true;
+    }
+
+    if !found && let Some(code) = try_resolve_import_in_stl(name) {
+        import_state = import_state.with_code(code);
+        import_state.set_current_file_path(format!("<stl:{name}>"));
+        found = true;
+    }
+    if !found {
+        raise!(
+            state,
+            ImportError,
+            "failed to find file for importing `{name}`"
+        );
+    }
+
+    import_state
+        .storage
+        .global_idents
+        .clone_from(&state.storage.global_idents);
+    import_state
+        .storage
+        .data
+        .extend(state.storage.global_items());
+    let atom = import_state.run();
+
+    if let Some(exit_unwind_value) = import_state.exit_unwind_value {
+        state.exit_unwind_value = Some(exit_unwind_value);
+        return Ok(Atom::Null);
+    }
+    let atom = atom?;
+
+    for (k, v) in import_state.storage.data {
+        state.storage.insert(k, v);
+    }
+    state.storage.global_idents = import_state.storage.global_idents;
+    Ok(atom)
+}
+
 /// Returns:
 /// * `None` if the resolution in the given directory failed,
 /// * `Some(path)` if the code was found outside the interned STL,
@@ -169,52 +230,7 @@ functions! {
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the return value of this function
     "import"(1) => |state, args| {
-        let name = args[0].variable("`import` argument must be a variable, string syntax was removed", state)?;
-        if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
-            raise!(
-                state,
-                ImportError,
-                "invalid characters in import name `{name}`, only a-Z, 0-9 and _ are allowed",
-            );
-        }
-
-        // lookup order:
-        // 1. look inside the programs current directory
-        // 2. look in the global stl directory
-        let mut import_state = State::new();
-        let mut found = false;
-        if let Directory::Regular(dir_path) = &state.file_directory {
-            if let Some(path) = try_resolve_import_in_dir(name, dir_path) {
-                import_state = import_state.with_source_file(path).unwrap();
-                found = true;
-            }
-        }
-        if !found {
-            if let Some(code) = try_resolve_import_in_stl(name) {
-                import_state = import_state.with_code(code);
-                import_state.set_current_file_path(format!("<stl:{name}>"));
-                found = true;
-            }
-        }
-        if !found {
-            raise!(state, ImportError, "failed to find file for importing `{name}`");
-        }
-
-        import_state.storage.global_idents.clone_from(&state.storage.global_idents);
-        import_state.storage.data.extend(state.storage.global_items());
-        let atom = import_state.run();
-
-        if let Some(exit_unwind_value) = import_state.exit_unwind_value {
-            state.exit_unwind_value = Some(exit_unwind_value);
-            return Ok(Atom::Null);
-        }
-        let atom = atom?;
-
-        for (k, v) in import_state.storage.data {
-            state.storage.insert(k, v);
-        }
-        state.storage.global_idents = import_state.storage.global_idents;
-        Ok(atom)
+        import(state, args)
     }
     /// Raises an exception.
     /// The first argument is a string that describes the error kind.

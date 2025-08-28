@@ -22,6 +22,70 @@ use crate::exception::{ArgumentError, NameError, SyntaxError};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
 
+fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
+    let Some((ident, fields)) = args.split_first() else {
+        raise!(state, ArgumentError, "`type` takes at least one argument");
+    };
+    let var = ident.variable("`type` must take a variable as first argument", state)?;
+
+    let mut required_fields = vec![];
+    let mut defaulted_fields = vec![];
+    let mut found_fields = HashSet::new();
+
+    for field in fields {
+        match field {
+            Argument::Atom(..) => raise!(
+                state,
+                SyntaxError,
+                "`type` field arguments should be variables or `=` calls"
+            ),
+            Argument::FunctionCall(call, _) => {
+                // TODO: `def` should be allowed; aliases of `=` should be allowed too.
+                if call.name != "=" {
+                    raise!(state, SyntaxError, "defaulted `type` values must use `=`");
+                }
+                let [Argument::Variable(name, _), value] = call.args.as_slice() else {
+                    raise!(
+                        state,
+                        SyntaxError,
+                        "defaulted `type` values must have the form `=(name, value)`"
+                    );
+                };
+                if found_fields.contains(name) {
+                    raise!(state, SyntaxError, "duplicate `type` field `{name}`");
+                }
+                found_fields.insert(name);
+                defaulted_fields.push((name.clone(), value.eval(state)?.into_owned()));
+            }
+            Argument::Variable(name, _) => {
+                if found_fields.contains(name) {
+                    raise!(state, SyntaxError, "duplicate `type` field `{name}`");
+                }
+                found_fields.insert(name);
+                required_fields.push(name.clone());
+            }
+        }
+    }
+    let ty_id = state.make_type_id();
+
+    let function = Function::new(
+        String::new(),
+        Some(required_fields.len()),
+        Box::new(move |state, args| {
+            let mut fields = required_fields
+                .iter()
+                .zip(args)
+                .map(|(field, arg)| Ok((field.clone(), arg.eval(state)?.into_owned())))
+                .collect::<Result<HashMap<String, Atom>>>()?;
+            fields.extend(defaulted_fields.clone());
+            Ok(Atom::Object(Object::new(fields, ty_id)))
+        }),
+    );
+
+    state.storage.insert(var, Atom::Function(function));
+    Ok(Atom::Null)
+}
+
 functions! {
     /// Defines a new type.
     /// The first argument must be given and is the ident of the type.
@@ -38,59 +102,7 @@ functions! {
     ///
     /// TODO: In the future, it will probably be supported to use `def` directly for this purpose.
     "type"(_) => |state, args| {
-        let Some((ident, fields)) = args.split_first() else {
-            raise!(state, ArgumentError, "`type` takes at least one argument");
-        };
-        let var = ident.variable("`type` must take a variable as first argument", state)?;
-
-        let mut required_fields = vec![];
-        let mut defaulted_fields = vec![];
-        let mut found_fields = HashSet::new();
-
-        for field in fields {
-            match field {
-                Argument::Atom(..) => raise!(state, SyntaxError, "`type` field arguments should be variables or `=` calls"),
-                Argument::FunctionCall(call, _) => {
-                    // TODO: `def` should be allowed; aliases of `=` should be allowed too.
-                    if call.name != "=" {
-                        raise!(state, SyntaxError, "defaulted `type` values must use `=`");
-                    }
-                    let [Argument::Variable(name, _), value] = call.args.as_slice() else {
-                        raise!(state, SyntaxError, "defaulted `type` values must have the form `=(name, value)`");
-                    };
-                    if found_fields.contains(name) {
-                        raise!(state, SyntaxError, "duplicate `type` field `{name}`");
-                    }
-                    found_fields.insert(name);
-                    defaulted_fields.push((name.clone(), value.eval(state)?.into_owned()));
-                },
-                Argument::Variable(name, _) => {
-                    if found_fields.contains(name) {
-                        raise!(state, SyntaxError, "duplicate `type` field `{name}`");
-                    }
-                    found_fields.insert(name);
-                    required_fields.push(name.clone());
-                },
-            }
-        }
-        let ty_id = state.make_type_id();
-
-        let function = Function::new(
-            String::new(),
-            Some(required_fields.len()),
-            Box::new(move |state, args| {
-                let mut fields = required_fields
-                    .iter()
-                    .zip(args)
-                    .map(|(field, arg)| Ok((field.clone(), arg.eval(state)?.into_owned())))
-                    .collect::<Result<HashMap<String, Atom>>>()?;
-                fields.extend(defaulted_fields.clone());
-                Ok(Atom::Object(Object::new(fields, ty_id)))
-            }),
-        );
-
-        state.storage.insert(var, Atom::Function(function));
-        Ok(Atom::Null)
+        type_(state, args)
     }
     /// Get the value of a field of an object.
     ///

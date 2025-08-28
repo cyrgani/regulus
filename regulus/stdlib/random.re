@@ -4,7 +4,7 @@ import(lists),
 global(__stl_rng_state),
 =(__stl_rng_state, __builtin_now_nanos_part()),
 
-# returns a random i64
+# returns a random integer
 def(rand, _(
     # source: https://en.wikipedia.org/wiki/Xorshift#Example_implementation
     =(x, __stl_rng_state),
@@ -15,7 +15,7 @@ def(rand, _(
     x
 )),
 
-# returns a random i64 in low..high
+# returns a random integer in low..high
 # raises if low >= high
 def(randrange, low, high, _(
     =(diff, -(high, low)),
