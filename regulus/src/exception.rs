@@ -25,6 +25,9 @@ pub struct Exception {
 }
 
 impl Exception {
+    /// Constructs an exception with the given error name and message,
+    /// but without any span or backtrace.
+    /// Using this method is discouraged; ideally it will be removed in the future.
     pub fn new(error: impl Into<String>, msg: impl Into<String>) -> Self {
         Self {
             msg: msg.into(),
@@ -33,7 +36,9 @@ impl Exception {
         }
     }
 
-    // TODO: remove?
+    /// Constructs an exception with the given error name and message,
+    /// using the given span as the only backtrace entry.
+    ///
     /// If you have a [`State`](crate::prelude::State) available,
     /// consider using [`State::raise`](crate::prelude::State::raise) instead.
     pub fn spanned(error: impl Into<String>, msg: impl Into<String>, span: &Span) -> Self {
@@ -44,6 +49,8 @@ impl Exception {
         }
     }
 
+    /// Constructs an exception with the given error name, message and backtrace.
+    ///
     /// If you have a [`State`](crate::prelude::State) available,
     /// consider using [`State::raise`](crate::prelude::State::raise) instead.
     pub fn with_trace(

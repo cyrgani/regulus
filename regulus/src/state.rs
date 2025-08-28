@@ -212,7 +212,8 @@ impl State {
         old
     }
 
-    pub(crate) fn raise(&self, error: impl Into<String>, msg: impl Into<String>) -> Exception {
+    /// Constructs a new exception with the given error and message at the current point of execution.
+    pub fn raise(&self, error: impl Into<String>, msg: impl Into<String>) -> Exception {
         Exception::with_trace(error, msg, &self.backtrace)
     }
 
