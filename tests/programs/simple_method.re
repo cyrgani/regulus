@@ -24,3 +24,12 @@ __builtin_print_catch(@(x, fn(self, 2))),
 import(aliases),
 =(y, call_method(x, double)),
 assert_eq(.(y, a), 10),
+
+# TODO: error on "static" methods (methods that take 0 parameters), since they are not callable with @
+# make sure that errors in methods cause no panics
+type(E, =(f, fn(self, error("Foo", "Bar"))), =(g, fn(self, UNDEFINED))),
+
+=(e, E()),
+__builtin_print_catch(@(e, f)),
+__builtin_print_catch(@(e, g)),
+

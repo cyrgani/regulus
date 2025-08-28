@@ -8,3 +8,11 @@ TypeError: 5 is not a Object!
 ArgumentError: `@` expected the name of a method as second arg
 at programs/simple_method.re:22:24
 at programs/simple_method.re:22:22
+FooError: Bar
+at programs/simple_method.re:30:28
+at programs/simple_method.re:33:24
+at programs/simple_method.re:33:22
+NameError: No variable named `UNDEFINED` found!
+at programs/simple_method.re:30:60
+at programs/simple_method.re:34:24
+at programs/simple_method.re:34:22
