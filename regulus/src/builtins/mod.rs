@@ -1,24 +1,37 @@
 use crate::prelude::Atom;
 use std::collections::HashMap;
 
-macro_rules! builtin_modules {
-    ($($name: ident),*) => {
-        $(pub mod $name;)*
+mod cast;
+mod core;
+mod help;
+mod io;
+mod list;
+mod logic;
+mod math;
+mod private;
+mod string;
+mod time;
+mod ty;
 
-        pub fn all_functions() -> HashMap<String, Atom> {
-            let mut functions = HashMap::new();
+pub fn all_functions() -> HashMap<String, Atom> {
+    let mut functions = HashMap::new();
 
-            for module in [$($name::functions()),*] {
-                for (name, function) in module {
-                    functions.insert(name.to_string(), Atom::Function(function));
-                }
-            }
-
-            functions
+    for module in [
+        cast::functions(),
+        core::functions(),
+        help::functions(),
+        io::functions(),
+        list::functions(),
+        logic::functions(),
+        math::functions(),
+        private::functions(),
+        string::functions(),
+        time::functions(),
+        ty::functions(),
+    ] {
+        for (name, function) in module {
+            functions.insert(name.to_string(), Atom::Function(function));
         }
-    };
-}
-
-builtin_modules! {
-    cast, core, help, io, list, logic, math, private, string, time, ty
+    }
+    functions
 }
