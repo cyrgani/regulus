@@ -1,0 +1,3 @@
+
+ImportError: cyclic import of `c` at path `programs/import_cycle_errors/c.re` detected
+at programs/import_cycle_errors/c.re:2:7

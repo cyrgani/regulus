@@ -56,7 +56,7 @@ impl Storage {
     }
 }
 
-// TODO: add and update all docs here!
+// TODO: add and update all docs here as well as on `Storage`.
 /// The central structure for running a program.
 pub struct State {
     /// All values that can be accessed during the program's execution.
@@ -73,6 +73,10 @@ pub struct State {
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
     pub(crate) backtrace: Vec<Span>,
     pub(crate) current_doc_comment: Option<String>,
+    /// Tracks the current stack of nested `import`-calls to emit an error on cyclic imports.
+    /// Note that this only operates on user-written code and does not catch cyclic import
+    /// errors within the STL (those still cause a rust stack overflow).
+    pub(crate) import_stack: Vec<PathBuf>,
     code: Option<String>,
     next_type_id: i64,
     // make sure this type can never be constructed from outside
@@ -101,6 +105,7 @@ impl State {
             exit_unwind_value: None,
             backtrace: Vec::new(),
             current_doc_comment: None,
+            import_stack: Vec::new(),
             code: None,
             next_type_id: Atom::MIN_OBJECT_TY_ID,
             __private: (),

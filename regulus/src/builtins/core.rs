@@ -74,11 +74,21 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
     // 1. look inside the programs current directory
     // 2. look in the global stl directory
     let mut import_state = State::new();
+    import_state.import_stack.clone_from(&state.import_stack);
     let mut found = false;
     if let Directory::Regular(dir_path) = &state.file_directory
         && let Some(path) = try_resolve_import_in_dir(name, dir_path)
     {
-        import_state = import_state.with_source_file(path).unwrap();
+        if import_state.import_stack.contains(&path) {
+            raise!(
+                state,
+                ImportError,
+                "cyclic import of `{name}` at path `{}` detected",
+                path.display()
+            );
+        }
+        import_state = import_state.with_source_file(&path).unwrap();
+        import_state.import_stack.push(path);
         found = true;
     }
 

@@ -1,0 +1,3 @@
+
+ImportError: cyclic import of `a` at path `programs/import_cycle_errors/a.re` detected
+at programs/import_cycle_errors/b.re:3:7
