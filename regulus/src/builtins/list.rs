@@ -6,34 +6,21 @@ enum StringOrVec {
     Vec(Vec<Atom>),
 }
 
-enum StrOrSlice<'a> {
-    Str(&'a str),
-    Slice(&'a [Atom]),
-}
-
-impl Atom {
-    fn string_or_list(&self) -> Result<StringOrVec> {
-        match self {
-            Self::String(s) => Ok(StringOrVec::String(s.clone())),
-            Self::List(v) => Ok(StringOrVec::Vec(v.clone())),
-            _ => raise!(TypeError, "{self} should be a string or list"),
-        }
-    }
-
-    fn str_or_slice(&self) -> Result<StrOrSlice<'_>> {
-        match self {
-            Self::String(s) => Ok(StrOrSlice::Str(s)),
-            Self::List(v) => Ok(StrOrSlice::Slice(v)),
-            _ => raise!(TypeError, "{self} should be a string or list"),
+impl Argument {
+    fn eval_string_or_list(&self, state: &mut State) -> Result<StringOrVec> {
+        match self.eval(state)?.into_owned() {
+            Atom::String(s) => Ok(StringOrVec::String(s)),
+            Atom::List(v) => Ok(StringOrVec::Vec(v)),
+            val => raise!(state, TypeError, "{val} should be a string or list"),
         }
     }
 }
 
 impl StringOrVec {
-    fn replace_at(&mut self, index: usize, val: Atom, state: &State) -> Result<()> {
+    fn replace_at(&mut self, index: usize, arg: &Argument, state: &mut State) -> Result<()> {
         match self {
             Self::String(s) => {
-                let char = val.string()?;
+                let char = arg.eval_string(state)?;
                 if char.len() != 1 {
                     raise!(state, IndexError, "atom is not a single character")
                 }
@@ -42,7 +29,7 @@ impl StringOrVec {
             Self::Vec(v) => {
                 *v.get_mut(index).ok_or_else(|| {
                     state.raise(IndexError, "Unable to insert at index into list!")
-                })? = val;
+                })? = arg.eval(state)?.into_owned();
             }
         }
         Ok(())
@@ -55,31 +42,29 @@ impl StringOrVec {
         }
     }
 
-    fn push(&mut self, val: Atom) -> Result<()> {
+    fn push(&mut self, arg: &Argument, state: &mut State) -> Result<()> {
         match self {
             Self::String(s) => {
-                s.push_str(&val.string()?);
+                s.push_str(&arg.eval_string(state)?);
             }
             Self::Vec(v) => {
-                v.push(val);
+                v.push(arg.eval(state)?.into_owned());
             }
         }
         Ok(())
     }
-}
 
-impl StrOrSlice<'_> {
     const fn len(&self) -> usize {
         match self {
-            Self::Str(s) => s.len(),
-            Self::Slice(v) => v.len(),
+            Self::String(s) => s.len(),
+            Self::Vec(v) => v.len(),
         }
     }
 
     fn get(&self, index: usize) -> Option<Atom> {
         match self {
-            Self::Str(s) => s.chars().nth(index).map(char_to_atom),
-            Self::Slice(v) => v.get(index).cloned(),
+            Self::String(s) => s.chars().nth(index).map(char_to_atom),
+            Self::Vec(v) => v.get(index).cloned(),
         }
     }
 }
@@ -88,9 +73,8 @@ fn char_to_atom(c: char) -> Atom {
     Atom::String(c.to_string())
 }
 
-#[expect(clippy::needless_pass_by_value, reason = "helper function")]
-fn atom_to_index(atom: Atom, state: &State) -> Result<usize> {
-    usize::try_from(atom.int()?)
+fn atom_to_index(arg: &Argument, state: &mut State) -> Result<usize> {
+    usize::try_from(arg.eval_int(state)?)
         .map_err(|e| state.raise(IndexError, format!("invalid list index: {e}")))
 }
 
@@ -108,8 +92,8 @@ functions! {
     /// Alternatively, if the first argument is a string and the second is too, a new concatenated
     /// string will be returned.
     "append"(2) => |state, args| {
-        let mut seq = args[0].eval(state)?.string_or_list()?;
-        seq.push(args[1].eval(state)?.into_owned())?;
+        let mut seq = args[0].eval_string_or_list(state)?;
+        seq.push(&args[1], state)?;
         Ok(seq.into_atom())
     }
     // TODO: This function is untested and unused. Reconsider its future.
@@ -126,16 +110,15 @@ functions! {
     ///
     /// If the index does not evalutate to an integer, the first argument will not be evaluated at all.
     "index"(2) => |state, args| {
-        let index = atom_to_index(args[1].eval(state)?.into_owned(), state)?;
+        let index = atom_to_index(&args[1], state)?;
         args[0]
-            .eval(state)?
-            .str_or_slice()?
+            .eval_string_or_list(state)?
             .get(index)
             .ok_or_else(|| state.raise(IndexError, "sequence index out of bounds"))
     }
     /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {
-        Atom::int_from_rust_int(args[0].eval(state)?.str_or_slice()?.len())
+        Atom::int_from_rust_int(args[0].eval_string_or_list(state)?.len())
     }
     /// Iterates over the given list elements or string characters.
     /// The first argument is the list, the second the loop variable name for each element and the
@@ -144,7 +127,7 @@ functions! {
     ///
     /// If the loop variable shadows an existing variable, that value can be used again after the loop.
     "for_in"(3) => |state, args| {
-        let seq = args[0].eval(state)?.string_or_list()?;
+        let seq = args[0].eval_string_or_list(state)?;
         let loop_var = args[1].variable("invalid loop variable given to `for_in`", state)?;
         let loop_body = &args[2];
 
@@ -172,8 +155,8 @@ functions! {
     /// If the first argument is a string instead, the new value must be a single character,
     /// otherwise an exception will be raised.
     "replace_at"(3) => |state, args| {
-        let mut seq = args[0].eval(state)?.string_or_list()?;
-        seq.replace_at(atom_to_index(args[1].eval(state)?.into_owned(), state)?, args[2].eval(state)?.into_owned(), state)?;
+        let mut seq = args[0].eval_string_or_list(state)?;
+        seq.replace_at(atom_to_index(&args[1], state)?, &args[2], state)?;
         Ok(seq.into_atom())
     }
 }
