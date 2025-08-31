@@ -6,7 +6,7 @@ functions! {
     "strconcat"(_) => |state, args| {
         let mut string = String::new();
         for arg in args {
-            string.push_str(&arg.eval(state)?.string()?);
+            string.push_str(&arg.eval_string(state)?);
         }
         Ok(Atom::String(string))
     }

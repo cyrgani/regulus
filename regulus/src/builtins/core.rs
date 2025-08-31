@@ -182,7 +182,7 @@ functions! {
     /// If it evaluates to true, the second argument is evaluated and returned.
     /// If it evaluates to false, the second argument is ignored and `null` is returned.
     "if"(2) => |state, args| {
-        Ok(if args[0].eval(state)?.bool()? {
+        Ok(if args[0].eval_bool(state)? {
             args[1].eval(state)?.into_owned()
         } else {
             Atom::Null
@@ -192,7 +192,7 @@ functions! {
     /// If it evaluates to true, the second argument is evaluated and returned.
     /// If it evaluates to false, the third argument is evaluated and returned instead.
     "ifelse"(3) => |state, args| {
-        Ok(if args[0].eval(state)?.bool()? {
+        Ok(if args[0].eval_bool(state)? {
             args[1].eval(state)?
         } else {
             args[2].eval(state)?
@@ -202,7 +202,7 @@ functions! {
     /// If it evaluates to true, the second argument is evaluated and the same steps begin again.
     /// If it evaluates to false, the loop ends and `null` is returned.
     "while"(2) => |state, args| {
-        while args[0].eval(state)?.bool()? {
+        while args[0].eval_bool(state)? {
             args[1].eval(state)?;
         }
         Ok(Atom::Null)
@@ -250,8 +250,8 @@ functions! {
     /// When displaying the error kind, `Error` will be appended implicitly, so the error kind given
     /// here should not end in `Error`, `Exception` or similar.
     "error"(2) => |state, args| {
-        let kind = args[0].eval(state)?.string()?;
-        let msg = args[1].eval(state)?.string()?;
+        let kind = args[0].eval_string(state)?;
+        let msg = args[1].eval_string(state)?;
         Err(state.raise(kind, msg))
     }
     /// Evaluates the given value and returns it.
@@ -286,7 +286,7 @@ functions! {
     ///
     /// TODO: think about imports, test them
     "eval"(1) => |state, args| {
-        let code = args[0].eval(state)?.string()?;
+        let code = args[0].eval_string(state)?;
         let mut state = State::new().with_code(code);
         state.file_directory = Directory::FromEval;
         state.run()

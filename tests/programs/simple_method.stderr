@@ -5,6 +5,8 @@ ArgumentError: expected `1` args, found `2` args for `<object>.double`
 at programs/simple_method.re:20:24
 at programs/simple_method.re:20:22
 TypeError: 5 is not a Object!
+at programs/simple_method.re:21:24
+at programs/simple_method.re:21:22
 ArgumentError: `@` expected the name of a method as second arg
 at programs/simple_method.re:22:24
 at programs/simple_method.re:22:22

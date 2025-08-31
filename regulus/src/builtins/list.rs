@@ -117,7 +117,7 @@ functions! {
     "join"(_) => |state, args| {
         let mut list = vec![];
         for arg in args {
-            list.extend(arg.eval(state)?.list()?);
+            list.extend(arg.eval_list(state)?);
         }
         Ok(Atom::List(list))
     }

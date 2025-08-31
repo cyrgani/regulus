@@ -7,8 +7,8 @@ fn arithmetic_operation(
     name: &str,
     f: fn(i64, i64) -> Option<i64>,
 ) -> Result<Atom> {
-    let lhs = args[0].eval(state)?.int()?;
-    let rhs = args[1].eval(state)?.int()?;
+    let lhs = args[0].eval_int(state)?;
+    let rhs = args[1].eval_int(state)?;
 
     if let Some(i) = f(lhs, rhs) {
         Ok(Atom::Int(i))
@@ -26,8 +26,8 @@ fn shift_operation(
     name: &str,
     f: fn(i64, u32) -> Option<i64>,
 ) -> Result<Atom> {
-    let lhs = args[0].eval(state)?.int()?;
-    let rhs = u32::try_from(args[1].eval(state)?.int()?).map_err(|err| {
+    let lhs = args[0].eval_int(state)?;
+    let rhs = u32::try_from(args[1].eval_int(state)?).map_err(|err| {
         state.raise(
             ArgumentError,
             format!("invalid arithmetic argument for `{name}`: `{err}`"),

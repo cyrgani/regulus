@@ -113,7 +113,7 @@ functions! {
     ///
     /// This function has an alias: `getattr`.
     "."(2) => |state, args| {
-        let obj = args[0].eval(state)?.object()?;
+        let obj = args[0].eval_object(state)?;
         let field = args[1].variable("`.` takes a field identifier as second argument", state)?;
         obj.data.get(field).cloned().ok_or_else(|| state.raise(NameError, format!("object has no field named `{field}`")))
     }
@@ -127,7 +127,7 @@ functions! {
     ///
     /// This function has an alias: `setattr`.
     "->"(3) => |state, args| {
-        let mut obj = args[0].eval(state)?.object()?;
+        let mut obj = args[0].eval_object(state)?;
         let field = args[1].variable("`.` takes a field identifier as second argument", state)?;
         let value = args[2].eval(state)?;
         *obj.data.get_mut(field).ok_or_else(|| state.raise(NameError, format!("object has no field named `{field}`")))? = value.into_owned();
@@ -143,7 +143,7 @@ functions! {
         let [obj_arg, method, rest @ ..] = args else {
             raise!(state, SyntaxError, "too few arguments for `@`");
         };
-        let obj = obj_arg.eval(state)?.object()?;
+        let obj = obj_arg.eval_object(state)?;
         let method_name = method.variable("`@` expected the name of a method as second arg", state)?;
         let Some(func) = obj.data.get(method_name) else {
             raise!(state, NameError, "object has no method `{method_name}`");
