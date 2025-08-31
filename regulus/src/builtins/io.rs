@@ -4,15 +4,18 @@ use crate::prelude::*;
 functions! {
     /// Evaluates all given arguments and prints them to stdout.
     /// All arguments are separated with a single space.
+    /// No trailing space is added after the last element.
     /// After all arguments have been printed, a newline is also printed.
     /// Returns `null`.
     ///
     /// If you need more precise control over the output, use `write` instead.
     "print"(_) => |state, args| {
-        for arg in args {
-            let arg_val = arg.eval(state)?;
-            let s = format!("{arg_val} ");
-            state.write_to_stdout(&s);
+        for (idx, arg) in args.iter().enumerate() {
+            let arg_val = arg.eval(state)?.to_string();
+            state.write_to_stdout(&arg_val);
+            if idx != args.len() - 1 {
+                state.write_to_stdout(" ");
+            }
         }
         state.write_to_stdout("\n");
         Ok(Atom::Null)
