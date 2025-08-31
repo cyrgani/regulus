@@ -5,6 +5,7 @@ fn cast_error_builder(atom: &Atom, new_type: &str, state: &State) -> Exception {
     state.raise(TypeError, format!("Unable to cast {atom} to {new_type}"))
 }
 
+// TODO: try making as many of these as possible builtins
 functions! {
     /// Converts the given value into an integer, raising an exception if it is not possible to cast.
     ///
@@ -34,18 +35,6 @@ functions! {
             Atom::Null => Atom::String("null".to_string()),
             _ => return Err(cast_error_builder(&atom, "string", state)),
         })
-    }
-    /// Converts the given value into a boolean, raising an exception if it is not possible to cast.
-    ///
-    /// It is only supported to cast ints (0 -> false, all others -> 1), bools and nulls (returns false) to bools.
-    "bool"(1) => |state, args| {
-        let atom = args[0].eval(state)?.into_owned();
-        Ok(Atom::Bool(match atom {
-            Atom::Int(val) => val != 0,
-            Atom::Bool(val) => val,
-            Atom::Null => false,
-            _ => return Err(cast_error_builder(&atom, "bool", state)),
-        }))
     }
     /// Evaluates the given arg and returns a string representation of it.
     /// See the documentation of `string(1)` for a comparison of these two methods.

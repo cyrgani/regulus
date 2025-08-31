@@ -8,3 +8,5 @@ assert_eq(string(int(bool(int("2")))), "1"),
 
 # disallowed
 __builtin_print_catch(int("a")),
+
+# TODO: extend this drastically
