@@ -21,12 +21,11 @@ fn delete_then_write_file_if_nonempty(base_path: &Path, extension: &str, content
 
 /// Run a test program, making sure it produces the expected stdout and stderr.
 pub fn run_test(dir_path: &str, name: &str) {
-    //let mut overwrite_stream_files = env::args().any(|arg| arg == "--bless");
     let mut bless_stream_files = false;
-    if let Some(var) = BLESS {
-        if ["Y", "y", "yes", "true"].contains(&var) {
-            bless_stream_files = true;
-        }
+    if let Some(var) = BLESS
+        && ["Y", "y", "yes", "true"].contains(&var)
+    {
+        bless_stream_files = true;
     }
 
     let base_path = PathBuf::from(dir_path).join(name);

@@ -1,4 +1,4 @@
-use crate::exception::{ArgumentError, NameError};
+use crate::exception::{ArgumentError, NameError, TypeError};
 use crate::parsing::Span;
 use crate::prelude::*;
 use std::borrow::Cow;
@@ -57,4 +57,29 @@ impl Argument {
             Self::Atom(_, s) | Self::FunctionCall(_, s) | Self::Variable(_, s) => s,
         }
     }
+}
+
+macro_rules! argument_eval_as_methods {
+    ($($method_name: ident -> $ty:ty: $variant:ident;)*) => {
+        impl Argument {
+            $(
+                pub(crate) fn $method_name(&self, state: &mut State) -> Result<$ty> {
+                    match self.eval(state)?.into_owned() {
+                        Atom::$variant(v) => Ok(v.clone()),
+                        val => raise!(state, TypeError, "{val} is not a {}!", stringify!($variant)),
+                    }
+                }
+            )*
+        }
+    };
+}
+
+// method name, rust type, atom variant name
+argument_eval_as_methods! {
+    eval_int -> i64: Int;
+    eval_bool -> bool: Bool;
+    eval_list -> Vec<Atom>: List;
+    eval_string -> String: String;
+    eval_function -> Function: Function;
+    eval_object -> Object: Object;
 }
