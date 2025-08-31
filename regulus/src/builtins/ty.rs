@@ -18,7 +18,7 @@ def(fictional_main, _(
 ))
 */
 
-use crate::exception::{ArgumentError, NameError, SyntaxError};
+use crate::exception::{ArgumentError, NameError, SyntaxError, TypeError};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
 
@@ -145,10 +145,12 @@ functions! {
         };
         let obj = obj_arg.eval_object(state)?;
         let method_name = method.variable("`@` expected the name of a method as second arg", state)?;
-        let Some(func) = obj.data.get(method_name) else {
+        let Some(func_atom) = obj.data.get(method_name) else {
             raise!(state, NameError, "object has no method `{method_name}`");
         };
-        let func = func.function()?;
+        let Atom::Function(func) = func_atom else {
+            raise!(state, TypeError, "{func_atom} is not a function");
+        };
         let mut args = vec![obj_arg.clone()];
         args.extend_from_slice(rest);
         func.call(state, &args, &format!("<object>.{method_name}"))
