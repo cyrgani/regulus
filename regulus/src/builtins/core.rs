@@ -263,11 +263,6 @@ functions! {
             Err(exc) => Atom::String(exc.to_string())
         })
     }
-    /// Evaluates both arguments and returns whether they are equal.
-    /// TODO: define this behavior in edge cases and document it
-    "__builtin_atom_eq"(2) => |state, args| {
-        Ok(Atom::Bool(args[0].eval(state)?.into_owned() == *args[1].eval(state)?))
-    }
     /// Evaluates the given argument and terminates the program directly.
     /// The program will return the given value as its final result.
     ///
