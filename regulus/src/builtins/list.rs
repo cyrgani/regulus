@@ -126,6 +126,7 @@ functions! {
     /// Afterwards, `null` is returned.
     ///
     /// If the loop variable shadows an existing variable, that value can be used again after the loop.
+    // TODO: argument order of seq and loop var is confusing
     "for_in"(3) => |state, args| {
         let seq = args[0].eval_string_or_list(state)?;
         let loop_var = args[1].variable("invalid loop variable given to `for_in`", state)?;

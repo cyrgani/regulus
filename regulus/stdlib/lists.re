@@ -46,6 +46,13 @@ def(swap, seq, idx1, idx2, _(
     =(seq, replace_at(seq, idx2, e1)),
     =(seq, replace_at(seq, idx1, e2)),
     seq
-))
+)),
 
-# TODO: add `flatten`: list[list[atom]] -> list[atom]
+# Flattens a list of lists into a list.
+# Example: [[1, 2], [3], [[4, 5]]] -> [1, 2, 3, [4, 5]].
+def(flatten, seq, _(
+    =(new, list()),
+    for_in(seq, list_el, for_in(list_el, el, =(new, append(new, el)))),
+    new
+)),
+
