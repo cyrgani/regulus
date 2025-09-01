@@ -29,6 +29,8 @@ def(choose, seq, _(
     index(seq, idx)
 )),
 
+# Seeds the RNG with the given value.
+# It is not required to seed the RNG before using it, as it automatically uses the current time in nanoseconds as a start.
 def(seed, val, _(
     =(__stl_rng_state, val)
 )),
