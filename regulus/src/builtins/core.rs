@@ -1,5 +1,6 @@
 use crate::exception::ArgumentError;
 use crate::exception::ImportError;
+use crate::exception::{ArgumentError, ImportError};
 use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
 use crate::state::Directory;
@@ -55,6 +56,43 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
     );
 
     Ok(Atom::Function(function))
+}
+
+fn define_veriadic_function(body: &Argument, state: &State) -> Atom {
+    let body = body.clone();
+
+    let function = Function::new(
+        state.current_doc_comment.as_ref().unwrap(),
+        None,
+        Box::new(move |state, args| {
+            // a function call should have its own scope and not leak variables
+            // except for globals
+
+            // TODO:
+            //  this cloning of the whole storage is extremely inefficient
+            //  a better idea would be a "tagged" storage (??)
+            //  or: create a new empty storage, put all redefined vars in the function into it, but
+            //      allow reading from both new and then old in that order
+            //      problem: `body.eval(state);` can only take one state, not two
+            let mut old_storage_data = state.storage.data.clone();
+
+            for arg in args {
+                let val = arg.eval(state)?.into_owned();
+                state.current_variadic_args.push(val);
+            }
+
+            let function_result = body.eval(state).map(Cow::into_owned);
+
+            state.current_variadic_args.clear();
+
+            old_storage_data.extend(state.storage.global_items());
+
+            state.storage.data = old_storage_data;
+            function_result
+        }),
+    );
+
+    Atom::Function(function)
 }
 
 fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
@@ -236,6 +274,29 @@ functions! {
             raise!(state, ArgumentError, "`fn` invocation is missing body");
         };
         define_function(body, fn_args, state)
+    }
+    /// Creates a new variadic function and returns it.
+    /// The only arg is the function body.
+    ///
+    /// TODO: This function will probably be removed soon in favor of a proper solution usable with `def` / `fn`.
+    "vfn"(1) => |state, args| {
+        Ok(define_veriadic_function(&args[0], state))
+    }
+    /// Returns the next variadic argument.
+    /// Errors if no arguments are left or none were available at all.
+    ///
+    /// TODO: This function will probably be removed soon in favor of a proper solution usable with `def` / `fn`.
+    "va_next"(0) => |state, _| {
+        if state.current_variadic_args.is_empty() {
+            raise!(state, ArgumentError, "no variadic args available");
+        }
+        Ok(state.current_variadic_args.remove(0))
+    }
+    /// Returns the amount of remaining variadic arguments.
+    ///
+    /// TODO: This function will probably be removed soon in favor of a proper solution usable with `def` / `fn`.
+    "va_count"(0) => |state, _| {
+        Atom::int_from_rust_int(state.current_variadic_args.len())
     }
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the return value of this function
