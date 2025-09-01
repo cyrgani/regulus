@@ -1,5 +1,3 @@
-use crate::exception::ArgumentError;
-use crate::exception::ImportError;
 use crate::exception::{ArgumentError, ImportError};
 use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
