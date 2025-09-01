@@ -10,7 +10,6 @@ mod logic;
 mod math;
 mod private;
 mod string;
-mod time;
 mod ty;
 
 pub fn all_functions() -> HashMap<String, Atom> {
@@ -26,7 +25,6 @@ pub fn all_functions() -> HashMap<String, Atom> {
         math::functions(),
         private::functions(),
         string::functions(),
-        time::functions(),
         ty::functions(),
     ] {
         for (name, function) in module {

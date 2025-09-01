@@ -63,6 +63,7 @@ impl Argument {
 
 macro_rules! argument_eval_as_methods {
     ($($method_name: ident -> $ty:ty: $variant:ident;)*) => {
+        #[expect(dead_code)]
         impl Argument {
             $(
                 pub(crate) fn $method_name(&self, state: &mut State) -> Result<$ty> {
