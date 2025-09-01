@@ -17,19 +17,7 @@ impl FunctionCall {
         }
         let function = state.get_function(&self.name)?;
 
-        if let Some(argc) = function.argc() {
-            let arg_len = self.args.len();
-            if argc != arg_len {
-                raise!(
-                    state,
-                    ArgumentError,
-                    "expected `{argc}` args, found `{arg_len}` args for `{}`",
-                    self.name
-                );
-            }
-        }
-
-        function.call(state, &self.args, &self.name)
+        function.call(state, &self.args)
     }
 
     /// Returns an approximation of the source code of this function call.
@@ -72,21 +60,22 @@ impl Function {
         &self.0.body
     }
 
-    // TODO: consider making this public
-    pub(crate) fn call(
-        &self,
-        state: &mut State,
-        args: &[Argument],
-        fn_name_hint: &str,
-    ) -> Result<Atom> {
+    pub fn call(&self, state: &mut State, args: &[Argument]) -> Result<Atom> {
         if let Some(argc) = self.argc() {
             let arg_len = args.len();
             if argc != arg_len {
+                if let Some(current_name) = state.current_fn_name.as_ref() {
+                    raise!(
+                        state,
+                        ArgumentError,
+                        "expected `{argc}` args, found `{arg_len}` args for `{current_name}`",
+                    );
+                }
                 raise!(
                     state,
                     ArgumentError,
-                    "expected `{argc}` args, found `{arg_len}` args for `{fn_name_hint}`",
-                );
+                    "expected `{argc}` args, found `{arg_len}` args",
+                )
             }
         }
         (self.body())(state, args)

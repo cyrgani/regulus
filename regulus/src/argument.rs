@@ -18,8 +18,10 @@ impl Argument {
         state.backtrace.push(self.span().clone());
         if let Self::FunctionCall(call, _) = self {
             state.current_doc_comment = Some(call.doc_comment.clone());
+            state.current_fn_name = Some(call.name.clone());
         } else {
             state.current_doc_comment = None;
+            state.current_fn_name = None;
         }
         let res = match self {
             Self::FunctionCall(call, _) => call.eval(state).map(Cow::Owned),

@@ -5,7 +5,6 @@ use std::fmt;
 use std::fmt::Display;
 use std::num::IntErrorKind;
 
-// TODO: consider adding floats
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
     Int(i64),

@@ -153,7 +153,8 @@ functions! {
         };
         let mut args = vec![obj_arg.clone()];
         args.extend_from_slice(rest);
-        func.call(state, &args, &format!("<object>.{method_name}"))
+        state.current_fn_name = Some(format!("<object>.{method_name}"));
+        func.call(state, &args)
     }
     /// Returns the type id corresponding to the given value.
     ///

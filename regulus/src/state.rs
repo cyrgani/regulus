@@ -72,7 +72,9 @@ pub struct State {
     pub(crate) current_file_path: Option<PathBuf>,
     pub(crate) exit_unwind_value: Option<Result<Atom>>,
     pub(crate) backtrace: Vec<Span>,
+    // TODO: consider merging `current_doc_comment` and `current_fn_name`
     pub(crate) current_doc_comment: Option<String>,
+    pub(crate) current_fn_name: Option<String>,
     /// Tracks the current stack of nested `import`-calls to emit an error on cyclic imports.
     /// Note that this only operates on user-written code and does not catch cyclic import
     /// errors within the STL (those still cause a rust stack overflow).
@@ -105,6 +107,7 @@ impl State {
             exit_unwind_value: None,
             backtrace: Vec::new(),
             current_doc_comment: None,
+            current_fn_name: None,
             import_stack: Vec::new(),
             code: None,
             next_type_id: Atom::MIN_OBJECT_TY_ID,
