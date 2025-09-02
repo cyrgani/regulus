@@ -37,6 +37,9 @@ impl FnArgument {
     }
 }
 
+// TODO:
+//  think about the distinction between using the def-site state or the call-site state
+//  for evaluating the argument
 fn make_lazy(argument: Argument) -> Atom {
     Atom::Function(Function::new(
         "",
@@ -102,9 +105,9 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
             // prevent arguments from overwriting each other, ex. f(a,b) calls f(b,a)
             let mut arg_values = Vec::with_capacity(args.len());
 
-            // TODO: 
-            //  * see `lazy_functions.re` and `variadic_functions.re` tests for more TODOs
-            //  * tests for a function that iis both lazy and variadic
+            // TODO:
+            //  see `lazy_functions.re`, `variadic_functions.re`,
+            //  `lazy_and_variadic_functions.re` tests for more TODOs
             for (idx, signature_arg) in function_arg_names.iter().enumerate() {
                 if signature_arg.variadic {
                     let mut va_list = Vec::with_capacity(args.len() - idx);
