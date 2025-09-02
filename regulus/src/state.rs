@@ -79,7 +79,6 @@ pub struct State {
     /// Note that this only operates on user-written code and does not catch cyclic import
     /// errors within the STL (those still cause a rust stack overflow).
     pub(crate) import_stack: Vec<PathBuf>,
-    pub(crate) current_variadic_args: Vec<Atom>,
     code: Option<String>,
     next_type_id: i64,
     // make sure this type can never be constructed from outside
@@ -110,7 +109,6 @@ impl State {
             current_doc_comment: None,
             current_fn_name: None,
             import_stack: Vec::new(),
-            current_variadic_args: Vec::new(),
             code: None,
             next_type_id: Atom::MIN_OBJECT_TY_ID,
             __private: (),
