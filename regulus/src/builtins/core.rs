@@ -6,21 +6,80 @@ use std::borrow::Cow;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+#[derive(Clone)]
+struct FnArgument {
+    name: String,
+    variadic: bool,
+    lazy: bool,
+}
+
+impl FnArgument {
+    fn new(name: impl Into<String>) -> Self {
+        let mut name = name.into();
+        let variadic = name.starts_with('[') && name.ends_with(']');
+        if variadic {
+            name = name
+                .strip_prefix('[')
+                .unwrap()
+                .strip_suffix(']')
+                .unwrap()
+                .to_string();
+        }
+        let lazy = name.starts_with('$');
+        if lazy {
+            name = name.strip_prefix('$').unwrap().to_string();
+        }
+        Self {
+            name,
+            variadic,
+            lazy,
+        }
+    }
+}
+
 fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Result<Atom> {
     let body = body.clone();
     let function_arg_names = fn_args
         .iter()
         .map(|fn_arg| {
-            fn_arg
-                .variable("Error during definition: invalid args were given!", state)
-                .cloned()
+            Ok(FnArgument::new(fn_arg.variable(
+                "Error during definition: invalid args were given!",
+                state,
+            )?))
         })
         .collect::<Result<Vec<_>>>()?;
 
+    let (argc, min_required_args) = if let Some(variadic_idx) = function_arg_names
+        .iter()
+        .enumerate()
+        .find_map(|(idx, arg)| if arg.variadic { Some(idx) } else { None })
+    {
+        if variadic_idx == function_arg_names.len() - 1 {
+            (None, function_arg_names.len() - 1)
+        } else {
+            raise!(
+                state,
+                ArgumentError,
+                "variadic argument must be the last of the fn arguments"
+            );
+        }
+    } else {
+        (Some(function_arg_names.len()), function_arg_names.len())
+    };
+
     let function = Function::new(
         state.current_doc_comment.as_ref().unwrap(),
-        Some(function_arg_names.len()),
+        argc,
         Box::new(move |state, args| {
+            if args.len() < min_required_args && argc.is_none() {
+                raise!(
+                    state,
+                    ArgumentError,
+                    "too few arguments to variadic function: expected at least {min_required_args}, found {}",
+                    args.len()
+                );
+            }
+
             // a function call should have its own scope and not leak variables
             // except for globals
 
@@ -36,12 +95,20 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
             let mut arg_values = Vec::with_capacity(args.len());
 
             for (idx, arg) in function_arg_names.iter().enumerate() {
-                let arg_result = args[idx].eval(state)?.into_owned();
-                arg_values.push((arg.clone(), arg_result));
+                if arg.variadic {
+                    let mut va_list = Vec::with_capacity(args.len() - idx);
+                    for arg in args.iter().skip(idx) {
+                        va_list.push(arg.eval(state)?.into_owned());
+                    }
+                    arg_values.push((arg.clone(), Atom::List(va_list)));
+                } else {
+                    let arg_result = args[idx].eval(state)?.into_owned();
+                    arg_values.push((arg.clone(), arg_result));
+                }
             }
 
             for (name, value) in arg_values {
-                state.storage.insert(name, value);
+                state.storage.insert(name.name, value);
             }
 
             let function_result = body.eval(state).map(Cow::into_owned);
