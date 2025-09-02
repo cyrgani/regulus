@@ -1,27 +1,32 @@
 TypeError: cannot cast true to bool
-at <stl:casting>:17:22
-at <stl:casting>:14:19
-at <stl:casting>:11:15
-at <stl:casting>:8:11
-at <stl:casting>:6:17
+at <stl:casting>:11:10
+at <stl:control_flow>:58:15
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at <stl:casting>:7:22
 at programs/casting_tests.re:10:27
 at programs/casting_tests.re:10:22
 TypeError: cannot cast false to bool
-at <stl:casting>:17:22
-at <stl:casting>:14:19
-at <stl:casting>:11:15
-at <stl:casting>:8:11
-at <stl:casting>:6:17
+at <stl:casting>:11:10
+at <stl:control_flow>:58:15
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at <stl:casting>:7:22
 at programs/casting_tests.re:11:27
 at programs/casting_tests.re:11:22
 TypeError: cannot cast  to bool
-at <stl:casting>:17:22
-at <stl:casting>:14:19
-at <stl:casting>:11:15
-at <stl:casting>:8:11
-at <stl:casting>:6:17
+at <stl:casting>:11:10
+at <stl:control_flow>:58:15
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at <stl:casting>:7:22
 at programs/casting_tests.re:12:27
 at programs/casting_tests.re:12:22
-TypeError: Unable to cast a to int
+TypeError: cannot convert string to int: invalid digit found in string
+at <stl:casting>:20:39
+at <stl:control_flow>:58:15
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at <stl:casting>:17:21
 at programs/casting_tests.re:13:26
 at programs/casting_tests.re:13:22

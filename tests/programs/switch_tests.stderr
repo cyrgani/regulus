@@ -1,0 +1,7 @@
+SwitchError: no `switch` arm matched and no fallback found
+at <stl:control_flow>:59:14
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at programs/switch_tests.re:32:32
+at programs/switch_tests.re:37:39
+at programs/switch_tests.re:37:22

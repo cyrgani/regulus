@@ -5,21 +5,12 @@ fn cast_error_builder(atom: &Atom, new_type: &str, state: &State) -> Exception {
     state.raise(TypeError, format!("Unable to cast {atom} to {new_type}"))
 }
 
-// TODO: try making as many of these as possible builtins
+// TODO: try making as many of these as possible stl functions
 functions! {
-    /// Converts the given value into an integer, raising an exception if it is not possible to cast.
-    ///
-    /// It is only supported to cast ints, bools (false -> 0, true -> 1) and strings to ints.
-    "int"(1) => |state, args| {
-        let atom = args[0].eval(state)?.into_owned();
-        Ok(Atom::Int(match atom {
-            Atom::Int(val) => val,
-            Atom::Bool(val) => i64::from(val),
-            Atom::String(ref val) => val
-                .parse::<i64>()
-                .map_err(|_| cast_error_builder(&atom, "int", state))?,
-            _ => return Err(cast_error_builder(&atom, "int", state)),
-        }))
+    // TODO: implement this directly in the STL
+    /// Converts the given string into an integer, raising an exception if it is not possible to cast.
+    "__builtin_str_to_int"(1) => |state, args| {
+        args[0].eval_string(state)?.parse().map(Atom::Int).map_err(|e| state.raise(TypeError, format!("cannot convert string to int: {e}")))
     }
     /// Converts the given value into a string, raising an exception if it is not possible to cast.
     ///

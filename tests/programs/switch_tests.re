@@ -28,3 +28,10 @@ assert_eq(name_number(8), "some other strange number"),
 assert_eq(name_number(1), "one"),
 assert_eq(name_number(2), "some other strange number"),
 assert_eq(name_number(42), "the answer"),
+
+def(without_fallback, x, switch(x,
+    1, 2,
+)),
+
+assert_eq(without_fallback(1), 2),
+__builtin_print_catch(without_fallback(2)),
