@@ -107,15 +107,6 @@ functions! {
         seq.push(&args[1], state)?;
         Ok(seq.into_atom())
     }
-    // TODO: This function is untested and unused. Reconsider its future.
-    /// Takes any amount of lists and joins their elements together into a single list.
-    "join"(_) => |state, args| {
-        let mut list = vec![];
-        for arg in args {
-            list.extend(arg.eval_list(state)?);
-        }
-        Ok(Atom::List(list))
-    }
     /// Returns the value in the first list or string argument at the second integer argument.
     /// Raises an exception if the index is out of bounds.
     ///

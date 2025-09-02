@@ -48,11 +48,22 @@ def(swap, seq, idx1, idx2, _(
     seq
 )),
 
+# Takes a list and appends all elements of another list to it.
+def(extend, list, added_list, _(
+    for_in(added_list, el, =(list, append(list, el))),
+    list
+)),
+
 # Flattens a list of lists into a list.
 # Example: [[1, 2], [3], [[4, 5]]] -> [1, 2, 3, [4, 5]].
 def(flatten, seq, _(
     =(new, list()),
-    for_in(seq, list_el, for_in(list_el, el, =(new, append(new, el)))),
+    for_in(seq, list_el, =(new, extend(new, list_el))),
     new
 )),
 
+# Takes any amount of lists and joins their elements together into a single list.
+# TODO: This function is untested and unused. Reconsider its future.
+def(join, [lists], _(
+    flatten(lists),
+))
