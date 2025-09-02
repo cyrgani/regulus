@@ -48,6 +48,9 @@ def(swap, seq, idx1, idx2, _(
     seq
 )),
 
+# TODO: add tests for extend
+null,
+
 # Takes a list and appends all elements of another list to it.
 def(extend, list, added_list, _(
     for_in(added_list, el, =(list, append(list, el))),
@@ -61,9 +64,3 @@ def(flatten, seq, _(
     for_in(seq, list_el, =(new, extend(new, list_el))),
     new
 )),
-
-# Takes any amount of lists and joins their elements together into a single list.
-# TODO: This function is untested and unused. Reconsider its future.
-def(join, [lists], _(
-    flatten(lists),
-))
