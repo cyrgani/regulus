@@ -3,3 +3,6 @@ import(assertions),
 import(control_flow),
 import(casting),
 import(operators),
+import(print),
+import(range),
+

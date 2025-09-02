@@ -2,24 +2,6 @@ use crate::exception::IoError;
 use crate::prelude::*;
 
 functions! {
-    /// Evaluates all given arguments and prints them to stdout.
-    /// All arguments are separated with a single space.
-    /// No trailing space is added after the last element.
-    /// After all arguments have been printed, a newline is also printed.
-    /// Returns `null`.
-    ///
-    /// If you need more precise control over the output, use `write` instead.
-    "print"(_) => |state, args| {
-        for (idx, arg) in args.iter().enumerate() {
-            let arg_val = arg.eval(state)?.to_string();
-            state.write_to_stdout(&arg_val);
-            if idx != args.len() - 1 {
-                state.write_to_stdout(" ");
-            }
-        }
-        state.write_to_stdout("\n");
-        Ok(Atom::Null)
-    }
     /// Takes no arguments and reads from stdin until a newline is entered.
     /// Returns the read input, excluding the newline, as a string.
     "input"(0) => |state, _| {
