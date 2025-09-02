@@ -66,7 +66,7 @@ impl Exception {
     }
 }
 
-/// Creates an exception wrapped in an `Err`.
+/// Creates an exception wrapped in an `Err` and returns it from the current function or closure.
 ///
 /// The first argument is the current `State`, which is used to add a backtrace to the call.
 /// The second argument is the kind of the exception, the third the message or format string.
