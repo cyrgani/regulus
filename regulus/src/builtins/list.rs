@@ -129,7 +129,7 @@ functions! {
     }
     /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {
-        Atom::int_from_rust_int(args[0].eval_string_or_list(state)?.len())
+        Atom::int_from_rust_int(args[0].eval_string_or_list(state)?.len(), state)
     }
     /// Iterates over the given list elements or string characters.
     /// The first argument is the list, the second the loop variable name for each element and the

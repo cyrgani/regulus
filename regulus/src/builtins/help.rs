@@ -16,7 +16,7 @@ functions! {
         let arg = args[0].eval(state)?;
         if let Atom::Function(f) = &*arg {
             Ok(if let Some(argc) = f.argc() {
-                Atom::int_from_rust_int(argc)?
+                Atom::int_from_rust_int(argc, state)?
             } else {
                 Atom::Null
             })

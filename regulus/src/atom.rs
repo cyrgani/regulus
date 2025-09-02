@@ -35,15 +35,14 @@ impl Atom {
         }
     }
 
-    // TODO: make this public?
-    pub(crate) fn int_from_rust_int<T>(val: T) -> Result<Self>
+    pub(crate) fn int_from_rust_int<T>(val: T, state: &State) -> Result<Self>
     where
         i64: TryFrom<T>,
         <i64 as TryFrom<T>>::Error: Display,
     {
         match i64::try_from(val) {
             Ok(int) => Ok(Self::Int(int)),
-            Err(e) => raise!(OverflowError, "invalid integer: {e}"),
+            Err(e) => raise!(state, OverflowError, "invalid integer: {e}"),
         }
     }
 
