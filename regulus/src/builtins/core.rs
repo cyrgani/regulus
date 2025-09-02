@@ -37,6 +37,14 @@ impl FnArgument {
     }
 }
 
+fn make_lazy(argument: Argument) -> Atom {
+    Atom::Function(Function::new(
+        "",
+        Some(0),
+        Box::new(move |state, _| argument.eval(state).map(Cow::into_owned)),
+    ))
+}
+
 fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Result<Atom> {
     let body = body.clone();
     let function_arg_names = fn_args
@@ -94,16 +102,27 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
             // prevent arguments from overwriting each other, ex. f(a,b) calls f(b,a)
             let mut arg_values = Vec::with_capacity(args.len());
 
-            for (idx, arg) in function_arg_names.iter().enumerate() {
-                if arg.variadic {
+            // TODO: 
+            //  * see `lazy_functions.re` and `variadic_functions.re` tests for more TODOs
+            //  * tests for a function that iis both lazy and variadic
+            for (idx, signature_arg) in function_arg_names.iter().enumerate() {
+                if signature_arg.variadic {
                     let mut va_list = Vec::with_capacity(args.len() - idx);
                     for arg in args.iter().skip(idx) {
-                        va_list.push(arg.eval(state)?.into_owned());
+                        va_list.push(if signature_arg.lazy {
+                            make_lazy(arg.clone())
+                        } else {
+                            arg.eval(state)?.into_owned()
+                        });
                     }
-                    arg_values.push((arg.clone(), Atom::List(va_list)));
+                    arg_values.push((signature_arg.clone(), Atom::List(va_list)));
                 } else {
-                    let arg_result = args[idx].eval(state)?.into_owned();
-                    arg_values.push((arg.clone(), arg_result));
+                    let arg_result = if signature_arg.lazy {
+                        make_lazy(args[idx].clone())
+                    } else {
+                        args[idx].eval(state)?.into_owned()
+                    };
+                    arg_values.push((signature_arg.clone(), arg_result));
                 }
             }
 
