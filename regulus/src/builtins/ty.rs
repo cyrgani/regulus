@@ -1,23 +1,3 @@
-/*
-IDEA: method syntax:
-
-type(
-    Fraction,
-    numerator,
-    denominator,
-
-    add(self, other, _(
-        frac_add(self, other)
-    ))
-),
-
-def(fictional_main, _(
-    =(f, Fraction(4, 3)),
-    =(g, Fraction(5, 2)),
-    .(f, add(g))
-))
-*/
-
 use crate::exception::{ArgumentError, NameError, SyntaxError, TypeError};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
@@ -168,6 +148,8 @@ functions! {
     /// * String: 4
     /// * Function: 5
     /// * Object: 6+ (depending on the type of object).
+    ///
+    /// Instead of manually typing these values, use the constants in the `type_id.re` STL module.
     "type_id"(1) => |state, args| {
         Ok(Atom::Int(args[0].eval(state)?.ty_id()))
     }
