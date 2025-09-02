@@ -36,7 +36,7 @@ fn without_comments(tokens: &[Token]) -> impl DoubleEndedIterator<Item = &Token>
 fn get_token(tokens: &[Token], idx: usize) -> Result<&Token> {
     without_comments(tokens)
         .nth(idx)
-        .ok_or_else(|| Exception::new(SyntaxError, "missing token"))
+        .ok_or_else(|| Exception::unspanned(SyntaxError, "missing token"))
 }
 
 /// Returns all comments before the first non-comment token, then the token itself.
@@ -47,7 +47,7 @@ fn get_first_token_and_doc_comments(tokens: &[Token]) -> Result<(&[Token], &Toke
         }
     }
 
-    raise!(SyntaxError, "missing token")
+    Err(Exception::unspanned(SyntaxError, "missing token"))
 }
 
 fn non_comment_len(tokens: &[Token]) -> usize {
@@ -77,7 +77,7 @@ fn get_tokens_from(mut tokens: &[Token], mut start: usize) -> &[Token] {
 fn get_last_token(tokens: &[Token]) -> Result<&Token> {
     without_comments(tokens)
         .next_back()
-        .ok_or_else(|| Exception::new(SyntaxError, "missing token"))
+        .ok_or_else(|| Exception::unspanned(SyntaxError, "missing token"))
 }
 
 /// given `_(foo(), bar(baz()))`, this would take `foo(), bar(baz()))` (no start paren, but with end paren)
@@ -161,7 +161,7 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
         }
     }
     // TODO: better error message
-    Err(Exception::new(
+    Err(Exception::unspanned(
         SyntaxError,
         "missing or invalid tokens for s_step",
     ))
@@ -170,7 +170,10 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
 fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
     if is_token_empty(tokens) {
         // TODO: better error message
-        return Err(Exception::new(SyntaxError, "missing tokens for x_step"));
+        return Err(Exception::unspanned(
+            SyntaxError,
+            "missing tokens for x_step",
+        ));
     }
     let (first_arg, remaining) = next_s_step(tokens)?;
     let mut args = vec![first_arg];

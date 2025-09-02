@@ -17,6 +17,7 @@ pub enum Atom {
 }
 
 impl Atom {
+    // TODO: does this need to be public API?
     pub fn try_from_str(value: &str) -> Result<Option<Self>> {
         match value {
             "true" => Ok(Some(Self::Bool(true))),
@@ -25,10 +26,14 @@ impl Atom {
             _ => match value.parse::<i64>() {
                 Ok(int) => Ok(Some(Self::Int(int))),
                 Err(err) => match err.kind() {
-                    IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => raise!(
-                        SyntaxError,
-                        "integer {value} cannot be parsed as an integer due to overflow",
-                    ),
+                    IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => {
+                        Err(Exception::unspanned(
+                            SyntaxError,
+                            format!(
+                                "integer {value} cannot be parsed as an integer due to overflow"
+                            ),
+                        ))
+                    }
                     _ => Ok(None),
                 },
             },
@@ -80,10 +85,10 @@ macro_rules! atom_try_as_variant_methods {
                 pub fn $method_name(&self) -> Result<$ty> {
                     match self {
                         Self::$variant(v) => Ok(v.clone()),
-                        _ => raise!(
+                        _ => Err(Exception::unspanned(
                             TypeError,
-                            "{self} is not a {}!", stringify!($variant)
-                        ),
+                            format!("{self} is not a {}!", stringify!($variant))
+                        )),
                     }
                 }
             )*

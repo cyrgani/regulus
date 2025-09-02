@@ -28,7 +28,7 @@ impl Exception {
     /// Constructs an exception with the given error name and message,
     /// but without any span or backtrace.
     /// Using this method is discouraged; ideally it will be removed in the future.
-    pub fn new(error: impl Into<String>, msg: impl Into<String>) -> Self {
+    pub fn unspanned(error: impl Into<String>, msg: impl Into<String>) -> Self {
         Self {
             msg: msg.into(),
             error: error.into(),
@@ -68,7 +68,8 @@ impl Exception {
 
 /// Creates an exception wrapped in an `Err` and returns it from the current function or closure.
 ///
-/// The first argument is the kind of the exception, the second the message or format string.
+/// The first argument is the current `State`, which is used to add a backtrace to the call.
+/// The second argument is the kind of the exception, the third the message or format string.
 /// Any further arguments are passed into the `format!` string.
 #[macro_export]
 macro_rules! raise {
@@ -79,27 +80,11 @@ macro_rules! raise {
 
 /// Creates an exception wrapped in an `Err`.
 ///
-/// The first argument is the kind of the exception, the second the message or format string.
+/// The first argument is the current `State`, which is used to add a backtrace to the call.
+/// The second argument is the kind of the exception, the third the message or format string.
 /// Any further arguments are passed into the `format!` string.
-///
-/// Additionally, the first argument may also be the current `State`, in which case it will
-/// be used to add a backtrace to the call.
 #[macro_export]
 macro_rules! raise_noreturn {
-    // TODO:
-    //  the first three arms should be removed (or at least not used internally anymore)
-    //  as part of making backtraces mandatory
-    //  current problems are functions like `Atom::int` or `Argument::variable`,
-    //  and also the exceptions thrown while parsing
-    ($kind: expr, $string: literal) => {
-        $crate::raise_noreturn!($kind, $string,)
-    };
-    ($kind: expr, $msg: expr) => {
-        $crate::raise_noreturn!($kind, "{}", $msg)
-    };
-    ($kind: expr, $string: literal, $($fmt_args: expr),*) => {
-        Err(Exception::new($kind, format!($string, $($fmt_args),*)))
-    };
     ($state: expr, $kind: expr, $string: literal) => {
         $crate::raise_noreturn!($state, $kind, $string,)
     };
