@@ -1,3 +1,0 @@
-TypeError: Unable to cast a to int
-at programs/casting.re:10:26
-at programs/casting.re:10:22

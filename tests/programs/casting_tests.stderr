@@ -1,0 +1,27 @@
+TypeError: cannot cast true to bool
+at <stl:casting>:17:22
+at <stl:casting>:14:19
+at <stl:casting>:11:15
+at <stl:casting>:8:11
+at <stl:casting>:6:17
+at programs/casting_tests.re:10:27
+at programs/casting_tests.re:10:22
+TypeError: cannot cast false to bool
+at <stl:casting>:17:22
+at <stl:casting>:14:19
+at <stl:casting>:11:15
+at <stl:casting>:8:11
+at <stl:casting>:6:17
+at programs/casting_tests.re:11:27
+at programs/casting_tests.re:11:22
+TypeError: cannot cast  to bool
+at <stl:casting>:17:22
+at <stl:casting>:14:19
+at <stl:casting>:11:15
+at <stl:casting>:8:11
+at <stl:casting>:6:17
+at programs/casting_tests.re:12:27
+at programs/casting_tests.re:12:22
+TypeError: Unable to cast a to int
+at programs/casting_tests.re:13:26
+at programs/casting_tests.re:13:22
