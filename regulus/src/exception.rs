@@ -66,33 +66,21 @@ impl Exception {
     }
 }
 
-/// Creates an exception wrapped in an `Err` and returns it from the current function or closure.
-///
-/// The first argument is the current `State`, which is used to add a backtrace to the call.
-/// The second argument is the kind of the exception, the third the message or format string.
-/// Any further arguments are passed into the `format!` string.
-#[macro_export]
-macro_rules! raise {
-    ($($t: tt)*) => {
-        return $crate::raise_noreturn!($($t)*)
-    }
-}
-
 /// Creates an exception wrapped in an `Err`.
 ///
 /// The first argument is the current `State`, which is used to add a backtrace to the call.
 /// The second argument is the kind of the exception, the third the message or format string.
 /// Any further arguments are passed into the `format!` string.
 #[macro_export]
-macro_rules! raise_noreturn {
+macro_rules! raise {
     ($state: expr, $kind: expr, $string: literal) => {
-        $crate::raise_noreturn!($state, $kind, $string,)
+        $crate::raise!($state, $kind, $string,)
     };
     ($state: expr, $kind: expr, $msg: expr) => {
-        $crate::raise_noreturn!($state, $kind, "{}", $msg)
+        $crate::raise!($state, $kind, "{}", $msg)
     };
     ($state: expr, $kind: expr, $string: literal, $($fmt_args: expr),*) => {
-        Err(Exception::with_trace($kind, format!($string, $($fmt_args),*), &$state.backtrace))
+        return Err(Exception::with_trace($kind, format!($string, $($fmt_args),*), &$state.backtrace))
     };
 }
 
