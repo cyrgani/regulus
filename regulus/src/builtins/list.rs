@@ -35,6 +35,17 @@ impl StringOrVec {
         Ok(())
     }
 
+    fn remove_at(&mut self, index: usize) {
+        match self {
+            Self::String(s) => {
+                s.remove(index);
+            }
+            Self::Vec(v) => {
+                v.remove(index);
+            }
+        }
+    }
+
     fn into_atom(self) -> Atom {
         match self {
             Self::String(s) => Atom::String(s),
@@ -158,6 +169,18 @@ functions! {
     "replace_at"(3) => |state, args| {
         let mut seq = args[0].eval_string_or_list(state)?;
         seq.replace_at(atom_to_index(&args[1], state)?, &args[2], state)?;
+        Ok(seq.into_atom())
+    }
+    // TODO: add tests for this
+    /// Removes the element at the given list index.
+    /// The first argument is the list, the second the index.
+    /// If the index is out of bounds, an exception is raised.
+    /// If the first argument is a string instead, the single character at that position will be removed.
+    ///
+    /// Returns the updated sequence.
+    "remove_at"(2) => |state, args| {
+        let mut seq = args[0].eval_string_or_list(state)?;
+        seq.remove_at(atom_to_index(&args[1], state)?);
         Ok(seq.into_atom())
     }
 }
