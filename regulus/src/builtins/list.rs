@@ -35,14 +35,6 @@ fn atom_to_index(arg: &Argument, state: &mut State) -> Result<usize> {
 }
 
 functions! {
-    /// Constructs a new list containing all the given arguments.
-    "list"(_) => |state, args| {
-        let mut list = vec![];
-        for arg in args {
-            list.push(arg.eval(state)?.into_owned());
-        }
-        Ok(Atom::List(list))
-    }
     /// Appends the second argument at the back of the list given as first argument and returns
     /// the new list.
     /// Alternatively, if the first argument is a string and the second is too, a new concatenated

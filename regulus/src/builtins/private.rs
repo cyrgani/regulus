@@ -60,4 +60,8 @@ functions! {
     "__builtin_atom_eq"(2) => |state, args| {
         Ok(Atom::Bool(args[0].eval(state)?.into_owned() == *args[1].eval(state)?))
     }
+    /// Constructs an empty list.
+    "__builtin_new_list"(0) => |_, _| {
+        Ok(Atom::List(vec![]))
+    }
 }
