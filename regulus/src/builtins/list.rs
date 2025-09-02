@@ -17,65 +17,10 @@ impl Argument {
 }
 
 impl StringOrVec {
-    fn replace_at(&mut self, index: usize, arg: &Argument, state: &mut State) -> Result<()> {
-        match self {
-            Self::String(s) => {
-                let char = arg.eval_string(state)?;
-                if char.len() != 1 {
-                    raise!(state, IndexError, "atom is not a single character")
-                }
-                s.replace_range(index..=index, &char);
-            }
-            Self::Vec(v) => {
-                *v.get_mut(index).ok_or_else(|| {
-                    state.raise(IndexError, "Unable to insert at index into list!")
-                })? = arg.eval(state)?.into_owned();
-            }
-        }
-        Ok(())
-    }
-
-    fn remove_at(&mut self, index: usize) {
-        match self {
-            Self::String(s) => {
-                s.remove(index);
-            }
-            Self::Vec(v) => {
-                v.remove(index);
-            }
-        }
-    }
-
     fn into_atom(self) -> Atom {
         match self {
             Self::String(s) => Atom::String(s),
             Self::Vec(v) => Atom::List(v),
-        }
-    }
-
-    fn push(&mut self, arg: &Argument, state: &mut State) -> Result<()> {
-        match self {
-            Self::String(s) => {
-                s.push_str(&arg.eval_string(state)?);
-            }
-            Self::Vec(v) => {
-                v.push(arg.eval(state)?.into_owned());
-            }
-        }
-        Ok(())
-    }
-
-    const fn len(&self) -> usize {
-        match self {
-            Self::String(s) => s.len(),
-            Self::Vec(v) => v.len(),
-        }
-    }
-
-    fn get(&self, index: usize) -> Option<Atom> {
-        match self {
-            Self::String(s) => s.chars().nth(index).map(char_to_atom),
-            Self::Vec(v) => v.get(index).cloned(),
         }
     }
 }
@@ -104,7 +49,10 @@ functions! {
     /// string will be returned.
     "append"(2) => |state, args| {
         let mut seq = args[0].eval_string_or_list(state)?;
-        seq.push(&args[1], state)?;
+        match &mut seq {
+            StringOrVec::String(s) => s.push_str(&args[1].eval_string(state)?),
+            StringOrVec::Vec(v) => v.push(args[1].eval(state)?.into_owned()),
+        }
         Ok(seq.into_atom())
     }
     /// Returns the value in the first list or string argument at the second integer argument.
@@ -113,14 +61,17 @@ functions! {
     /// If the index does not evalutate to an integer, the first argument will not be evaluated at all.
     "index"(2) => |state, args| {
         let index = atom_to_index(&args[1], state)?;
-        args[0]
-            .eval_string_or_list(state)?
-            .get(index)
-            .ok_or_else(|| state.raise(IndexError, "sequence index out of bounds"))
+        match args[0].eval_string_or_list(state)? {
+            StringOrVec::String(s) => s.chars().nth(index).map(char_to_atom),
+            StringOrVec::Vec(v) => v.get(index).cloned(),
+        }.ok_or_else(|| state.raise(IndexError, "sequence index out of bounds"))
     }
     /// Returns the length of the given list or string argument.
     "len"(1) => |state, args| {
-        Atom::int_from_rust_int(args[0].eval_string_or_list(state)?.len(), state)
+        Atom::int_from_rust_int(match args[0].eval_string_or_list(state)? {
+            StringOrVec::String(s) => s.len(),
+            StringOrVec::Vec(v) => v.len(),
+        }, state)
     }
     /// Iterates over the given list elements or string characters.
     /// The first argument is the list, the second the loop variable name for each element and the
@@ -159,7 +110,22 @@ functions! {
     /// otherwise an exception will be raised.
     "replace_at"(3) => |state, args| {
         let mut seq = args[0].eval_string_or_list(state)?;
-        seq.replace_at(atom_to_index(&args[1], state)?, &args[2], state)?;
+        let index = atom_to_index(&args[1], state)?;
+        match &mut seq {
+            StringOrVec::String(s) => {
+                let char = args[2].eval_string(state)?;
+                if char.len() != 1 {
+                    raise!(state, IndexError, "atom is not a single character")
+                }
+                s.replace_range(index..=index, &char);
+            }
+            StringOrVec::Vec(v) => {
+                *v.get_mut(index).ok_or_else(|| {
+                    state.raise(IndexError, "Unable to insert at index into list!")
+                })? = args[2].eval(state)?.into_owned();
+            }
+        }
+
         Ok(seq.into_atom())
     }
     // TODO: add tests for this
@@ -171,7 +137,15 @@ functions! {
     /// Returns the updated sequence.
     "remove_at"(2) => |state, args| {
         let mut seq = args[0].eval_string_or_list(state)?;
-        seq.remove_at(atom_to_index(&args[1], state)?);
+        let index = atom_to_index(&args[1], state)?;
+        match &mut seq {
+            StringOrVec::String(s) => {
+                s.remove(index);
+            }
+            StringOrVec::Vec(v) => {
+                v.remove(index);
+            }
+        }
         Ok(seq.into_atom())
     }
 }
