@@ -30,3 +30,27 @@ at <stl:control_flow>:27:29
 at <stl:casting>:17:21
 at programs/casting_tests.re:13:26
 at programs/casting_tests.re:13:22
+TypeError: cannot convert string to int: invalid digit found in string
+at <stl:casting>:20:39
+at <stl:control_flow>:58:15
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at <stl:casting>:17:21
+at programs/casting_tests.re:20:26
+at programs/casting_tests.re:20:22
+TypeError: cannot convert string to int: invalid digit found in string
+at <stl:casting>:20:39
+at <stl:control_flow>:58:15
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at <stl:casting>:17:21
+at programs/casting_tests.re:21:26
+at programs/casting_tests.re:21:22
+TypeError: cannot convert string to int: invalid digit found in string
+at <stl:casting>:20:39
+at <stl:control_flow>:58:15
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at <stl:casting>:17:21
+at programs/casting_tests.re:22:26
+at programs/casting_tests.re:22:22
