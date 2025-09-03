@@ -1,13 +1,7 @@
-use crate::exception::TypeError;
 use crate::prelude::*;
 
 // TODO: try making as many of these as possible stl functions
 functions! {
-    // TODO: implement this directly in the STL
-    /// Converts the given string into an integer, raising an exception if it is not possible to cast.
-    "__builtin_str_to_int"(1) => |state, args| {
-        args[0].eval_string(state)?.parse().map(Atom::Int).map_err(|e| state.raise(TypeError, format!("cannot convert string to int: {e}")))
-    }
     // TODO: implement this directly in the STL
     /// Converts the given integer into a string.
     "__builtin_int_to_str"(1) => |state, args| {

@@ -1,56 +1,92 @@
 TypeError: cannot cast true to bool
-at <stl:casting>:11:10
+at <stl:casting>:35:10
 at <stl:control_flow>:58:15
 at <stl:control_flow>:56:11
 at <stl:control_flow>:27:29
-at <stl:casting>:7:22
+at <stl:casting>:31:22
 at programs/casting_tests.re:10:27
 at programs/casting_tests.re:10:22
 TypeError: cannot cast false to bool
-at <stl:casting>:11:10
+at <stl:casting>:35:10
 at <stl:control_flow>:58:15
 at <stl:control_flow>:56:11
 at <stl:control_flow>:27:29
-at <stl:casting>:7:22
+at <stl:casting>:31:22
 at programs/casting_tests.re:11:27
 at programs/casting_tests.re:11:22
 TypeError: cannot cast  to bool
-at <stl:casting>:11:10
+at <stl:casting>:35:10
 at <stl:control_flow>:58:15
 at <stl:control_flow>:56:11
 at <stl:control_flow>:27:29
-at <stl:casting>:7:22
+at <stl:casting>:31:22
 at programs/casting_tests.re:12:27
 at programs/casting_tests.re:12:22
-TypeError: cannot convert string to int: invalid digit found in string
-at <stl:casting>:20:39
+ValueError: invalid digit found in string: `a`
+at <stl:casting>:20:18
 at <stl:control_flow>:58:15
 at <stl:control_flow>:56:11
 at <stl:control_flow>:27:29
-at <stl:casting>:17:21
+at <stl:casting>:9:24
+at <stl:casting>:9:10
+at <stl:casting>:8:28
+at <stl:casting>:8:11
+at <stl:casting>:5:27
+at <stl:casting>:44:35
+at <stl:control_flow>:58:15
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at <stl:casting>:41:21
 at programs/casting_tests.re:13:26
 at programs/casting_tests.re:13:22
-TypeError: cannot convert string to int: invalid digit found in string
-at <stl:casting>:20:39
+ValueError: invalid digit found in string: `_`
+at <stl:casting>:20:18
 at <stl:control_flow>:58:15
 at <stl:control_flow>:56:11
 at <stl:control_flow>:27:29
-at <stl:casting>:17:21
+at <stl:casting>:9:24
+at <stl:casting>:9:10
+at <stl:casting>:8:28
+at <stl:casting>:8:11
+at <stl:casting>:5:27
+at <stl:casting>:44:35
+at <stl:control_flow>:58:15
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at <stl:casting>:41:21
 at programs/casting_tests.re:20:26
 at programs/casting_tests.re:20:22
-TypeError: cannot convert string to int: invalid digit found in string
-at <stl:casting>:20:39
+ValueError: invalid digit found in string: ` `
+at <stl:casting>:20:18
 at <stl:control_flow>:58:15
 at <stl:control_flow>:56:11
 at <stl:control_flow>:27:29
-at <stl:casting>:17:21
+at <stl:casting>:9:24
+at <stl:casting>:9:10
+at <stl:casting>:8:28
+at <stl:casting>:8:11
+at <stl:casting>:5:27
+at <stl:casting>:44:35
+at <stl:control_flow>:58:15
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at <stl:casting>:41:21
 at programs/casting_tests.re:21:26
 at programs/casting_tests.re:21:22
-TypeError: cannot convert string to int: invalid digit found in string
-at <stl:casting>:20:39
+ValueError: invalid digit found in string: `.`
+at <stl:casting>:20:18
 at <stl:control_flow>:58:15
 at <stl:control_flow>:56:11
 at <stl:control_flow>:27:29
-at <stl:casting>:17:21
+at <stl:casting>:9:24
+at <stl:casting>:9:10
+at <stl:casting>:8:28
+at <stl:casting>:8:11
+at <stl:casting>:5:27
+at <stl:casting>:44:35
+at <stl:control_flow>:58:15
+at <stl:control_flow>:56:11
+at <stl:control_flow>:27:29
+at <stl:casting>:41:21
 at programs/casting_tests.re:22:26
 at programs/casting_tests.re:22:22
