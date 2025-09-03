@@ -1,6 +1,9 @@
 # TODO: many things here can operate on list and string. consider moving those into `seq.re`, `sequence.re` or similar.
+# TODO: add tests for each version that test both string and list.
 # note: `null` is put here to avoid merging the above comment with the doc comment below.
 null,
+
+import(range),
 
 # Applies the second argument function to each element of the first argument list and returns
 # the updated list.
@@ -48,9 +51,6 @@ def(swap, seq, idx1, idx2, _(
     seq
 )),
 
-# TODO: add tests for extend
-null,
-
 # Takes a list and appends all elements of another list to it.
 def(extend, list, added_list, _(
     for_in(added_list, el, =(list, append(list, el))),
@@ -63,4 +63,15 @@ def(flatten, seq, _(
     =(new, list()),
     for_in(seq, list_el, =(new, extend(new, list_el))),
     new
+)),
+
+# Reverses a string or list.
+def(reverse, seq, _(
+    =(l, len(seq)),
+    for_in(
+        range(0, /(l, 2)),
+        i,
+        =(seq, swap(seq, i, -(-(l, 1), i)))
+    ),
+    seq
 )),

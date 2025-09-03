@@ -20,4 +20,19 @@ for_in(list(0, 1, 2, 3), i, print(i)),
 assert_eq(for_in(list(0, 1, 2), i, 0), null),
 
 assert_eq(list(2, 4, 6), filter(list(1, 2, 3, 4, 6), fn(el, ==(%(el, 2), 0)))),
-assert_eq(flatten(list(list(1, 2), list(3), list(list(4, 5)))), list(1, 2, 3, list(4, 5)))
+assert_eq(flatten(list(list(1, 2), list(3), list(list(4, 5)))), list(1, 2, 3, list(4, 5))),
+
+assert_eq(extend(list(1, 2), list(3, 4)), list(1, 2, 3, 4)),
+assert_eq(extend(list(1, 2), list()), list(1, 2)),
+assert_eq(extend(list(), list()), list()),
+assert_eq(extend(list(1, 2), list(list(3), 4)), list(1, 2, list(3), 4)),
+assert_eq(extend(list(), list(1)), list(1)),
+
+assert_eq(reverse(list(1, 2, 3)), list(3, 2, 1)),
+assert_eq(reverse(list(1, 2)), list(2, 1)),
+assert_eq(reverse(list(1)), list(1)),
+assert_eq(reverse(list()), list()),
+assert_eq(reverse("123"), "321"),
+assert_eq(reverse("12"), "21"),
+assert_eq(reverse("1"), "1"),
+assert_eq(reverse(""), ""),
