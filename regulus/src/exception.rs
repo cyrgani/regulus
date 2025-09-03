@@ -20,8 +20,7 @@ pub(crate) use errors::*;
 pub struct Exception {
     pub msg: String,
     pub error: String,
-    // todo: this will eventually stop being optional
-    pub backtrace: Option<Vec<Span>>,
+    pub backtrace: Vec<Span>,
 }
 
 impl Exception {
@@ -32,7 +31,7 @@ impl Exception {
         Self {
             msg: msg.into(),
             error: error.into(),
-            backtrace: None,
+            backtrace: vec![],
         }
     }
 
@@ -45,7 +44,7 @@ impl Exception {
         Self {
             msg: msg.into(),
             error: error.into(),
-            backtrace: Some(vec![span.clone()]),
+            backtrace: vec![span.clone()],
         }
     }
 
@@ -61,7 +60,7 @@ impl Exception {
         Self {
             msg: msg.into(),
             error: error.into(),
-            backtrace: Some(backtrace.to_vec()),
+            backtrace: backtrace.to_vec(),
         }
     }
 }
@@ -87,13 +86,15 @@ macro_rules! raise {
 impl fmt::Display for Exception {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}Error: {}", self.error, self.msg)?;
-        if let Some(backtrace) = self.backtrace.as_ref() {
-            if backtrace.len() == 1 {
+        match self.backtrace.len() {
+            0 => (),
+            1 => {
                 // in the case of a syntax error, the backtrace is just the error location
-                write!(f, "\nat {}", backtrace[0])?;
-            } else {
+                write!(f, "\nat {}", self.backtrace[0])?;
+            }
+            _ => {
                 // otherwise, the first entry is the meaningless implicit `_` wrapper
-                for span in backtrace.iter().skip(1).rev() {
+                for span in self.backtrace.iter().skip(1).rev() {
                     write!(f, "\nat {span}")?;
                 }
             }
