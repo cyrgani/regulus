@@ -19,6 +19,7 @@ mod atom;
 mod exception;
 mod function;
 mod macros;
+mod optimizations;
 mod parsing;
 mod state;
 

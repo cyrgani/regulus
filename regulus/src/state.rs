@@ -1,6 +1,7 @@
 use crate::builtins::all_functions;
 use crate::exception::NameError;
 use crate::no_path;
+use crate::optimizations::optimize;
 use crate::parsing::Span;
 use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
@@ -81,6 +82,7 @@ pub struct State {
     pub(crate) import_stack: Vec<PathBuf>,
     code: Option<String>,
     next_type_id: i64,
+    optimizations_enabled: bool,
     // make sure this type can never be constructed from outside
     __private: (),
 }
@@ -111,6 +113,7 @@ impl State {
             import_stack: Vec::new(),
             code: None,
             next_type_id: Atom::MIN_OBJECT_TY_ID,
+            optimizations_enabled: false,
             __private: (),
         }
     }
@@ -152,6 +155,20 @@ impl State {
         self
     }
 
+    /// Enables optimizations which run prior to execution.
+    ///
+    /// **WARNING**: Enabling optimizations may cause programs that redefine builtins
+    /// (or possibly also STL functions) to change their behavior.
+    #[expect(
+        clippy::missing_const_for_fn,
+        reason = "type cannot be constructed in const anyway"
+    )]
+    #[must_use = "this returns the new state without modifying the original"]
+    pub fn enable_optimizations(mut self) -> Self {
+        self.optimizations_enabled = true;
+        self
+    }
+
     /// Sets the current directory to the operating systems current working directory.
     ///
     /// Note that this does not set or change the program code.
@@ -187,7 +204,10 @@ impl State {
 
         let tokens = tokenize(&code, file_path)?;
 
-        let program = build_program(tokens)?;
+        let mut program = build_program(tokens)?;
+        if self.optimizations_enabled {
+            optimize(&mut program);
+        }
 
         let result = program.eval(self)?.into_owned();
 
@@ -287,7 +307,7 @@ impl WriteHandle {
     /// Panics if it is does not allow reading or if it does not contain valid UTF-8.
     pub fn read_to_string(&mut self) -> String {
         let Self::ReadWrite(buf) = self else {
-            panic!("read_buffer() expected a buffer")
+            panic!("read_to_string(): cannot read from write only handle")
         };
         let mut vec = vec![0; 1024];
         let mut n = 0;

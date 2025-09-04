@@ -19,8 +19,13 @@ fn delete_then_write_file_if_nonempty(base_path: &Path, extension: &str, content
     fs::write(&path, content).unwrap();
 }
 
-/// Run a test program, making sure it produces the expected stdout and stderr.
 pub fn run_test(dir_path: &str, name: &str) {
+    run_test_maybe_opt(dir_path, name, false);
+    run_test_maybe_opt(dir_path, name, true);
+}
+
+/// Run a test program, making sure it produces the expected stdout and stderr.
+pub fn run_test_maybe_opt(dir_path: &str, name: &str, optimize: bool) {
     let mut bless_stream_files = false;
     if let Some(var) = BLESS
         && ["Y", "y", "yes", "true"].contains(&var)
@@ -32,6 +37,9 @@ pub fn run_test(dir_path: &str, name: &str) {
     let mut state = State::new()
         .with_source_file(base_path.with_extension(FILE_EXTENSION))
         .expect("fatal error: program file not found");
+    if optimize {
+        state = state.enable_optimizations();
+    }
     state.stdin = Box::new(BufReader::new(RwVec(
         read_file_or_empty(&base_path, "stdin").into_bytes(),
     )));
