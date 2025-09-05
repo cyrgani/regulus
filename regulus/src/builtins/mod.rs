@@ -1,7 +1,6 @@
 use crate::prelude::Atom;
 use std::collections::HashMap;
 
-mod cast;
 mod core;
 mod help;
 mod io;
@@ -16,7 +15,6 @@ pub fn all_functions() -> HashMap<String, Atom> {
     let mut functions = HashMap::new();
 
     for module in [
-        cast::functions(),
         core::functions(),
         help::functions(),
         io::functions(),

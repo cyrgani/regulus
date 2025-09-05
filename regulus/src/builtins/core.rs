@@ -397,4 +397,15 @@ functions! {
         }
         Ok(Atom::Null)
     }
+    // TODO: invent some way for objects to define how they want to be printed.
+    // TODO: try then moving this to the STL
+    /// Evaluates the given arg and returns a string representation of it.
+    /// See the documentation of `string(1)` for a comparison of these two methods.
+    /// Note that the exact output format is not yet stable and may change, especially regarding
+    /// objects.
+    ///
+    /// This is identical to the output of `write`.
+    "printable"(1) => |state, args| {
+        Ok(Atom::String(args[0].eval(state)?.to_string()))
+    }
 }
