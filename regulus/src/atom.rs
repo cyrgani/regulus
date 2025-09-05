@@ -79,7 +79,7 @@ impl Atom {
 }
 
 macro_rules! atom_try_as_variant_methods {
-    ($($method_name: ident -> $ty:ty: $variant:ident;)*) => {
+    ($($method_name: ident, $method_name_e: ident -> $ty:ty: $variant:ident;)*) => {
         impl Atom {
             $(
                 pub fn $method_name(&self) -> Result<$ty> {
@@ -91,6 +91,17 @@ macro_rules! atom_try_as_variant_methods {
                         )),
                     }
                 }
+            
+                pub(crate) fn $method_name_e(&self, state: &State) -> Result<$ty> {
+                    match self {
+                        Self::$variant(v) => Ok(v.clone()),
+                        _ => raise!(
+                            state,
+                            TypeError,
+                            "{self} is not a {}!", stringify!($variant)
+                        ),
+                    }
+                }
             )*
         }
     };
@@ -98,12 +109,12 @@ macro_rules! atom_try_as_variant_methods {
 
 // method name, rust type, atom variant name
 atom_try_as_variant_methods! {
-    int -> i64: Int;
-    bool -> bool: Bool;
-    list -> Vec<Self>: List;
-    string -> String: String;
-    function -> Function: Function;
-    object -> Object: Object;
+    int, int_e -> i64: Int;
+    bool, bool_e -> bool: Bool;
+    list, list_e -> Vec<Self>: List;
+    string, string_e -> String: String;
+    function, function_e -> Function: Function;
+    object, object_e -> Object: Object;
 }
 
 impl fmt::Display for Atom {

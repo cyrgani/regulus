@@ -1,3 +1,4 @@
+use crate::builtins::eagerly_evaluate;
 use crate::exception::{IndexError, TypeError};
 use crate::prelude::*;
 
@@ -16,6 +17,16 @@ impl Argument {
     }
 }
 
+impl Atom {
+    fn string_or_list(&self, state: &State) -> Result<StringOrVec> {
+        match self {
+            Self::String(s) => Ok(StringOrVec::String(s.clone())),
+            Self::List(v) => Ok(StringOrVec::Vec(v.clone())),
+            val => raise!(state, TypeError, "{val} should be a string or list"),
+        }
+    }
+}
+
 impl StringOrVec {
     fn into_atom(self) -> Atom {
         match self {
@@ -29,8 +40,8 @@ fn char_to_atom(c: char) -> Atom {
     Atom::String(c.to_string())
 }
 
-fn atom_to_index(arg: &Argument, state: &mut State) -> Result<usize> {
-    usize::try_from(arg.eval_int(state)?)
+fn atom_to_index(atom: &Atom, state: &State) -> Result<usize> {
+    usize::try_from(atom.int_e(state)?)
         .map_err(|e| state.raise(IndexError, format!("invalid list index: {e}")))
 }
 
@@ -40,20 +51,20 @@ functions! {
     /// Alternatively, if the first argument is a string and the second is too, a new concatenated
     /// string will be returned.
     "append"(2) => |state, args| {
-        let mut seq = args[0].eval_string_or_list(state)?;
+        let args = eagerly_evaluate(state, args)?;
+        let mut seq = args[0].string_or_list(state)?;
         match &mut seq {
-            StringOrVec::String(s) => s.push_str(&args[1].eval_string(state)?),
-            StringOrVec::Vec(v) => v.push(args[1].eval(state)?.into_owned()),
+            StringOrVec::String(s) => s.push_str(&args[1].string_e(state)?),
+            StringOrVec::Vec(v) => v.push(args[1].clone()),
         }
         Ok(seq.into_atom())
     }
     /// Returns the value in the first list or string argument at the second integer argument.
     /// Raises an exception if the index is out of bounds.
-    ///
-    /// If the index does not evalutate to an integer, the first argument will not be evaluated at all.
     "index"(2) => |state, args| {
+        let args = eagerly_evaluate(state, args)?;
         let index = atom_to_index(&args[1], state)?;
-        match args[0].eval_string_or_list(state)? {
+        match args[0].string_or_list(state)? {
             StringOrVec::String(s) => s.chars().nth(index).map(char_to_atom),
             StringOrVec::Vec(v) => v.get(index).cloned(),
         }.ok_or_else(|| state.raise(IndexError, "sequence index out of bounds"))
@@ -101,11 +112,12 @@ functions! {
     /// If the first argument is a string instead, the new value must be a single character,
     /// otherwise an exception will be raised.
     "replace_at"(3) => |state, args| {
-        let mut seq = args[0].eval_string_or_list(state)?;
+        let args = eagerly_evaluate(state, args)?;
+        let mut seq = args[0].string_or_list(state)?;
         let index = atom_to_index(&args[1], state)?;
         match &mut seq {
             StringOrVec::String(s) => {
-                let char = args[2].eval_string(state)?;
+                let char = args[2].string_e(state)?;
                 if char.len() != 1 {
                     raise!(state, IndexError, "atom is not a single character")
                 }
@@ -114,7 +126,7 @@ functions! {
             StringOrVec::Vec(v) => {
                 *v.get_mut(index).ok_or_else(|| {
                     state.raise(IndexError, "Unable to insert at index into list!")
-                })? = args[2].eval(state)?.into_owned();
+                })? = args[2].clone();
             }
         }
 
@@ -128,7 +140,8 @@ functions! {
     ///
     /// Returns the updated sequence.
     "remove_at"(2) => |state, args| {
-        let mut seq = args[0].eval_string_or_list(state)?;
+        let args = eagerly_evaluate(state, args)?;
+        let mut seq = args[0].string_or_list(state)?;
         let index = atom_to_index(&args[1], state)?;
         match &mut seq {
             StringOrVec::String(s) => {

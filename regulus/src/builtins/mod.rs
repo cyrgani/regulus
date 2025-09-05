@@ -1,4 +1,4 @@
-use crate::prelude::Atom;
+use crate::prelude::*;
 use std::collections::HashMap;
 
 mod core;
@@ -34,4 +34,13 @@ pub fn all_functions() -> HashMap<String, Atom> {
         }
     }
     functions
+}
+
+/// Evaluates all arguments to make a builtin behave just the same as if it was a regular function.
+fn eagerly_evaluate(state: &mut State, args: &[Argument]) -> Result<Vec<Atom>> {
+    let mut v = Vec::with_capacity(args.len());
+    for arg in args {
+        v.push(arg.eval(state)?.into_owned());
+    }
+    Ok(v)
 }
