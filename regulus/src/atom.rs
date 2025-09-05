@@ -91,7 +91,7 @@ macro_rules! atom_try_as_variant_methods {
                         )),
                     }
                 }
-            
+
                 pub(crate) fn $method_name_e(&self, state: &State) -> Result<$ty> {
                     match self {
                         Self::$variant(v) => Ok(v.clone()),

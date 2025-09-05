@@ -129,16 +129,20 @@ impl State {
     ///
     /// # Errors
     /// Returns an error if reading from the file failed.
-    ///
-    /// # Panics
-    /// Panics if the path is invalid.
     #[must_use = "this returns the new state without modifying the original"]
     pub fn with_source_file(mut self, path: impl AsRef<Path>) -> io::Result<Self> {
         self.code = Some(fs::read_to_string(&path)?);
 
         self.current_file_path = Some(path.as_ref().to_owned());
 
-        let mut current_dir = path.as_ref().parent().unwrap().to_path_buf();
+        let mut current_dir = path
+            .as_ref()
+            .parent()
+            .ok_or_else(|| {
+                io::Error::new(io::ErrorKind::InvalidFilename, "file path has no parent")
+            })?
+            .to_path_buf();
+
         if current_dir == PathBuf::new() {
             current_dir = PathBuf::from(".");
         }
