@@ -37,6 +37,8 @@ pub fn all_functions() -> HashMap<String, Atom> {
 }
 
 /// Evaluates all arguments to make a builtin behave just the same as if it was a regular function.
+///
+/// This should be used for all builtins where this is the expected behavior, such as list builtins.
 fn eagerly_evaluate(state: &mut State, args: &[Argument]) -> Result<Vec<Atom>> {
     let mut v = Vec::with_capacity(args.len());
     for arg in args {

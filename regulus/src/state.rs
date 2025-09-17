@@ -59,6 +59,7 @@ impl StoredValue {
     }
 }
 
+// TODO: consider merging this type with `State` and/or making scopes and `StoredValue` `pub(crate)`
 pub struct Storage {
     pub data: HashMap<String, StoredValue>,
     pub current_scope: usize,
