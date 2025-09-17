@@ -39,12 +39,13 @@ impl StoredValue {
         match self {
             Self::Global(a) => *a = atom,
             Self::Locals(vec) => {
-                if let Some(last) = vec.last()
+                if let Some(last) = vec.last_mut()
                     && last.0 == scope
                 {
-                    vec.pop();
+                    last.1 = atom;
+                } else {
+                    vec.push((scope, atom));
                 }
-                vec.push((scope, atom));
             }
         }
     }

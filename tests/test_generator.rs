@@ -31,18 +31,21 @@ fn make_tests_for_dir(dir_path: PathBuf) -> TokenStream {
                     .to_string()
                     .replace("/", "__");
                 let sep = if tfn_prefix.is_empty() { "" } else { "__" };
-                output.extend(
-                    TokenStream::from_str(&format!(
-                        r##"
+                for optimize in [false, true] {
+                    let maybe_opt = if optimize { "_opt" } else { "" };
+                    output.extend(
+                        TokenStream::from_str(&format!(
+                            r##"
 #[test]
-fn {tfn_prefix}{sep}{name}() {{
-    run_test("{}", "{name}");
+fn {tfn_prefix}{sep}{name}{maybe_opt}() {{
+    run_test("{}", "{name}", {optimize});
 }}
 "##,
-                        path_display.display()
-                    ))
-                    .unwrap(),
-                );
+                            path_display.display()
+                        ))
+                        .unwrap(),
+                    );
+                }
             }
         } else if file_type.is_dir() {
             output.extend(make_tests_for_dir(entry.path()))

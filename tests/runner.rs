@@ -19,13 +19,8 @@ fn delete_then_write_file_if_nonempty(base_path: &Path, extension: &str, content
     fs::write(&path, content).unwrap();
 }
 
-pub fn run_test(dir_path: &str, name: &str) {
-    run_test_maybe_opt(dir_path, name, false);
-    run_test_maybe_opt(dir_path, name, true);
-}
-
 /// Run a test program, making sure it produces the expected stdout and stderr.
-pub fn run_test_maybe_opt(dir_path: &str, name: &str, optimize: bool) {
+pub fn run_test(dir_path: &str, name: &str, optimize: bool) {
     let mut bless_stream_files = false;
     if let Some(var) = BLESS
         && ["Y", "y", "yes", "true"].contains(&var)
