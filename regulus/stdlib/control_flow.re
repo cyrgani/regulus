@@ -60,8 +60,7 @@ def(switch, base, [$arms], _(
     )
 )),
 
-# TODO: unsupported, see `unwanted_behavior/if_in_stl_blocker.re` test for details
 # Evaluates the first argument as a boolean.
 # If it evaluates to true, the second argument is evaluated and returned.
 # If it evaluates to false, the second argument is ignored and `null` is returned.
-# def(if, cond, $body, ifelse(cond, body(), null)),
+def(if, cond, $body, ifelse(cond, body(), null)),

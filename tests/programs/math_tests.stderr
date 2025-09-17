@@ -8,18 +8,24 @@ at programs/math_tests.re:10:26
 at programs/math_tests.re:10:22
 DivideByZeroError: cannot calculate gcd when one argument is zero
 at <stl:math>:7:37
+at <stl:control_flow>:66:39
+at <stl:control_flow>:66:28
 at <stl:math>:7:7
 at <stl:math>:6:17
 at programs/math_tests.re:18:26
 at programs/math_tests.re:18:22
 DivideByZeroError: cannot calculate gcd when one argument is zero
 at <stl:math>:7:37
+at <stl:control_flow>:66:39
+at <stl:control_flow>:66:28
 at <stl:math>:7:7
 at <stl:math>:6:17
 at programs/math_tests.re:19:26
 at programs/math_tests.re:19:22
 DivideByZeroError: cannot calculate gcd when one argument is zero
 at <stl:math>:7:37
+at <stl:control_flow>:66:39
+at <stl:control_flow>:66:28
 at <stl:math>:7:7
 at <stl:math>:6:17
 at programs/math_tests.re:20:26

@@ -30,16 +30,6 @@ functions! {
     }
     /// Evaluates the first argument as a boolean.
     /// If it evaluates to true, the second argument is evaluated and returned.
-    /// If it evaluates to false, the second argument is ignored and `null` is returned.
-    "if"(2) => |state, args| {
-        Ok(if args[0].eval_bool(state)? {
-            args[1].eval(state)?.into_owned()
-        } else {
-            Atom::Null
-        })
-    }
-    /// Evaluates the first argument as a boolean.
-    /// If it evaluates to true, the second argument is evaluated and returned.
     /// If it evaluates to false, the third argument is evaluated and returned instead.
     "ifelse"(3) => |state, args| {
         Ok(if args[0].eval_bool(state)? {

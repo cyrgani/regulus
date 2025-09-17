@@ -40,7 +40,12 @@ fn make_lazy(argument: Argument) -> Atom {
     Atom::Function(Function::new(
         "",
         Some(0),
-        Box::new(move |state, _| argument.eval(state).map(Cow::into_owned)),
+        Box::new(move |state, _| {
+            state.storage.current_scope -= 1;
+            let v = argument.eval(state).map(Cow::into_owned);
+            state.storage.current_scope += 1;
+            v
+        }),
     ))
 }
 
@@ -118,7 +123,13 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
             // except for globals
             state.storage.start_scope();
             for (name, value) in arg_values {
+                if name.lazy {
+                    state.storage.current_scope -= 1;
+                }
                 state.storage.insert(name.name, value);
+                if name.lazy {
+                    state.storage.current_scope += 1;
+                }
             }
 
             let function_result = body.eval(state).map(Cow::into_owned);

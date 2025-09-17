@@ -21,6 +21,9 @@ fn make_tests_for_dir(dir_path: PathBuf) -> TokenStream {
                         panic!("invalid character `{c}` found in test name `{name}`")
                     }
                 }
+                if name.ends_with("_opt") {
+                    panic!("test `{name}` should not end with `_opt`");
+                }
 
                 let path_display = dir_path.components().skip(1).collect::<PathBuf>();
                 let tfn_prefix = dir_path
