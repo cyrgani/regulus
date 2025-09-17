@@ -1,5 +1,5 @@
 def(f, _(
-    global(G),
+    global(G, 4),
 )),
 
 def(e, _(
@@ -10,7 +10,7 @@ __builtin_print_catch(G),
 e(),
 __builtin_print_catch(G),
 f(),
-__builtin_print_catch(G),
+assert_eq(G, 4),
 e(),
 assert_eq(G, 2),
 

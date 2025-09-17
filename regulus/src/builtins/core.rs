@@ -101,12 +101,11 @@ functions! {
         state.file_directory = Directory::FromEval;
         state.run()
     }
-    /// Marks a variable identifier as global.
-    ///
-    /// This does not require the identifier to be defined at this time.
-    "global"(1) => |state, args| {
-        let var = args[0].variable("`global(1)` expects a variable argument", state)?;
-        state.storage.global_idents.insert(var.clone());
+    /// Defines a new variable as global and assigns it the given value.
+    "global"(2) => |state, args| {
+        let var = args[0].variable("`global(2)` expects a variable argument", state)?;
+        let atom = args[1].eval(state)?.into_owned();
+        state.storage.add_global(var, atom);
         Ok(Atom::Null)
     }
     /// Executes the first argument. If it raises an uncaught exception, runs the second argument.

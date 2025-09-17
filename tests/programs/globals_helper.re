@@ -1,4 +1,4 @@
-global(GLOBALS_HELPER),
+global(GLOBALS_HELPER, 1),
 
 def(use_global, assert_eq(GLOBALS_HELPER, 5)),
 

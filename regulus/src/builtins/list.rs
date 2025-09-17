@@ -80,15 +80,11 @@ functions! {
     /// The first argument is the list, the second the loop variable name for each element and the
     /// third is the body that will be run for each of these elements.
     /// Afterwards, `null` is returned.
-    ///
-    /// If the loop variable shadows an existing variable, that value can be used again after the loop.
     // TODO: argument order of seq and loop var is confusing
     "for_in"(3) => |state, args| {
         let seq = args[0].eval_string_or_list(state)?;
         let loop_var = args[1].variable("invalid loop variable given to `for_in`", state)?;
         let loop_body = &args[2];
-
-        let possibly_shadowed_value = state.storage.remove(loop_var);
 
         match seq {
             StringOrVec::Vec(v) => for el in v {
@@ -101,9 +97,6 @@ functions! {
             }
         }
 
-        if let Some(val) = possibly_shadowed_value {
-            state.storage.insert(loop_var, val);
-        }
         Ok(Atom::Null)
     }
     /// Replaces an element at a list index with another.

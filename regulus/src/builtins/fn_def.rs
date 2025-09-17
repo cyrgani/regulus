@@ -87,17 +87,6 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
                 );
             }
 
-            // a function call should have its own scope and not leak variables
-            // except for globals
-
-            // TODO:
-            //  this cloning of the whole storage is extremely inefficient
-            //  a better idea would be a "tagged" storage (??)
-            //  or: create a new empty storage, put all redefined vars in the function into it, but
-            //      allow reading from both new and then old in that order
-            //      problem: `body.eval(state);` can only take one state, not two
-            let mut old_storage_data = state.storage.data.clone();
-
             // prevent arguments from overwriting each other, ex. f(a,b) calls f(b,a)
             let mut arg_values = Vec::with_capacity(args.len());
 
@@ -125,15 +114,16 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
                 }
             }
 
+            // a function call should have its own scope and not leak variables
+            // except for globals
+            state.storage.start_scope();
             for (name, value) in arg_values {
                 state.storage.insert(name.name, value);
             }
 
             let function_result = body.eval(state).map(Cow::into_owned);
+            state.storage.end_scope();
 
-            old_storage_data.extend(state.storage.global_items());
-
-            state.storage.data = old_storage_data;
             function_result
         }),
     );
