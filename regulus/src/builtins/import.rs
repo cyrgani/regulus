@@ -67,7 +67,7 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
 
 /// Returns:
 /// * `None` if the resolution in the given directory failed,
-/// * `Some(path)` if the code was found outside the interned STL,
+/// * `Some(path)` if the code was found at `path` in the given directory.
 fn try_resolve_import_in_dir(name: &str, dir_path: &Path) -> Option<PathBuf> {
     let paths = fs::read_dir(dir_path)
         .unwrap_or_else(|err| {

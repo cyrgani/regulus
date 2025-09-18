@@ -1,5 +1,9 @@
 use crate::prelude::*;
 
+enum Void {}
+/// Type alias used so that opt passes can use `?` to exit easily without returning anything meaningful.
+type Unit = Option<Void>;
+
 impl Argument {
     const fn atom(&mut self) -> Option<&mut Atom> {
         match self {
@@ -14,19 +18,32 @@ impl Argument {
             _ => None,
         }
     }
+
+    const fn var(&mut self) -> Option<&mut String> {
+        match self {
+            Self::Variable(a, _) => Some(a),
+            _ => None,
+        }
+    }
 }
 
-pub fn optimize(program: &mut Argument) -> Option<()> {
+struct OptData {}
+
+pub fn run_optimizations(program: &mut Argument) {
+    optimize(program, &mut OptData {});
+}
+
+fn optimize(program: &mut Argument, data: &mut OptData) -> Unit {
     inline_trivial_underscore_call(program);
 
     let call = program.call()?;
     for arg in &mut call.args {
-        optimize(arg);
+        optimize(arg, data);
     }
-    Some(())
+    None
 }
 
-fn inline_trivial_underscore_call(call_arg: &mut Argument) -> Option<()> {
+fn inline_trivial_underscore_call(call_arg: &mut Argument) -> Unit {
     let call = call_arg.call()?;
     if call.name == "_" {
         if call.args.is_empty() {
@@ -35,5 +52,5 @@ fn inline_trivial_underscore_call(call_arg: &mut Argument) -> Option<()> {
             *call_arg = call.args[0].clone();
         }
     }
-    Some(())
+    None
 }

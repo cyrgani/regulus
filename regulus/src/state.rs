@@ -1,7 +1,7 @@
 use crate::builtins::all_functions;
 use crate::exception::NameError;
 use crate::no_path;
-use crate::optimizations::optimize;
+use crate::optimizations::run_optimizations;
 use crate::parsing::Span;
 use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
@@ -281,7 +281,7 @@ impl State {
 
         let mut program = build_program(tokens)?;
         if self.optimizations_enabled {
-            optimize(&mut program);
+            run_optimizations(&mut program);
         }
 
         let result = program.eval(self)?.into_owned();
