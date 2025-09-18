@@ -1,25 +1,25 @@
 AssertionError: Equality assertion failed! lhs: `2`, rhs: `4`!
-at <stl:assertions>:4:10
-at <stl:assertions>:1:32
+at <stl:assertions>:14:10
+at <stl:assertions>:11:32
 at programs/assert_eq_test.re:1:32
 at programs/assert_eq_test.re:1:22
 AssertionError: Equality assertion failed! lhs: `true`, rhs: `1`!
-at <stl:assertions>:4:10
-at <stl:assertions>:1:32
+at <stl:assertions>:14:10
+at <stl:assertions>:11:32
 at programs/assert_eq_test.re:2:32
 at programs/assert_eq_test.re:2:22
 AssertionError: Equality assertion failed! lhs: `<function>(0)`, rhs: `1`!
-at <stl:assertions>:4:10
-at <stl:assertions>:1:32
+at <stl:assertions>:14:10
+at <stl:assertions>:11:32
 at programs/assert_eq_test.re:3:32
 at programs/assert_eq_test.re:3:22
 AssertionError: Equality assertion failed! lhs: `{}`, rhs: `null`!
-at <stl:assertions>:4:10
-at <stl:assertions>:1:32
+at <stl:assertions>:14:10
+at <stl:assertions>:11:32
 at programs/assert_eq_test.re:5:32
 at programs/assert_eq_test.re:5:22
 AssertionError: Equality assertion failed! lhs: `<function>(_)`, rhs: `<function>(_)`!
-at <stl:assertions>:4:10
-at <stl:assertions>:1:32
+at <stl:assertions>:14:10
+at <stl:assertions>:11:32
 at programs/assert_eq_test.re:6:32
 at programs/assert_eq_test.re:6:22

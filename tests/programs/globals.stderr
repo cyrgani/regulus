@@ -6,8 +6,8 @@ at programs/globals.re:11:23
 at programs/globals.re:11:22
 at programs/globals.re:9:22
 AssertionError: Equality assertion failed! lhs: `1`, rhs: `5`!
-at <stl:assertions>:4:10
-at <stl:assertions>:1:32
+at <stl:assertions>:14:10
+at <stl:assertions>:11:32
 at programs/globals_helper.re:3:26
 at programs/globals.re:18:33
 at programs/globals.re:18:22
