@@ -1,8 +1,8 @@
 SyntaxError: missing or invalid tokens for s_step
 DivideByZeroError: attempted to divide by zero
-at <stl:operators>:76:26
-at <stl:operators>:74:11
-at <stl:operators>:71:19
+at <stl:operators>:68:26
+at <stl:operators>:66:11
+at <stl:operators>:65:19
 at <file>:1:4
 at <file>:1:2
 NameError: No variable named `aaaaa` found!

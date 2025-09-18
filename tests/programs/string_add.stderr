@@ -1,18 +1,18 @@
 ArithmeticError: Unsupported addition
 at <stl:operators>:3:31
-at <stl:operators>:25:32
-at <stl:operators>:22:19
-at <stl:operators>:19:15
-at <stl:operators>:16:11
+at <stl:operators>:23:32
+at <stl:operators>:20:19
+at <stl:operators>:17:15
+at <stl:operators>:14:11
 at <stl:operators>:13:19
 at programs/string_add.re:3:24
 at programs/string_add.re:3:22
 ArithmeticError: Unsupported addition
 at <stl:operators>:3:31
-at <stl:operators>:25:32
-at <stl:operators>:22:19
-at <stl:operators>:19:15
-at <stl:operators>:16:11
+at <stl:operators>:23:32
+at <stl:operators>:20:19
+at <stl:operators>:17:15
+at <stl:operators>:14:11
 at <stl:operators>:13:19
 at programs/string_add.re:4:24
 at programs/string_add.re:4:22

@@ -11,16 +11,14 @@ def(__stl_arith_err, op, error(
 # If they are both objects, this calls the `+` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
 def(+, lhs, rhs, _(
-    =(lid, type_id(lhs)),
-    =(rid, type_id(rhs)),
     ifelse(
-        &&(==(lid, INT_TY_ID), ==(rid, INT_TY_ID)),
+        &&(is_int(lhs), is_int(rhs)),
         __builtin_int_add(lhs, rhs),
         ifelse(
-            &&(==(lid, STRING_TY_ID), ==(rid, STRING_TY_ID)),
+            &&(is_string(lhs), is_string(rhs)),
             __builtin_str_add(lhs, rhs),
             ifelse(
-                &&(>=(lid, MIN_OBJECT_TY_ID), >=(rid, MIN_OBJECT_TY_ID)),
+                &&(is_object(lhs), is_object(rhs)),
                 @(lhs, +, rhs),
                 __stl_arith_err("addition"),
             )
@@ -33,13 +31,11 @@ def(+, lhs, rhs, _(
 # If they are both objects, this calls the `-` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
 def(-, lhs, rhs, _(
-    =(lid, type_id(lhs)),
-    =(rid, type_id(rhs)),
     ifelse(
-        &&(==(lid, INT_TY_ID), ==(rid, INT_TY_ID)),
+        &&(is_int(lhs), is_int(rhs)),
         __builtin_int_sub(lhs, rhs),
         ifelse(
-            &&(>=(lid, MIN_OBJECT_TY_ID), >=(rid, MIN_OBJECT_TY_ID)),
+            &&(is_object(lhs), is_object(rhs)),
             @(lhs, -, rhs),
             __stl_arith_err("subtraction"),
         )
@@ -51,13 +47,11 @@ def(-, lhs, rhs, _(
 # If they are both objects, this calls the `*` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
 def(*, lhs, rhs, _(
-    =(lid, type_id(lhs)),
-    =(rid, type_id(rhs)),
     ifelse(
-        &&(==(lid, INT_TY_ID), ==(rid, INT_TY_ID)),
+        &&(is_int(lhs), is_int(rhs)),
         __builtin_int_mul(lhs, rhs),
         ifelse(
-            &&(>=(lid, MIN_OBJECT_TY_ID), >=(rid, MIN_OBJECT_TY_ID)),
+            &&(is_object(lhs), is_object(rhs)),
             @(lhs, *, rhs),
             __stl_arith_err("multiplication"),
         )
@@ -69,13 +63,11 @@ def(*, lhs, rhs, _(
 # If they are both objects, this calls the `/` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
 def(/, lhs, rhs, _(
-    =(lid, type_id(lhs)),
-    =(rid, type_id(rhs)),
     ifelse(
-        &&(==(lid, INT_TY_ID), ==(rid, INT_TY_ID)),
+        &&(is_int(lhs), is_int(rhs)),
         __builtin_int_div(lhs, rhs),
         ifelse(
-            &&(>=(lid, MIN_OBJECT_TY_ID), >=(rid, MIN_OBJECT_TY_ID)),
+            &&(is_object(lhs), is_object(rhs)),
             @(lhs, /, rhs),
             __stl_arith_err("division"),
         )
@@ -89,7 +81,7 @@ def(/, lhs, rhs, _(
 # (Lists are compared element-wise).
 # If they are of different types, this always returns `false`.
 def(==, lhs, rhs, ifelse(
-    &&(>=(type_id(lhs), MIN_OBJECT_TY_ID), >=(type_id(rhs), MIN_OBJECT_TY_ID)),
+    &&(is_object(lhs), is_object(rhs)),
     @(lhs, ==, rhs),
     __builtin_atom_eq(lhs, rhs),
 )),
@@ -98,3 +90,13 @@ def(==, lhs, rhs, ifelse(
 # This is just a short form for `!(==(lhs, rhs))`.
 # See the documentation of `==` for the precise behavior.
 def(!=, lhs, rhs, !(==(lhs, rhs))),
+
+# Negates the given value.
+# If it is a boolean, this maps `true` to `false` and `false` to `true`.
+# If it is an object, this calls the `!` method of `val` with no arguments.
+# Otherwise, this raises an error.
+def(!, val, ifelse(
+    is_object(val),
+    @(val, !),
+    ifelse(val, false, true)
+)),
