@@ -31,7 +31,6 @@ functions! {
         Atom::int_from_rust_int(epoch_duration().subsec_nanos(), state)
     }
     /// Evaluates both arguments and returns whether they are equal.
-    /// TODO: define this behavior in edge cases and document it (in the STL, on `==` and `!=`)
     "__builtin_atom_eq"(2) => |state, args| {
         Ok(Atom::Bool(args[0].eval(state)?.into_owned() == *args[1].eval(state)?))
     }
