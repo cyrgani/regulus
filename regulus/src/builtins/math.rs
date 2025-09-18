@@ -43,6 +43,12 @@ fn shift_operation(
 functions! {
     /// Adds the two given integers and returns the result, causing an exception in case of overflow.
     "__builtin_int_add"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
+    /// Concatenates the two given strings and returns the result.
+    "__builtin_str_add"(2) => |state, args| {
+        let mut s = args[0].eval_string(state)?;
+        s.push_str(args[1].eval_string(state)?.as_str());
+        Ok(Atom::String(s))
+    }
     /// Subtracts the two given integers and returns the result, causing an exception in case of overflow.
     "__builtin_int_sub"(2) => |state, args| arithmetic_operation(state, args, "-", i64::checked_sub)
     /// Multiplies the two given integers and returns the result, causing an exception in case of overflow.

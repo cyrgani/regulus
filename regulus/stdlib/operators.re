@@ -7,6 +7,7 @@ def(__stl_arith_err, op, error(
 
 # Adds the two values together.
 # If they are both integers, `lhs + rhs` is returned.
+# If they are both strings, their concatenation is returned.
 # If they are both objects, this calls the `+` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
 def(+, lhs, rhs, _(
@@ -16,9 +17,13 @@ def(+, lhs, rhs, _(
         &&(==(lid, INT_TY_ID), ==(rid, INT_TY_ID)),
         __builtin_int_add(lhs, rhs),
         ifelse(
-            &&(>=(lid, MIN_OBJECT_TY_ID), >=(rid, MIN_OBJECT_TY_ID)),
-            @(lhs, +, rhs),
-            __stl_arith_err("addition"),
+            &&(==(lid, STRING_TY_ID), ==(rid, STRING_TY_ID)),
+            __builtin_str_add(lhs, rhs),
+            ifelse(
+                &&(>=(lid, MIN_OBJECT_TY_ID), >=(rid, MIN_OBJECT_TY_ID)),
+                @(lhs, +, rhs),
+                __stl_arith_err("addition"),
+            )
         )
     )
 )),

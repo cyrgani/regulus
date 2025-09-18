@@ -1,7 +1,7 @@
 
 DivideByZeroError: attempted to divide by zero
-at <stl:operators>:71:26
-at <stl:operators>:69:11
-at <stl:operators>:66:19
+at <stl:operators>:76:26
+at <stl:operators>:74:11
+at <stl:operators>:71:19
 at programs/catching_exception_arg.re:11:4
 at programs/catching_exception_arg.re:11:2

@@ -1,0 +1,6 @@
+assert_eq(+("a", "b"), "ab"),
+assert_eq(+(1, 2), 3),
+__builtin_print_catch(+("1", 2)),
+__builtin_print_catch(+(1, "2")),
+assert_eq(+("", ""), ""),
+assert_eq(+("", endl()), endl()),
