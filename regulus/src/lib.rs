@@ -3,8 +3,7 @@
     clippy::pedantic,
     clippy::print_stdout,
     clippy::print_stderr,
-    clippy::dbg_macro,
-    clippy::allow_attributes
+    clippy::dbg_macro
 )]
 #![allow(
     clippy::missing_errors_doc,

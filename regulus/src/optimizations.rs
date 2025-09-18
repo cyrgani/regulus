@@ -4,6 +4,7 @@ enum Void {}
 /// Type alias used so that opt passes can use `?` to exit easily without returning anything meaningful.
 type Unit = Option<Void>;
 
+#[expect(dead_code)]
 impl Argument {
     const fn atom(&mut self) -> Option<&mut Atom> {
         match self {
@@ -33,6 +34,7 @@ pub fn run_optimizations(program: &mut Argument) {
     optimize(program, &mut OptData {});
 }
 
+#[expect(clippy::only_used_in_recursion)]
 fn optimize(program: &mut Argument, data: &mut OptData) -> Unit {
     inline_trivial_underscore_call(program);
 

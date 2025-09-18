@@ -92,6 +92,7 @@ macro_rules! atom_try_as_variant_methods {
                     }
                 }
 
+                #[allow(dead_code, reason = "just provided for completeness")]
                 pub(crate) fn $method_name_e(&self, state: &State) -> Result<$ty> {
                     match self {
                         Self::$variant(v) => Ok(v.clone()),
