@@ -1,5 +1,6 @@
 use crate::exception::{OverflowError, SyntaxError, TypeError};
 use crate::prelude::*;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
@@ -14,6 +15,17 @@ pub enum Atom {
     String(String),
     Function(Function),
     Object(Object),
+}
+
+impl PartialOrd for Atom {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match (self, other) {
+            (Self::Int(lhs), Self::Int(rhs)) => lhs.partial_cmp(rhs),
+            (Self::Bool(lhs), Self::Bool(rhs)) => lhs.partial_cmp(rhs),
+            (Self::Null, Self::Null) => Some(Ordering::Equal),
+            _ => None,
+        }
+    }
 }
 
 impl Atom {

@@ -100,3 +100,47 @@ def(!, val, ifelse(
     @(val, !),
     ifelse(val, false, true)
 )),
+
+# Returns whether `lhs` is less than `rhs`.
+# This function, as well as `<=`, `>=` and ">", compare by the following rules:
+#
+# If `lhs` and `rhs` are both objects, this calls the `<` (or `<=`, `>=`, `>`) method of `lhs` with `rhs` as the only argument.
+# If they are both integers, this compares them naturally.
+# If they are both booleans, this compares them according to `false < true`.
+# If they are both null, this compares them according to `null <= null`.
+# Otherwise, this raises an exception.
+def(<, lhs, rhs, ifelse(
+    &&(is_object(lhs), is_object(rhs)),
+    @(lhs, <, rhs),
+    __builtin_atom_eq(__builtin_atom_cmp(lhs, rhs), 2)
+)),
+
+# Returns whether `lhs` is less than or equal to `rhs`.
+# See the documentation of `<` for more details.
+def(<=, lhs, rhs, ifelse(
+    &&(is_object(lhs), is_object(rhs)),
+    @(lhs, <=, rhs),
+    _(
+        =(c, __builtin_atom_cmp(lhs, rhs)),
+        ||(__builtin_atom_eq(c, 0), __builtin_atom_eq(c, 2))
+    )
+)),
+
+# Returns whether `lhs` is greater than or equal to `rhs`.
+# See the documentation of `<` for more details.
+def(>=, lhs, rhs, ifelse(
+    &&(is_object(lhs), is_object(rhs)),
+    @(lhs, >=, rhs),
+    _(
+        =(c, __builtin_atom_cmp(lhs, rhs)),
+        ||(__builtin_atom_eq(c, 0), __builtin_atom_eq(c, 1))
+    )
+)),
+
+# Returns whether `lhs` is greater than `rhs`.
+# See the documentation of `<` for more details.
+def(>, lhs, rhs, ifelse(
+    &&(is_object(lhs), is_object(rhs)),
+    @(lhs, >, rhs),
+    __builtin_atom_eq(__builtin_atom_cmp(lhs, rhs), 1)
+)),

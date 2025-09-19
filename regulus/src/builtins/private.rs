@@ -1,6 +1,8 @@
 //! Builtin functions which will never have a stable equivalent and are for internal use only.
 
+use crate::exception::ArgumentError;
 use crate::prelude::*;
+use std::cmp::Ordering;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 fn epoch_duration() -> Duration {
@@ -33,6 +35,22 @@ functions! {
     /// Evaluates both arguments and returns whether they are equal.
     "__builtin_atom_eq"(2) => |state, args| {
         Ok(Atom::Bool(args[0].eval(state)?.into_owned() == *args[1].eval(state)?))
+    }
+    /// Compares both arguments.
+    /// Returns:
+    /// * 0 if they are equal
+    /// * 1 if lhs > rhs
+    /// * 2 if lhs < rhs
+    /// Raises an exception if the comparison is not supported.
+    "__builtin_atom_cmp"(2) => |state, args| {
+        let lhs = args[0].eval(state)?.into_owned();
+        let rhs = args[1].eval(state)?;
+        Ok(Atom::Int(match lhs.partial_cmp(rhs.as_ref()) {
+            Some(Ordering::Equal) => 0,
+            Some(Ordering::Greater) => 1,
+            Some(Ordering::Less) => 2,
+            None => raise!(state, ArgumentError, "cannot compare {lhs} and {rhs}"),
+        }))
     }
     /// Constructs an empty list.
     "__builtin_new_list"(0) => |_, _| {

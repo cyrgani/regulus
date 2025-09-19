@@ -19,6 +19,7 @@ def(is_string, val, __builtin_atom_eq(type_id(val), STRING_TY_ID)),
 # Returns whether the given value is a function (according to its type id).
 def(is_function, val, __builtin_atom_eq(type_id(val), FUNCTION_TY_ID)),
 # Returns whether the given value is an object (according to its type id).
-def(is_object, val, >=(type_id(val), MIN_OBJECT_TY_ID)),
-# TODO: once `>=` is in the STL, `is_object` must use the __builtin version of `>=` instead
-null,
+def(is_object, val, _(
+    =(c, __builtin_atom_cmp(type_id(val), MIN_OBJECT_TY_ID)),
+    ||(__builtin_atom_eq(c, 0), __builtin_atom_eq(c, 1))
+)),
