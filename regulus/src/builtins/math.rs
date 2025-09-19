@@ -1,24 +1,6 @@
-use crate::exception::{ArgumentError, DivideByZeroError, OverflowError};
+use crate::builtins::private::arithmetic_operation;
+use crate::exception::{ArgumentError, OverflowError};
 use crate::prelude::*;
-
-fn arithmetic_operation(
-    state: &mut State,
-    args: &[Argument],
-    name: &str,
-    f: fn(i64, i64) -> Option<i64>,
-) -> Result<Atom> {
-    let lhs = args[0].eval_int(state)?;
-    let rhs = args[1].eval_int(state)?;
-
-    if let Some(i) = f(lhs, rhs) {
-        Ok(Atom::Int(i))
-    } else {
-        if name == "/" && rhs == 0 {
-            raise!(state, DivideByZeroError, "attempted to divide by zero")
-        }
-        raise!(state, OverflowError, "overflow occured during {name}")
-    }
-}
 
 fn shift_operation(
     state: &mut State,
@@ -41,20 +23,6 @@ fn shift_operation(
 }
 
 functions! {
-    /// Adds the two given integers and returns the result, causing an exception in case of overflow.
-    "__builtin_int_add"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
-    /// Concatenates the two given strings and returns the result.
-    "__builtin_str_add"(2) => |state, args| {
-        let mut s = args[0].eval_string(state)?;
-        s.push_str(args[1].eval_string(state)?.as_str());
-        Ok(Atom::String(s))
-    }
-    /// Subtracts the two given integers and returns the result, causing an exception in case of overflow.
-    "__builtin_int_sub"(2) => |state, args| arithmetic_operation(state, args, "-", i64::checked_sub)
-    /// Multiplies the two given integers and returns the result, causing an exception in case of overflow.
-    "__builtin_int_mul"(2) => |state, args| arithmetic_operation(state, args, "*", i64::checked_mul)
-    /// Divides the two given integers and returns the result, causing an exception in case of division by zero.
-    "__builtin_int_div"(2) => |state, args| arithmetic_operation(state, args, "/", i64::checked_div)
     /// Calculates the remainder of the two given integers and returns the result,
     /// causing an exception in case of division by zero.
     "%"(2) => |state, args| arithmetic_operation(state, args, "%", i64::checked_rem)
@@ -64,4 +32,16 @@ functions! {
     /// Shifts the first integer to the right by the second amount of digits,
     /// causing an exception in case of overflow or a negative shift amount.
     ">>"(2) => |state, args| shift_operation(state, args, ">>", i64::checked_shr)
+    /// Evaluates both arguments as booleans and performs short-circuiting OR on them.
+    "||"(2) => |state, args| Ok(Atom::Bool(
+        args[0].eval_bool(state)? ||
+        args[1].eval_bool(state)?
+    ))
+    /// Evaluates both arguments as booleans and performs short-circuiting AND on them.
+    "&&"(2) => |state, args| Ok(Atom::Bool(
+        args[0].eval_bool(state)? &&
+        args[1].eval_bool(state)?
+    ))
+    /// Evaluates both arguments as integers and preforms XOR.
+    "^"(2) => |state, args| Ok(Atom::Int(args[0].eval_int(state)? ^ args[1].eval_int(state)?))
 }

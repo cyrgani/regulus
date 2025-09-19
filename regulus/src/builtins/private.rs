@@ -1,6 +1,8 @@
 //! Builtin functions which will never have a stable equivalent and are for internal use only.
 
 use crate::exception::ArgumentError;
+use crate::exception::DivideByZeroError;
+use crate::exception::OverflowError;
 use crate::prelude::*;
 use std::cmp::Ordering;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -9,6 +11,25 @@ fn epoch_duration() -> Duration {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("internal time error")
+}
+
+pub(crate) fn arithmetic_operation(
+    state: &mut State,
+    args: &[Argument],
+    name: &str,
+    f: fn(i64, i64) -> Option<i64>,
+) -> Result<Atom> {
+    let lhs = args[0].eval_int(state)?;
+    let rhs = args[1].eval_int(state)?;
+
+    if let Some(i) = f(lhs, rhs) {
+        Ok(Atom::Int(i))
+    } else {
+        if name == "/" && rhs == 0 {
+            raise!(state, DivideByZeroError, "attempted to divide by zero")
+        }
+        raise!(state, OverflowError, "overflow occured during {name}")
+    }
 }
 
 functions! {
@@ -56,4 +77,19 @@ functions! {
     "__builtin_new_list"(0) => |_, _| {
         Ok(Atom::List(vec![]))
     }
+    /// Adds the two given integers and returns the result, causing an exception in case of overflow.
+    "__builtin_int_add"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
+    /// Concatenates the two given strings and returns the result.
+    "__builtin_str_add"(2) => |state, args| {
+        let mut s = args[0].eval_string(state)?;
+        s.push_str(args[1].eval_string(state)?.as_str());
+        Ok(Atom::String(s))
+    }
+    /// Subtracts the two given integers and returns the result, causing an exception in case of overflow.
+    "__builtin_int_sub"(2) => |state, args| arithmetic_operation(state, args, "-", i64::checked_sub)
+    /// Multiplies the two given integers and returns the result, causing an exception in case of overflow.
+    "__builtin_int_mul"(2) => |state, args| arithmetic_operation(state, args, "*", i64::checked_mul)
+    /// Divides the two given integers and returns the result, causing an exception in case of division by zero.
+    "__builtin_int_div"(2) => |state, args| arithmetic_operation(state, args, "/", i64::checked_div)
+
 }

@@ -124,4 +124,8 @@ functions! {
     "printable"(1) => |state, args| {
         Ok(Atom::String(args[0].eval(state)?.to_string()))
     }
+    /// Returns a string consisting of one newline character.
+    "endl"(0) => |_, _| {
+        Ok(Atom::String("\n".to_string()))
+    }
 }

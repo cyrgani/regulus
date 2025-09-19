@@ -7,10 +7,8 @@ mod help;
 mod import;
 mod io;
 mod list;
-mod logic;
 mod math;
 mod private;
-mod string;
 mod ty;
 
 pub fn all_functions() -> HashMap<String, Atom> {
@@ -23,10 +21,8 @@ pub fn all_functions() -> HashMap<String, Atom> {
         import::functions(),
         io::functions(),
         list::functions(),
-        logic::functions(),
         math::functions(),
         private::functions(),
-        string::functions(),
         ty::functions(),
     ] {
         for (name, function) in module {
