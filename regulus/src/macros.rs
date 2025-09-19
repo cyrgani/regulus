@@ -54,7 +54,7 @@ macro_rules! functions {
                     $crate::prelude::Function::new(
                         [$($doc),*].map(|s| s.trim_start()).join("\n"),
                         $crate::make_argc!($argc),
-                        std::boxed::Box::new($callback),
+                        $callback,
                     ),
                 )),*
             ]

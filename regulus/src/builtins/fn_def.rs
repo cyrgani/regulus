@@ -37,16 +37,12 @@ impl FnArgument {
 //  think about the distinction between using the def-site state or the call-site state
 //  for evaluating the argument
 fn make_lazy(argument: Argument) -> Atom {
-    Atom::Function(Function::new(
-        "",
-        Some(0),
-        Box::new(move |state, _| {
-            state.storage.current_scope -= 1;
-            let v = argument.eval(state).map(Cow::into_owned);
-            state.storage.current_scope += 1;
-            v
-        }),
-    ))
+    Atom::Function(Function::new("", Some(0), move |state, _| {
+        state.storage.current_scope -= 1;
+        let v = argument.eval(state).map(Cow::into_owned);
+        state.storage.current_scope += 1;
+        v
+    }))
 }
 
 fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Result<Atom> {
@@ -82,7 +78,7 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
     let function = Function::new(
         state.current_doc_comment.as_ref().unwrap(),
         argc,
-        Box::new(move |state, args| {
+        move |state, args| {
             if args.len() < min_required_args && argc.is_none() {
                 raise!(
                     state,
@@ -136,7 +132,7 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
             state.storage.end_scope();
 
             function_result
-        }),
+        },
     );
 
     Ok(Atom::Function(function))

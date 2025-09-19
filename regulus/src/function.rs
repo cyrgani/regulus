@@ -40,11 +40,15 @@ pub type FunctionBody = dyn Fn(&mut State, &[Argument]) -> Result<Atom>;
 pub struct Function(Rc<FunctionInner>);
 
 impl Function {
-    pub fn new(doc: impl Into<String>, argc: Option<usize>, body: Box<FunctionBody>) -> Self {
+    pub fn new(
+        doc: impl Into<String>,
+        argc: Option<usize>,
+        body: impl Fn(&mut State, &[Argument]) -> Result<Atom> + 'static,
+    ) -> Self {
         Self(Rc::new(FunctionInner {
             doc: doc.into(),
             argc,
-            body,
+            body: Box::new(body),
         }))
     }
 

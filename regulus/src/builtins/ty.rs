@@ -51,7 +51,7 @@ fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
     let function = Function::new(
         String::new(),
         Some(required_fields.len()),
-        Box::new(move |state, args| {
+        move |state, args| {
             let mut fields = required_fields
                 .iter()
                 .zip(args)
@@ -59,7 +59,7 @@ fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
                 .collect::<Result<HashMap<String, Atom>>>()?;
             fields.extend(defaulted_fields.clone());
             Ok(Atom::Object(Object::new(fields, ty_id)))
-        }),
+        },
     );
 
     state.storage.insert(var, Atom::Function(function));
