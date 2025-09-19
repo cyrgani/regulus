@@ -22,6 +22,7 @@ fn shift_operation(
     }
 }
 
+// TODO: move most of these to the STL
 functions! {
     /// Calculates the remainder of the two given integers and returns the result,
     /// causing an exception in case of division by zero.

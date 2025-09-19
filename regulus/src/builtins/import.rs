@@ -23,7 +23,6 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
     // 2. look in the global stl directory
     let mut import_state = State::new();
     import_state.import_stack.clone_from(&state.import_stack);
-    let mut found = false;
     if let Directory::Regular(dir_path) = &state.file_directory
         && let Some(path) = try_resolve_import_in_dir(name, dir_path)
     {
@@ -37,15 +36,10 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
         }
         import_state = import_state.with_source_file(&path).unwrap();
         import_state.import_stack.push(path);
-        found = true;
-    }
-
-    if !found && let Some(code) = try_resolve_import_in_stl(name) {
+    } else if let Some(code) = try_resolve_import_in_stl(name) {
         import_state = import_state.with_code(code);
         import_state.set_current_file_path(format!("<stl:{name}>"));
-        found = true;
-    }
-    if !found {
+    } else {
         raise!(
             state,
             ImportError,

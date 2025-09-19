@@ -91,5 +91,4 @@ functions! {
     "__builtin_int_mul"(2) => |state, args| arithmetic_operation(state, args, "*", i64::checked_mul)
     /// Divides the two given integers and returns the result, causing an exception in case of division by zero.
     "__builtin_int_div"(2) => |state, args| arithmetic_operation(state, args, "/", i64::checked_div)
-
 }
