@@ -1,8 +1,6 @@
 //! Builtin functions which will never have a stable equivalent and are for internal use only.
 
-use crate::exception::ArgumentError;
-use crate::exception::DivideByZeroError;
-use crate::exception::OverflowError;
+use crate::exception::{ArgumentError, DivideByZeroError, OverflowError};
 use crate::prelude::*;
 use std::cmp::Ordering;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -13,7 +11,7 @@ fn epoch_duration() -> Duration {
         .expect("internal time error")
 }
 
-pub(crate) fn arithmetic_operation(
+fn arithmetic_operation(
     state: &mut State,
     args: &[Argument],
     name: &str,
@@ -91,4 +89,7 @@ functions! {
     "__builtin_int_mul"(2) => |state, args| arithmetic_operation(state, args, "*", i64::checked_mul)
     /// Divides the two given integers and returns the result, causing an exception in case of division by zero.
     "__builtin_int_div"(2) => |state, args| arithmetic_operation(state, args, "/", i64::checked_div)
+    /// Calculates the remainder of the two given integers and returns the result,
+    /// causing an exception in case of division by zero.
+    "__builtin_int_rem"(2) => |state, args| arithmetic_operation(state, args, "%", i64::checked_rem)
 }

@@ -59,7 +59,7 @@ def(*, lhs, rhs, _(
 )),
 
 # Divides the first value through the second.
-# If they are both integers, `lhs / rhs` is returned (rounded to an integer).
+# If they are both integers, `lhs / rhs` is returned (rounded to an integer), raising an error if `rhs` is 0.
 # If they are both objects, this calls the `/` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
 def(/, lhs, rhs, _(
@@ -70,6 +70,22 @@ def(/, lhs, rhs, _(
             &&(is_object(lhs), is_object(rhs)),
             @(lhs, /, rhs),
             __stl_arith_err("division"),
+        )
+    )
+)),
+
+# Calculates the remainder when dividing the first value through the second.
+# If they are both integers, `lhs % rhs` is returned, raising an error if `rhs` is 0.
+# If they are both objects, this calls the `%` method of `lhs` with `rhs` as the only argument.
+# Otherwise, this raises an error.
+def(%, lhs, rhs, _(
+    ifelse(
+        &&(is_int(lhs), is_int(rhs)),
+        __builtin_int_rem(lhs, rhs),
+        ifelse(
+            &&(is_object(lhs), is_object(rhs)),
+            @(lhs, %, rhs),
+            __stl_arith_err("remainder"),
         )
     )
 )),

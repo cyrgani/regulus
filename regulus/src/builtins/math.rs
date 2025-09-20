@@ -1,4 +1,3 @@
-use crate::builtins::private::arithmetic_operation;
 use crate::exception::{ArgumentError, OverflowError};
 use crate::prelude::*;
 
@@ -24,9 +23,6 @@ fn shift_operation(
 
 // TODO: move most of these to the STL
 functions! {
-    /// Calculates the remainder of the two given integers and returns the result,
-    /// causing an exception in case of division by zero.
-    "%"(2) => |state, args| arithmetic_operation(state, args, "%", i64::checked_rem)
     /// Shifts the first integer to the left by the second amount of digits,
     /// causing an exception in case of overflow or a negative shift amount.
     "<<"(2) => |state, args| shift_operation(state, args, "<<", i64::checked_shl)
