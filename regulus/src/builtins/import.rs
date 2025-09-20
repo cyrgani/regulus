@@ -24,7 +24,7 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
     let mut import_state = State::new();
     import_state.import_stack.clone_from(&state.import_stack);
     if let Directory::Regular(dir_path) = &state.file_directory
-        && let Some(path) = try_resolve_import_in_dir(name, dir_path)
+        && let Some(path) = try_resolve_import_in_dir(state, name, dir_path)?
     {
         if import_state.import_stack.contains(&path) {
             raise!(
@@ -60,23 +60,31 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
 }
 
 /// Returns:
-/// * `None` if the resolution in the given directory failed,
-/// * `Some(path)` if the code was found at `path` in the given directory.
-fn try_resolve_import_in_dir(name: &str, dir_path: &Path) -> Option<PathBuf> {
+/// * `Ok(None)` if the resolution in the given directory failed
+/// * `Ok(Some(path))` if the code was found at `path` in the given directory
+/// * `Err(error)` if reading the directory failed
+fn try_resolve_import_in_dir(
+    state: &State,
+    name: &str,
+    dir_path: &Path,
+) -> Result<Option<PathBuf>> {
     let paths = fs::read_dir(dir_path)
-        .unwrap_or_else(|err| {
-            panic!(
-                "error when reading directory `{}`: {err}",
-                dir_path.display()
+        .map_err(|err| {
+            state.raise(
+                ImportError,
+                format!(
+                    "error when reading directory `{}`: {err}",
+                    dir_path.display()
+                ),
             )
-        })
+        })?
         .flatten();
     for item in paths {
         if *item.file_name() == *format!("{name}.{FILE_EXTENSION}") {
-            return Some(item.path());
+            return Ok(Some(item.path()));
         }
     }
-    None
+    Ok(None)
 }
 
 fn try_resolve_import_in_stl(name: &str) -> Option<String> {
@@ -98,7 +106,7 @@ functions! {
         }
         let name = "prelude";
         let mut import_state = State::new();
-        let code = INTERNED_STL[name];
+        let code = INTERNED_STL.get(name).expect("`prelude.re` missing from STL");
         import_state = import_state.with_code(code);
         import_state.set_current_file_path(format!("<stl:{name}>"));
         import_state.run()?;
