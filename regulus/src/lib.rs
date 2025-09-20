@@ -38,7 +38,7 @@ pub mod prelude {
         functions,
         parsing::{Position, Span},
         raise, run, run_file,
-        state::{State, StoredValue, WriteHandle},
+        state::{State, WriteHandle},
     };
 }
 

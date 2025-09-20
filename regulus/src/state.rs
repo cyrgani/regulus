@@ -20,7 +20,7 @@ pub(crate) enum Directory {
     InternedSTL,
 }
 
-pub enum StoredValue {
+pub(crate) enum StoredValue {
     Global(Atom),
     /// An identifier may refer to any number of atoms within different scopes.
     /// Only the innermost one will be considered, until its scope ends.
@@ -62,8 +62,8 @@ impl StoredValue {
 
 // TODO: consider merging this type with `State` and/or making scopes and `StoredValue` `pub(crate)`
 pub struct Storage {
-    pub data: HashMap<String, StoredValue>,
-    pub current_scope: usize,
+    pub(crate) data: HashMap<String, StoredValue>,
+    pub(crate) current_scope: usize,
 }
 
 impl Storage {
@@ -101,11 +101,12 @@ impl Storage {
         clippy::missing_const_for_fn,
         reason = "type is not constructible in const anyway"
     )]
-    pub fn start_scope(&mut self) {
+    pub(crate) fn start_scope(&mut self) {
         self.current_scope += 1;
     }
 
-    pub fn end_scope(&mut self) {
+    pub(crate) fn end_scope(&mut self) {
+        // TODO: consider removing dead locals (with an empty vec) from the storage
         for val in self.data.values_mut() {
             val.reduce_by_scope(self.current_scope);
         }
@@ -125,6 +126,20 @@ impl Storage {
                 }
             }
         }
+    }
+
+    pub fn undefine(&mut self, name: impl AsRef<str>) -> Option<Atom> {
+        match self.data.remove(name.as_ref())? {
+            StoredValue::Global(global) => Some(global),
+            StoredValue::Locals(mut locals) => locals.pop().map(|(_, a)| a),
+        }
+    }
+
+    pub fn all_data(&self) -> HashMap<String, Atom> {
+        self.data
+            .iter()
+            .filter_map(|(ident, value)| Some((ident.to_string(), value.as_atom()?.clone())))
+            .collect()
     }
 }
 
