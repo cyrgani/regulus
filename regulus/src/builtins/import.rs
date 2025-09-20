@@ -23,6 +23,10 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
     // 2. look in the global stl directory
     let mut import_state = State::new();
     import_state.import_stack.clone_from(&state.import_stack);
+    for (global_ident, global_value) in state.storage.all_globals() {
+        import_state.storage.add_global(global_ident, global_value);
+    }
+
     if let Directory::Regular(dir_path) = &state.file_directory
         && let Some(path) = try_resolve_import_in_dir(state, name, dir_path)?
     {

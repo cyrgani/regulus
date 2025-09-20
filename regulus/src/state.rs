@@ -135,11 +135,20 @@ impl Storage {
         }
     }
 
-    pub fn all_data(&self) -> HashMap<String, Atom> {
+    pub fn all_data(&self) -> impl Iterator<Item = (String, Atom)> {
         self.data
             .iter()
             .filter_map(|(ident, value)| Some((ident.to_string(), value.as_atom()?.clone())))
-            .collect()
+    }
+
+    pub fn all_globals(&self) -> impl Iterator<Item = (String, Atom)> {
+        self.data.iter().filter_map(|(ident, value)| {
+            if let StoredValue::Global(atom) = value {
+                Some((ident.clone(), atom.clone()))
+            } else {
+                None
+            }
+        })
     }
 }
 
