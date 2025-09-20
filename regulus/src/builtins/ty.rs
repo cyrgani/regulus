@@ -149,7 +149,8 @@ functions! {
     /// * Function: 5
     /// * Object: 6+ (depending on the type of object).
     ///
-    /// Instead of manually typing these values, use the constants in the `type_id.re` STL module.
+    /// Instead of manually typing these values, use the constants in the `type_id.re` STL module
+    /// and the `is_*` (`int`, `bool`, ...) family of functions in that module.
     "type_id"(1) => |state, args| {
         Ok(Atom::Int(args[0].eval(state)?.ty_id()))
     }
