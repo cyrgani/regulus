@@ -49,7 +49,7 @@ impl Argument {
         match self {
             Self::Atom(atom, _) => atom.to_string(),
             Self::FunctionCall(call, _) => call.stringify(),
-            Self::Variable(name, _) => name.to_string(),
+            Self::Variable(name, _) => name.clone(),
         }
     }
 

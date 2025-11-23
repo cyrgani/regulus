@@ -25,7 +25,7 @@ impl Token {
 
     pub(crate) fn to_name(&self) -> Option<String> {
         if let TokenData::Name(name) = &self.data {
-            Some(name.to_string())
+            Some(name.clone())
         } else {
             None
         }

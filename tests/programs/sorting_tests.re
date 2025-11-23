@@ -8,7 +8,7 @@ assert_eq(quicksort(list(1)), list(1)),
 assert_eq(quicksort(list(2, 1)), list(1, 2)),
 
 import(random),
-assert_eq(quicksort(shuffle(range(0, 1000))), range(0, 1000)),
+assert_eq(quicksort(shuffle(range(0, 2000))), range(0, 2000)),
 
 assert(is_sorted(range(0, 300))),
 assert(is_sorted(list())),
