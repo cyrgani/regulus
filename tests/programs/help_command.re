@@ -4,7 +4,8 @@ assert_eq(x, null),
 def(f, a, _()),
 assert_eq(argc(f), 1),
 assert_eq(argc(_), null),
-assert_eq(argc(endl), 0),
+def(noarg, _()),
+assert_eq(argc(noarg), 0),
 help(help),
 
 # Great function

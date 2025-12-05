@@ -2,5 +2,5 @@
 #
 # Use `doc(1)` to return it instead.
 def(help, f, write(
-    strconcat("<function>(", string(argc(f)), "): ", endl(), endl(), doc(f), endl())
+    strconcat("<function>(", string(argc(f)), "): ", endl, endl, doc(f), endl)
 )),

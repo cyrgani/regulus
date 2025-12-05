@@ -1,5 +1,10 @@
 import(range),
 
+# A string consisting of one newline character.
+# TODO: this constant is a hack used because writing "\n" in a regulus string does not produce a newline yet
+=(endl, "
+"),
+
 # Evaluates all given arguments and prints them to stdout.
 # All arguments are separated with a single space.
 # No trailing space is added after the last element.
@@ -13,5 +18,5 @@ def(print, [args], _(
         write(index(args, i)),
         if(!=(i, -(l, 1)), write(" "))
     )),
-    write(endl()),
+    write(endl),
 ))
