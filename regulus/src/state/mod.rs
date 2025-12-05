@@ -3,7 +3,6 @@ mod storage;
 use crate::exception::NameError;
 use crate::no_path;
 use crate::optimizations::run_optimizations;
-use crate::parsing::Span;
 use crate::parsing::{build_program, tokenize};
 use crate::prelude::*;
 use std::io::{BufRead, BufReader, Read, Write, stderr, stdin, stdout};
@@ -234,7 +233,7 @@ impl<T> ReadAndWrite for T where T: Read + Write {}
 
 /// A handle that always allows writing and optionally allows reading. Used for stdout and stderr.
 ///
-/// Usually, stdout / stderr only need to be written to, but sometimes, one may want to capture
+/// Usually, writing to stdout / stderr is enough, but sometimes, one may want to capture
 /// what is written to them. In this case, the `ReadWrite` variant can be used.
 pub enum WriteHandle {
     ReadWrite(Box<dyn ReadAndWrite>),

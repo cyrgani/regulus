@@ -2,8 +2,7 @@ use crate::exception::{OverflowError, SyntaxError, TypeError};
 use crate::prelude::*;
 use std::cmp::Ordering;
 use std::collections::HashMap;
-use std::fmt;
-use std::fmt::Display;
+use std::fmt::{self, Display};
 use std::num::IntErrorKind;
 
 #[derive(Debug, Clone, PartialEq)]

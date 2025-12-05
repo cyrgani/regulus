@@ -37,7 +37,7 @@ impl Argument {
 
     /// Returns the identifier of this variable.
     /// If it is not a variable, it raises an exception with the given error message.
-    pub fn variable(&self, error_msg: &str, state: &State) -> Result<&String> {
+    pub(crate) fn variable(&self, error_msg: &str, state: &State) -> Result<&String> {
         match self {
             Self::Variable(var, _) => Ok(var),
             _ => raise!(state, ArgumentError, error_msg),
