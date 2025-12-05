@@ -62,7 +62,7 @@ impl Argument {
 }
 
 macro_rules! argument_eval_as_methods {
-    ($($method_name: ident -> $ty:ty: $variant:ident;)*) => {
+    ($($method_name: ident: $variant:ident -> $ty:ty;)*) => {
         #[expect(dead_code)]
         impl Argument {
             $(
@@ -77,12 +77,12 @@ macro_rules! argument_eval_as_methods {
     };
 }
 
-// method name, rust type, atom variant name
+// method name, atom variant name, rust type
 argument_eval_as_methods! {
-    eval_int -> i64: Int;
-    eval_bool -> bool: Bool;
-    eval_list -> Vec<Atom>: List;
-    eval_string -> String: String;
-    eval_function -> Function: Function;
-    eval_object -> Object: Object;
+    eval_int: Int -> i64;
+    eval_bool: Bool -> bool;
+    eval_list: List -> Vec<Atom>;
+    eval_string: String -> String;
+    eval_function: Function -> Function;
+    eval_object: Object -> Object;
 }
