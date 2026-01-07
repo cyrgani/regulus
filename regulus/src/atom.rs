@@ -10,7 +10,7 @@ pub enum Atom {
     Int(i64),
     Bool(bool),
     Null,
-    List(Vec<Atom>),
+    List(Vec<Self>),
     String(String),
     Function(Function),
     Object(Object),
@@ -86,6 +86,13 @@ impl Atom {
     /// Useful for (singleton) objects added from outside the language.
     pub const fn new_object(data: HashMap<String, Self>) -> Self {
         Self::Object(Object::new(data, i64::MAX))
+    }
+
+    pub fn stringify(&self) -> String {
+        match self {
+            Self::String(s) => format!("\"{s}\""),
+            _ => self.to_string(),
+        }
     }
 }
 

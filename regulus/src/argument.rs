@@ -47,7 +47,7 @@ impl Argument {
     /// Returns an approximation of the source code of this argument.
     pub fn stringify(&self) -> String {
         match self {
-            Self::Atom(atom, _) => atom.to_string(),
+            Self::Atom(atom, _) => atom.stringify(),
             Self::FunctionCall(call, _) => call.stringify(),
             Self::Variable(name, _) => name.clone(),
         }
