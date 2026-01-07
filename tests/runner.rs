@@ -2,7 +2,6 @@ use regulus::FILE_EXTENSION;
 use regulus::prelude::{State, WriteHandle};
 use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
-use std::str;
 use std::{fs, io};
 use tests::make_tests;
 

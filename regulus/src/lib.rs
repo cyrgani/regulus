@@ -50,6 +50,7 @@ pub(crate) fn no_path() -> Rc<PathBuf> {
     Rc::new(PathBuf::new())
 }
 
+/// Files need to end with this extension to be considered by import resolution.
 pub const FILE_EXTENSION: &str = "re";
 
 /// A convenient helper for directly running one file program.

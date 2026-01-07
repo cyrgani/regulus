@@ -50,10 +50,6 @@ fn get_first_token_and_doc_comments(tokens: &[Token]) -> Result<(&[Token], &Toke
     Err(Exception::unspanned(SyntaxError, "missing token"))
 }
 
-fn non_comment_len(tokens: &[Token]) -> usize {
-    without_comments(tokens).count()
-}
-
 fn is_token_empty(tokens: &[Token]) -> bool {
     without_comments(tokens).next().is_none()
 }
@@ -187,7 +183,7 @@ fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
             &get_token(remaining, 0)?.span,
         ));
     }
-    if non_comment_len(remaining) > 1 {
+    if without_comments(remaining).count() > 1 {
         args.append(&mut next_x_step(get_tokens_from(remaining, 1))?);
     }
     Ok(args)
