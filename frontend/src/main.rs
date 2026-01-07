@@ -1,15 +1,10 @@
-use colored::Colorize;
 use regulus::prelude::{Atom, State};
 use std::env;
 use std::process::exit;
 
 fn main() {
     let Some(path) = env::args().nth(1) else {
-        eprintln!(
-            "{} program file not provided\n{} cargo run -- PATH",
-            "error:".red(),
-            "usage:".underline().bold()
-        );
+        eprintln!("error: program file not provided\nusage: cargo run -- PATH",);
         exit(1);
     };
 
@@ -19,10 +14,7 @@ fn main() {
             state = updated;
         }
         Err(err) => {
-            eprintln!(
-                "{}",
-                format!("Reading the file caused an error: {err}").red()
-            );
+            eprintln!("reading the file caused an error: {err}");
             exit(1);
         }
     }
@@ -34,7 +26,7 @@ fn main() {
             }
         }
         Err(error) => {
-            eprintln!("{}", error.to_string().red());
+            eprintln!("uncaught exception occured: \n{error}");
             exit(1);
         }
     }
