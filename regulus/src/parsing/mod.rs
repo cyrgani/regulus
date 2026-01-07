@@ -5,14 +5,14 @@
 //  S -> a | n | n() | n(X)
 //  X -> S,X | S, | S
 
-pub mod positions;
-pub mod token;
+mod positions;
+mod token;
 
 use crate::exception::SyntaxError;
 use crate::parsing::token::Token;
 use crate::prelude::*;
 pub use positions::{Position, Span};
-pub use token::{TokenData, tokenize};
+pub(crate) use token::{TokenData, tokenize};
 
 pub fn build_program(tokens: Vec<Token>) -> Result<Argument> {
     let (arg, rest) = next_s_step(&tokens)?;

@@ -7,7 +7,7 @@ use std::result;
 
 /// A token of source code with location information.
 #[derive(Debug)]
-pub struct Token {
+pub(crate) struct Token {
     /// The actual token.
     pub data: TokenData,
     /// The start and end of the character range this token was created from.
@@ -15,7 +15,7 @@ pub struct Token {
 }
 
 impl Token {
-    pub(crate) fn to_atom(&self) -> Option<Atom> {
+    pub fn to_atom(&self) -> Option<Atom> {
         if let TokenData::Atom(atom) = &self.data {
             Some(atom.clone())
         } else {
@@ -23,7 +23,7 @@ impl Token {
         }
     }
 
-    pub(crate) fn to_name(&self) -> Option<String> {
+    pub fn to_name(&self) -> Option<String> {
         if let TokenData::Name(name) = &self.data {
             Some(name.clone())
         } else {
@@ -31,11 +31,11 @@ impl Token {
         }
     }
 
-    pub(crate) const fn is_comma(&self) -> bool {
+    pub const fn is_comma(&self) -> bool {
         matches!(self.data, TokenData::Comma)
     }
 
-    pub(crate) const fn is_comment(&self) -> bool {
+    pub const fn is_comment(&self) -> bool {
         matches!(self.data, TokenData::Comment(_))
     }
 }

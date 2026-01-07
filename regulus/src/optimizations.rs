@@ -52,6 +52,7 @@ fn inline_trivial_underscore_call(call_arg: &mut Argument) -> Unit {
             *call_arg = Argument::Atom(Atom::Null, call_arg.span().clone());
         } else if call.args.len() == 1 {
             *call_arg = call.args.pop().unwrap();
+            inline_trivial_underscore_call(call_arg);
         }
     }
     None
