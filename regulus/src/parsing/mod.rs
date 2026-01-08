@@ -141,68 +141,67 @@ fn next_s_step(mut tokens: &[Token]) -> Result<(Argument, &[Token])> {
     if let Some(atom) = first_token.to_atom() {
         return Ok((Argument::Atom(atom, first_token.span.clone()), tokens));
     }
-    if let Some(name) = first_token.to_name() {
-        // we may not use `?` on the result of `nth`, since that is valid in the `a` or `n` case
-        if let Some(token_1) = without_comments(tokens).next()
-            && token_1.is_left_paren()
-        {
-            if let Some((body, rest)) = find_within_parens(get_tokens_from(tokens, 1)) {
-                let args = if is_token_empty(body) {
-                    vec![]
-                } else {
-                    next_x_step(body)?
-                };
+    let Some(name) = first_token.to_name() else {
+        return Err(Exception::spanned(
+            SyntaxError,
+            "expected atom or ident",
+            &first_token.span,
+        ));
+    };
+    // we may not use `unwrap` here, since that is valid in the `a` or `n` case
+    if let Some(token_1) = without_comments(tokens).next()
+        && token_1.is_left_paren()
+    {
+        if let Some((mut body, rest)) = find_within_parens(get_tokens_from(tokens, 1)) {
+            let mut args = vec![];
 
-                return Ok((
-                    Argument::FunctionCall(
-                        FunctionCall {
-                            args,
-                            name,
-                            doc_comment: concat_doc_comments(doc_comments),
-                        },
-                        Span::new(
-                            token_1.span.start,
-                            get_last_token(tokens)?.span.end,
-                            token_1.span.file.clone(),
-                        ),
-                    ),
-                    rest,
-                ));
+            if !is_token_empty(body) {
+                loop {
+                    let (first_arg, mut remaining) = next_s_step(body)?;
+                    args.push(first_arg);
+                    let Ok(first) = take_token(&mut remaining, 0) else {
+                        break;
+                    };
+
+                    if !first.is_comma() {
+                        return Err(Exception::spanned(
+                            SyntaxError,
+                            "missing comma in argument list",
+                            &first.span,
+                        ));
+                    }
+                    if without_comments(remaining).next().is_some() {
+                        body = remaining;
+                    } else {
+                        break;
+                    }
+                }
             }
-        } else {
-            return Ok((Argument::Variable(name, first_token.span.clone()), tokens));
+
+            return Ok((
+                Argument::FunctionCall(
+                    FunctionCall {
+                        args,
+                        name,
+                        doc_comment: concat_doc_comments(doc_comments),
+                    },
+                    Span::new(
+                        token_1.span.start,
+                        get_last_token(tokens)?.span.end,
+                        token_1.span.file.clone(),
+                    ),
+                ),
+                rest,
+            ));
         }
+    } else {
+        return Ok((Argument::Variable(name, first_token.span.clone()), tokens));
     }
     // TODO: better error message
     Err(Exception::unspanned(
         SyntaxError,
         "missing or invalid tokens for s_step",
     ))
-}
-
-fn next_x_step(mut tokens: &[Token]) -> Result<Vec<Argument>> {
-    let mut args = vec![];
-    loop {
-        let (first_arg, mut remaining) = next_s_step(tokens)?;
-        args.push(first_arg);
-        let Ok(first) = take_token(&mut remaining, 0) else {
-            break;
-        };
-
-        if !first.is_comma() {
-            return Err(Exception::spanned(
-                SyntaxError,
-                "missing comma in argument list",
-                &first.span,
-            ));
-        }
-        if without_comments(remaining).next().is_some() {
-            tokens = remaining;
-        } else {
-            break;
-        }
-    }
-    Ok(args)
 }
 
 #[cfg(test)]
@@ -216,14 +215,14 @@ mod tests {
 
         assert_eq!(
             prog.unwrap_err().to_string(),
-            "SyntaxError: missing or invalid tokens for s_step"
+            "SyntaxError: expected atom or ident\nat <file>:0:3"
         );
 
         let prog = build_program(tokenize("(print(2)), print(3)", no_path()).unwrap());
 
         assert_eq!(
             prog.unwrap_err().to_string(),
-            "SyntaxError: missing or invalid tokens for s_step"
+            "SyntaxError: expected atom or ident\nat <file>:0:1"
         );
     }
 }
