@@ -17,17 +17,11 @@ pub(crate) use token::{TokenData, tokenize};
 pub fn build_program(tokens: Vec<Token>) -> Result<Argument> {
     let (arg, rest) = next_s_step(&tokens)?;
 
-    if !is_token_empty(rest) {
-        if let Some(t) = without_comments(rest).next() {
-            return Err(Exception::spanned(
-                SyntaxError,
-                "trailing unparsed tokens detected",
-                &t.span,
-            ));
-        }
-        return Err(Exception::unspanned(
+    if let Some(t) = without_comments(rest).next() {
+        return Err(Exception::spanned(
             SyntaxError,
             "trailing unparsed tokens detected",
+            &t.span,
         ));
     }
 
@@ -84,26 +78,20 @@ fn get_last_token(tokens: &[Token]) -> Result<&Token> {
         .ok_or_else(|| Exception::unspanned(SyntaxError, "missing token"))
 }
 
-/// skips the first non-comment token. then:
-/// given `_(foo(), bar(baz()))`, this would take `foo(), bar(baz()))` (no start paren, but with end paren)
+/// given `_(foo(), bar(baz()))`, this would take `(foo(), bar(baz()))` (with start paren, with end paren)
 /// as its argument and return `foo(), bar(baz())` (no start, no end paren).
 ///
 /// returns the tokens in the parens and the rest after them, excluding the start and end parens
-fn find_within_parens(mut tokens: &[Token]) -> Option<(&[Token], &[Token])> {
-    for t in tokens {
-        tokens = &tokens[1..];
-        if !t.is_comment() {
-            break;
-        }
-    }
-    let mut stack = 1u32;
+fn find_within_parens(tokens: &[Token]) -> Option<(&[Token], &[Token])> {
+    let mut stack = 0;
     for (idx, token) in tokens.iter().enumerate() {
         match token.data {
             TokenData::LeftParen => stack += 1,
             TokenData::RightParen => {
+                assert!(stack > 0);
                 stack -= 1;
                 if stack == 0 {
-                    return Some((&tokens[0..idx], &tokens[idx + 1..]));
+                    return Some((&tokens[1..idx], &tokens[idx + 1..]));
                 }
             }
             _ => (),
@@ -169,11 +157,10 @@ fn next_s_step(mut tokens: &[Token]) -> Result<(Argument, &[Token])> {
                         &first.span,
                     ));
                 }
-                if without_comments(remaining).next().is_some() {
-                    body = remaining;
-                } else {
+                if is_token_empty(remaining) {
                     break;
                 }
+                body = remaining;
             }
         }
 
