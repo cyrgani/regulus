@@ -81,7 +81,7 @@ fn get_last_token(tokens: &[Token]) -> Result<&Token> {
 ///
 /// returns the tokens in the parens and the rest after them, excluding the start and end parens
 fn find_within_parens(tokens: &[Token]) -> Option<(&[Token], &[Token])> {
-    let mut stack = 1;
+    let mut stack = 1u32;
     for (idx, token) in tokens.iter().enumerate() {
         match token.data {
             TokenData::LeftParen => stack += 1,
@@ -124,7 +124,7 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
     if let Some(name) = first_token.to_name() {
         // we may not use `?` on the result of `get_token`, since that is valid in the `a` or `n` case
         if let Ok(token_1) = get_token(tokens, 1)
-            && matches!(token_1.data, TokenData::LeftParen)
+            && token_1.is_left_paren()
         {
             if let Some((body, rest)) = find_within_parens(get_tokens_from(tokens, 2)) {
                 let args = if is_token_empty(body) {
@@ -163,30 +163,28 @@ fn next_s_step(tokens: &[Token]) -> Result<(Argument, &[Token])> {
     ))
 }
 
-fn next_x_step(tokens: &[Token]) -> Result<Vec<Argument>> {
-    if is_token_empty(tokens) {
-        // TODO: better error message
-        return Err(Exception::unspanned(
-            SyntaxError,
-            "missing tokens for x_step",
-        ));
+fn next_x_step(mut tokens: &[Token]) -> Result<Vec<Argument>> {
+    let mut args = vec![];
+    loop {
+        let (first_arg, remaining) = next_s_step(tokens)?;
+        args.push(first_arg);
+        let Ok(first) = get_token(remaining, 0) else {
+            return Ok(args);
+        };
+
+        if !first.is_comma() {
+            return Err(Exception::spanned(
+                SyntaxError,
+                "missing comma in argument list",
+                &first.span,
+            ));
+        }
+        if without_comments(remaining).nth(1).is_some() {
+            tokens = get_tokens_from(remaining, 1);
+        } else {
+            return Ok(args);
+        }
     }
-    let (first_arg, remaining) = next_s_step(tokens)?;
-    let mut args = vec![first_arg];
-    if is_token_empty(remaining) {
-        return Ok(args);
-    }
-    if !get_token(remaining, 0)?.is_comma() {
-        return Err(Exception::spanned(
-            SyntaxError,
-            "missing comma in argument list",
-            &get_token(remaining, 0)?.span,
-        ));
-    }
-    if without_comments(remaining).count() > 1 {
-        args.append(&mut next_x_step(get_tokens_from(remaining, 1))?);
-    }
-    Ok(args)
 }
 
 #[cfg(test)]

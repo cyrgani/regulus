@@ -31,6 +31,10 @@ impl Token {
         }
     }
 
+    pub const fn is_left_paren(&self) -> bool {
+        matches!(self.data, TokenData::LeftParen)
+    }
+
     pub const fn is_comma(&self) -> bool {
         matches!(self.data, TokenData::Comma)
     }
@@ -67,10 +71,12 @@ fn take_until(
     Err(result)
 }
 
+const CAP: usize = 10;
+
 pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
     let mut tokens = vec![];
 
-    let mut current = String::new();
+    let mut current = String::with_capacity(CAP);
 
     let mut chars = CharPositions::new(code);
     let mut add_token = |data, start, end| {
@@ -87,12 +93,11 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
             '(' => {
                 if !current.is_empty() {
                     add_token(
-                        TokenData::Name(current.clone()),
-                        current_start_pos.unwrap(),
+                        TokenData::Name(current),
+                        current_start_pos.take().unwrap(),
                         char_pos.one_back(),
                     );
-                    current.clear();
-                    current_start_pos = None;
+                    current = String::with_capacity(CAP);
                 }
                 add_token(TokenData::LeftParen, char_pos, char_pos);
             }
@@ -101,13 +106,12 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
                     add_token(
                         match Atom::try_from_str(&current)? {
                             Some(value) => TokenData::Atom(value),
-                            None => TokenData::Name(current.clone()),
+                            None => TokenData::Name(current),
                         },
-                        current_start_pos.unwrap(),
+                        current_start_pos.take().unwrap(),
                         char_pos.one_back(),
                     );
-                    current.clear();
-                    current_start_pos = None;
+                    current = String::with_capacity(CAP);
                 }
                 add_token(
                     match c {
