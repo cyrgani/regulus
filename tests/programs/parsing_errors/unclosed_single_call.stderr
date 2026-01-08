@@ -1,0 +1,3 @@
+
+SyntaxError: unclosed `(` parenthesis
+at programs/parsing_errors/unclosed_single_call.re:0:2

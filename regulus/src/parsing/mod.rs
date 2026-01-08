@@ -77,21 +77,6 @@ fn is_token_empty(tokens: &[Token]) -> bool {
     without_comments(tokens).next().is_none()
 }
 
-/// Returns all the tokens from the given index and beyond, not counting comments before that index.
-/// Comments after the index are included.
-fn get_tokens_from(mut tokens: &[Token], mut start: usize) -> &[Token] {
-    for t in tokens {
-        if start == 0 {
-            return tokens;
-        }
-        if !t.is_comment() {
-            start -= 1;
-        }
-        tokens = &tokens[1..];
-    }
-    &[]
-}
-
 /// Returns the last token, not counting comments.
 fn get_last_token(tokens: &[Token]) -> Result<&Token> {
     without_comments(tokens)
@@ -99,11 +84,18 @@ fn get_last_token(tokens: &[Token]) -> Result<&Token> {
         .ok_or_else(|| Exception::unspanned(SyntaxError, "missing token"))
 }
 
+/// skips the first non-comment token. then:
 /// given `_(foo(), bar(baz()))`, this would take `foo(), bar(baz()))` (no start paren, but with end paren)
 /// as its argument and return `foo(), bar(baz())` (no start, no end paren).
 ///
 /// returns the tokens in the parens and the rest after them, excluding the start and end parens
-fn find_within_parens(tokens: &[Token]) -> Option<(&[Token], &[Token])> {
+fn find_within_parens(mut tokens: &[Token]) -> Option<(&[Token], &[Token])> {
+    for t in tokens {
+        tokens = &tokens[1..];
+        if !t.is_comment() {
+            break;
+        }
+    }
     let mut stack = 1u32;
     for (idx, token) in tokens.iter().enumerate() {
         match token.data {
@@ -152,54 +144,54 @@ fn next_s_step(mut tokens: &[Token]) -> Result<(Argument, &[Token])> {
     if let Some(token_1) = without_comments(tokens).next()
         && token_1.is_left_paren()
     {
-        if let Some((mut body, rest)) = find_within_parens(get_tokens_from(tokens, 1)) {
-            let mut args = vec![];
-
-            if !is_token_empty(body) {
-                loop {
-                    let (first_arg, mut remaining) = next_s_step(body)?;
-                    args.push(first_arg);
-                    let Ok(first) = take_token(&mut remaining, 0) else {
-                        break;
-                    };
-
-                    if !first.is_comma() {
-                        return Err(Exception::spanned(
-                            SyntaxError,
-                            "missing comma in argument list",
-                            &first.span,
-                        ));
-                    }
-                    if without_comments(remaining).next().is_some() {
-                        body = remaining;
-                    } else {
-                        break;
-                    }
-                }
-            }
-
-            Ok((
-                Argument::FunctionCall(
-                    FunctionCall {
-                        args,
-                        name,
-                        doc_comment: concat_doc_comments(doc_comments),
-                    },
-                    Span::new(
-                        token_1.span.start,
-                        get_last_token(tokens)?.span.end,
-                        token_1.span.file.clone(),
-                    ),
-                ),
-                rest,
-            ))
-        } else {
-            Err(Exception::spanned(
+        let Some((mut body, rest)) = find_within_parens(tokens) else {
+            return Err(Exception::spanned(
                 SyntaxError,
                 "unclosed `(` parenthesis",
                 &token_1.span,
-            ))
+            ));
+        };
+
+        let mut args = vec![];
+
+        if !is_token_empty(body) {
+            loop {
+                let (first_arg, mut remaining) = next_s_step(body)?;
+                args.push(first_arg);
+                let Ok(first) = take_token(&mut remaining, 0) else {
+                    break;
+                };
+
+                if !first.is_comma() {
+                    return Err(Exception::spanned(
+                        SyntaxError,
+                        "missing comma in argument list",
+                        &first.span,
+                    ));
+                }
+                if without_comments(remaining).next().is_some() {
+                    body = remaining;
+                } else {
+                    break;
+                }
+            }
         }
+
+        Ok((
+            Argument::FunctionCall(
+                FunctionCall {
+                    args,
+                    name,
+                    doc_comment: concat_doc_comments(doc_comments),
+                },
+                Span::new(
+                    token_1.span.start,
+                    get_last_token(tokens)?.span.end,
+                    token_1.span.file.clone(),
+                ),
+            ),
+            rest,
+        ))
     } else {
         Ok((Argument::Variable(name, first_token.span.clone()), tokens))
     }
