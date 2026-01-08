@@ -1,0 +1,3 @@
+
+SyntaxError: expected atom or ident
+at programs/parsing_errors/bad_parens.re:2:1

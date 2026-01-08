@@ -1,0 +1,3 @@
+
+SyntaxError: expected atom or ident
+at programs/parsing_errors/garbage.re:1:3

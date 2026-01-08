@@ -225,4 +225,11 @@ mod tests {
             "SyntaxError: expected atom or ident\nat <file>:0:1"
         );
     }
+
+    #[test]
+    fn atom_fn() {
+        let prog = build_program(tokenize("2(4)", no_path()).unwrap());
+
+        assert_eq!(prog.unwrap().stringify(), "2(4)");
+    }
 }

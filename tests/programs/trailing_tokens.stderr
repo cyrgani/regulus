@@ -1,3 +1,0 @@
-
-SyntaxError: trailing unparsed tokens detected
-at programs/trailing_tokens.re:1:10

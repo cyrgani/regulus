@@ -1,0 +1,3 @@
+
+SyntaxError: missing comma in argument list
+at programs/parsing_errors/spaces_in_variables.re:2:5

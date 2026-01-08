@@ -1,0 +1,3 @@
+
+SyntaxError: trailing unparsed tokens detected
+at programs/parsing_errors/single_right_paren.re:2:1

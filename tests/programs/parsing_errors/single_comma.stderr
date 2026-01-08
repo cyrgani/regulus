@@ -1,0 +1,3 @@
+
+SyntaxError: expected atom or ident
+at programs/parsing_errors/single_comma.re:1:1
