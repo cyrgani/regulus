@@ -14,15 +14,15 @@ use crate::prelude::*;
 pub use positions::{Position, Span};
 pub(crate) use token::{TokenData, tokenize};
 
+fn syntax_error<T>(msg: impl Into<String>, span: &Span) -> Result<T> {
+    Err(Exception::spanned(SyntaxError, msg, span))
+}
+
 pub fn build_program(tokens: Vec<Token>) -> Result<Argument> {
     let (arg, rest) = next_s_step(&tokens)?;
 
     if let Some(t) = without_comments(rest).next() {
-        return Err(Exception::spanned(
-            SyntaxError,
-            "trailing unparsed tokens detected",
-            &t.span,
-        ));
+        return syntax_error("trailing unparsed tokens detected", &t.span);
     }
 
     Ok(arg)
@@ -71,13 +71,6 @@ fn is_token_empty(tokens: &[Token]) -> bool {
     without_comments(tokens).next().is_none()
 }
 
-/// Returns the last token, not counting comments.
-fn get_last_token(tokens: &[Token]) -> Result<&Token> {
-    without_comments(tokens)
-        .next_back()
-        .ok_or_else(|| Exception::unspanned(SyntaxError, "missing token"))
-}
-
 /// given `_(foo(), bar(baz()))`, this would take `(foo(), bar(baz()))` (with start paren, with end paren)
 /// as its argument and return `foo(), bar(baz())` (no start, no end paren).
 ///
@@ -122,22 +115,14 @@ fn next_s_step(mut tokens: &[Token]) -> Result<(Argument, &[Token])> {
         return Ok((Argument::Atom(atom, first_token.span.clone()), tokens));
     }
     let Some(name) = first_token.to_name() else {
-        return Err(Exception::spanned(
-            SyntaxError,
-            "expected atom or ident",
-            &first_token.span,
-        ));
+        return syntax_error("expected atom or ident", &first_token.span);
     };
     // we may not use `unwrap` here, since that is valid in the `a` or `n` case
     if let Some(token_1) = without_comments(tokens).next()
         && token_1.is_left_paren()
     {
         let Some((mut body, rest)) = find_within_parens(tokens) else {
-            return Err(Exception::spanned(
-                SyntaxError,
-                "unclosed `(` parenthesis",
-                &token_1.span,
-            ));
+            return syntax_error("unclosed `(` parenthesis", &token_1.span);
         };
 
         let mut args = vec![];
@@ -151,11 +136,7 @@ fn next_s_step(mut tokens: &[Token]) -> Result<(Argument, &[Token])> {
                 };
 
                 if !first.is_comma() {
-                    return Err(Exception::spanned(
-                        SyntaxError,
-                        "missing comma in argument list",
-                        &first.span,
-                    ));
+                    return syntax_error("missing comma in argument list", &first.span);
                 }
                 if is_token_empty(remaining) {
                     break;
@@ -173,7 +154,7 @@ fn next_s_step(mut tokens: &[Token]) -> Result<(Argument, &[Token])> {
                 },
                 Span::new(
                     token_1.span.start,
-                    get_last_token(tokens)?.span.end,
+                    without_comments(tokens).next_back().unwrap().span.end,
                     token_1.span.file.clone(),
                 ),
             ),
