@@ -1,2 +1,3 @@
 
-SyntaxError: missing or invalid tokens for s_step
+SyntaxError: unclosed `(` parenthesis
+at programs/parsing_errors/single_left_paren.re:0:2

@@ -178,7 +178,7 @@ fn next_s_step(mut tokens: &[Token]) -> Result<(Argument, &[Token])> {
                 }
             }
 
-            return Ok((
+            Ok((
                 Argument::FunctionCall(
                     FunctionCall {
                         args,
@@ -192,16 +192,17 @@ fn next_s_step(mut tokens: &[Token]) -> Result<(Argument, &[Token])> {
                     ),
                 ),
                 rest,
-            ));
+            ))
+        } else {
+            Err(Exception::spanned(
+                SyntaxError,
+                "unclosed `(` parenthesis",
+                &token_1.span,
+            ))
         }
     } else {
-        return Ok((Argument::Variable(name, first_token.span.clone()), tokens));
+        Ok((Argument::Variable(name, first_token.span.clone()), tokens))
     }
-    // TODO: better error message
-    Err(Exception::unspanned(
-        SyntaxError,
-        "missing or invalid tokens for s_step",
-    ))
 }
 
 #[cfg(test)]
