@@ -1,6 +1,7 @@
 use crate::atom::Atom;
 use crate::exception::{Exception, Result, SyntaxError};
 use crate::parsing::positions::{CharPositions, Position, Span};
+use crate::parsing::syntax_error;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::result;
@@ -23,16 +24,12 @@ impl Token {
         }
     }
 
-    pub fn to_name(&self) -> Option<String> {
+    pub fn to_name(&self) -> Result<String> {
         if let TokenData::Name(name) = &self.data {
-            Some(name.clone())
+            Ok(name.clone())
         } else {
-            None
+            syntax_error("expected atom or ident", &self.span)
         }
-    }
-
-    pub const fn is_left_paren(&self) -> bool {
-        matches!(self.data, TokenData::LeftParen)
     }
 
     pub const fn is_comma(&self) -> bool {
