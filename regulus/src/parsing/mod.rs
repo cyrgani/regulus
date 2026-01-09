@@ -19,9 +19,10 @@ fn syntax_error<T>(msg: impl Into<String>, span: &Span) -> Result<T> {
 }
 
 pub fn build_program(tokens: Vec<Token>) -> Result<Argument> {
-    let (arg, rest) = next_s_step(&tokens)?;
+    let mut cursor = tokens.as_slice();
+    let arg = next_s_step(&mut cursor)?;
 
-    if let Some(t) = without_comments(rest).next() {
+    if let Some(t) = without_comments(cursor).next() {
         return syntax_error("trailing unparsed tokens detected", &t.span);
     }
 
@@ -32,30 +33,9 @@ fn without_comments(tokens: &[Token]) -> impl DoubleEndedIterator<Item = &Token>
     tokens.iter().filter(|t| !t.is_comment())
 }
 
-/// Returns the token with the given index, not counting comments,
-/// then moves `tokens` forward until right after the returned token.
-fn take_token<'a>(tokens: &mut &'a [Token], idx: usize) -> Result<&'a Token> {
-    let mut n = 0;
-    loop {
-        let Some(next) = tokens.first() else {
-            return Err(Exception::unspanned(SyntaxError, "missing token"));
-        };
-        *tokens = &tokens[1..];
-        if next.is_comment() {
-            continue;
-        }
-        if n == idx {
-            return Ok(next);
-        }
-        n += 1;
-    }
-}
-
 /// Returns all comments before the first non-comment token, then the token itself.
 /// Moves `tokens` forward, right after the returned token.
-fn take_first_token_and_doc_comments<'a>(
-    tokens: &mut &'a [Token],
-) -> Result<(&'a [Token], &'a Token)> {
+fn eat_commented_token<'a>(tokens: &mut &'a [Token]) -> Result<(&'a [Token], &'a Token)> {
     for i in 0..tokens.len() {
         if !tokens[i].is_comment() {
             let r = Ok((&tokens[0..i], &tokens[i]));
@@ -67,15 +47,11 @@ fn take_first_token_and_doc_comments<'a>(
     Err(Exception::unspanned(SyntaxError, "missing token"))
 }
 
-fn is_token_empty(tokens: &[Token]) -> bool {
-    without_comments(tokens).next().is_none()
-}
-
 /// given `_(foo(), bar(baz()))`, this would take `(foo(), bar(baz()))` (with start paren, with end paren)
 /// as its argument and return `foo(), bar(baz())` (no start, no end paren).
 ///
-/// returns the tokens in the parens and the rest after them, excluding the start and end parens
-fn find_within_parens(tokens: &[Token]) -> Option<(&[Token], &[Token])> {
+/// returns the tokens in the parens (excluding start and end parens), then moves `tokens` forward until right after the end paren.
+fn find_within_parens<'a>(tokens: &mut &'a [Token]) -> Option<&'a [Token]> {
     let mut stack = 0;
     for (idx, token) in tokens.iter().enumerate() {
         match token.data {
@@ -84,7 +60,9 @@ fn find_within_parens(tokens: &[Token]) -> Option<(&[Token], &[Token])> {
                 assert!(stack > 0);
                 stack -= 1;
                 if stack == 0 {
-                    return Some((&tokens[1..idx], &tokens[idx + 1..]));
+                    let inner = &tokens[1..idx];
+                    *tokens = &tokens[idx + 1..];
+                    return Some(inner);
                 }
             }
             _ => (),
@@ -109,10 +87,10 @@ fn concat_doc_comments(tokens: &[Token]) -> String {
 }
 
 /// returns the constructed argument and all remaining tokens
-fn next_s_step(mut tokens: &[Token]) -> Result<(Argument, &[Token])> {
-    let (doc_comments, first_token) = take_first_token_and_doc_comments(&mut tokens)?;
+fn next_s_step(tokens: &mut &[Token]) -> Result<Argument> {
+    let (doc_comments, first_token) = eat_commented_token(tokens)?;
     if let Some(atom) = first_token.to_atom() {
-        return Ok((Argument::Atom(atom, first_token.span.clone()), tokens));
+        return Ok(Argument::Atom(atom, first_token.span.clone()));
     }
     let Some(name) = first_token.to_name() else {
         return syntax_error("expected atom or ident", &first_token.span);
@@ -121,47 +99,43 @@ fn next_s_step(mut tokens: &[Token]) -> Result<(Argument, &[Token])> {
     if let Some(token_1) = without_comments(tokens).next()
         && token_1.is_left_paren()
     {
-        let Some((mut body, rest)) = find_within_parens(tokens) else {
+        let Some(mut body) = find_within_parens(tokens) else {
             return syntax_error("unclosed `(` parenthesis", &token_1.span);
         };
 
         let mut args = vec![];
 
-        if !is_token_empty(body) {
-            loop {
-                let (first_arg, mut remaining) = next_s_step(body)?;
-                args.push(first_arg);
-                let Ok(first) = take_token(&mut remaining, 0) else {
-                    break;
-                };
+        loop {
+            if without_comments(body).next().is_none() {
+                break;
+            }
+            let first_arg = next_s_step(&mut body)?;
+            args.push(first_arg);
+            let Ok((_, first)) = eat_commented_token(&mut body) else {
+                break;
+            };
 
-                if !first.is_comma() {
-                    return syntax_error("missing comma in argument list", &first.span);
-                }
-                if is_token_empty(remaining) {
-                    break;
-                }
-                body = remaining;
+            if !first.is_comma() {
+                return syntax_error("missing comma in argument list", &first.span);
             }
         }
 
-        Ok((
-            Argument::FunctionCall(
-                FunctionCall {
-                    args,
-                    name,
-                    doc_comment: concat_doc_comments(doc_comments),
-                },
-                Span::new(
-                    token_1.span.start,
-                    without_comments(tokens).next_back().unwrap().span.end,
-                    token_1.span.file.clone(),
-                ),
+        Ok(Argument::FunctionCall(
+            FunctionCall {
+                args,
+                name,
+                doc_comment: concat_doc_comments(doc_comments),
+            },
+            Span::new(
+                token_1.span.start,
+                without_comments(tokens)
+                    .next_back()
+                    .map_or(token_1.span.end, |tok| tok.span.end),
+                token_1.span.file.clone(),
             ),
-            rest,
         ))
     } else {
-        Ok((Argument::Variable(name, first_token.span.clone()), tokens))
+        Ok(Argument::Variable(name, first_token.span.clone()))
     }
 }
 
