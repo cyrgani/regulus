@@ -20,7 +20,7 @@ fn syntax_error<T>(msg: impl Into<String>, span: &Span) -> Result<T> {
 
 pub fn build_program(tokens: Vec<Token>) -> Result<Argument> {
     let mut cursor = tokens.as_slice();
-    let arg = parse_subprogram(&mut cursor)?;
+    let arg = build_subprogram(&mut cursor)?;
 
     if let Some(t) = without_comments(cursor).next() {
         return syntax_error("trailing unparsed tokens detected", &t.span);
@@ -50,8 +50,9 @@ fn eat_commented_token<'a>(tokens: &mut &'a [Token]) -> Result<(&'a [Token], &'a
 /// given `_(foo(), bar(baz()))`, this would take `(foo(), bar(baz()))` (with start paren, with end paren)
 /// as its argument and return `foo(), bar(baz())` (no start, no end paren).
 ///
-/// returns the tokens in the parens (excluding start and end parens), then moves `tokens` forward until right after the end paren.
-fn find_within_parens<'a>(tokens: &mut &'a [Token]) -> Result<&'a [Token]> {
+/// sets `tokens` to the tokens in the parens (excluding start and end parens,
+/// returns the span of the end paren and the tokens after that.
+fn extract_within_parens<'a>(tokens: &mut &'a [Token]) -> Result<(Span, &'a [Token])> {
     // note: tokens[0] will always be a `(`
     let mut stack = 1u32;
     for i in 1..tokens.len() {
@@ -60,9 +61,10 @@ fn find_within_parens<'a>(tokens: &mut &'a [Token]) -> Result<&'a [Token]> {
             TokenData::RightParen => {
                 stack -= 1;
                 if stack == 0 {
-                    let inner = &tokens[1..i];
-                    *tokens = &tokens[i + 1..];
-                    return Ok(inner);
+                    let span = tokens[i].span.clone();
+                    let rest = &tokens[i + 1..];
+                    *tokens = &tokens[1..i];
+                    return Ok((span, rest));
                 }
             }
             _ => (),
@@ -87,10 +89,10 @@ fn concat_doc_comments(tokens: &[Token]) -> String {
 }
 
 /// returns the constructed argument
-fn parse_subprogram(tokens: &mut &[Token]) -> Result<Argument> {
+fn build_subprogram(tokens: &mut &[Token]) -> Result<Argument> {
     let (doc_comments, first_token) = eat_commented_token(tokens)?;
     if let Some(atom) = first_token.to_atom() {
-        return Ok(Argument::Atom(atom, first_token.span.clone()));
+        return Ok(atom);
     }
     let name = first_token.to_name()?;
 
@@ -99,23 +101,21 @@ fn parse_subprogram(tokens: &mut &[Token]) -> Result<Argument> {
         span: left_paren_span,
     }) = without_comments(tokens).next()
     {
-        let mut body = find_within_parens(tokens)?;
+        let (right_paren_span, rest) = extract_within_parens(tokens)?;
         let mut args = vec![];
 
-        loop {
-            if without_comments(body).next().is_none() {
-                break;
-            }
-            let first_arg = parse_subprogram(&mut body)?;
-            args.push(first_arg);
-            let Ok((_, first)) = eat_commented_token(&mut body) else {
+        while without_comments(tokens).next().is_some() {
+            args.push(build_subprogram(tokens)?);
+
+            let Ok((_, comma)) = eat_commented_token(tokens) else {
                 break;
             };
 
-            if !first.is_comma() {
-                return syntax_error("missing comma in argument list", &first.span);
+            if !comma.is_comma() {
+                return syntax_error("missing comma in argument list", &comma.span);
             }
         }
+        *tokens = rest;
 
         Ok(Argument::FunctionCall(
             FunctionCall {
@@ -123,13 +123,10 @@ fn parse_subprogram(tokens: &mut &[Token]) -> Result<Argument> {
                 name,
                 doc_comment: concat_doc_comments(doc_comments),
             },
-            Span::new(
-                left_paren_span.start,
-                without_comments(tokens)
-                    .next_back()
-                    .map_or(left_paren_span.end, |tok| tok.span.end),
-                left_paren_span.file.clone(),
-            ),
+            Span {
+                start: left_paren_span.start,
+                ..right_paren_span
+            },
         ))
     } else {
         Ok(Argument::Variable(name, first_token.span.clone()))
@@ -161,7 +158,15 @@ mod tests {
     #[test]
     fn atom_fn() {
         let prog = build_program(tokenize("2(4)", no_path()).unwrap());
-
         assert_eq!(prog.unwrap().stringify(), "2(4)");
+    }
+
+    #[test]
+    fn two_commas() {
+        let prog = build_program(tokenize("_(4,,4)", no_path()).unwrap());
+        assert_eq!(
+            prog.unwrap_err().to_string(),
+            "SyntaxError: expected atom or ident\nat <file>:0:5"
+        );
     }
 }

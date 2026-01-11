@@ -2,6 +2,7 @@ use crate::atom::Atom;
 use crate::exception::{Exception, Result, SyntaxError};
 use crate::parsing::positions::{CharPositions, Position, Span};
 use crate::parsing::syntax_error;
+use crate::prelude::Argument;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::result;
@@ -16,9 +17,9 @@ pub(crate) struct Token {
 }
 
 impl Token {
-    pub fn to_atom(&self) -> Option<Atom> {
+    pub fn to_atom(&self) -> Option<Argument> {
         if let TokenData::Atom(atom) = &self.data {
-            Some(atom.clone())
+            Some(Argument::Atom(atom.clone(), self.span.clone()))
         } else {
             None
         }
@@ -165,7 +166,7 @@ fn last_pos(code: &str) -> Position {
 /// Returns `None` if the span is invalid (end before start or out of bounds).
 // TODO: use or remove
 #[cfg_attr(not(test), expect(dead_code))]
-pub fn extract(text: &str, span: Span) -> Option<String> {
+pub fn extract(text: &str, span: &Span) -> Option<String> {
     let mut start_found = false;
 
     let mut s = String::new();
@@ -208,24 +209,24 @@ mod tests {
     #[test]
     fn extract_1() {
         let t = "abc\nde\nf\nghi\n";
-        assert_eq!(extract(t, sp(1, 1, 1, 4)), so("abc\n"));
-        assert_eq!(extract(t, sp(1, 1, 2, 2)), so("abc\nde"));
-        assert_eq!(extract(t, sp(1, 1, 2, 1)), so("abc\nd"));
-        assert_eq!(extract(t, sp(1, 3, 2, 2)), so("c\nde"));
-        assert_eq!(extract(t, sp(1, 1, 1, 2)), so("ab"));
-        assert_eq!(extract(t, sp(1, 1, 1, 1)), so("a"));
-        assert_eq!(extract(t, sp(1, 1, 1, 1000)), None);
-        assert_eq!(extract(t, sp(1, 2, 1, 1)), None);
-        assert_eq!(extract(t, sp(2, 2, 3, 2)), so("e\nf\n"));
-        assert_eq!(extract(t, sp(3, 1, 1, 1)), None);
-        assert_eq!(extract(t, sp(2, 1, 1, 4)), None);
-        assert_eq!(extract(t, sp(2, 2, 2, 2)), so("e"));
-        assert_eq!(extract(t, sp(3, 2, 3, 2)), so("\n"));
-        assert_eq!(extract(t, sp(4, 5, 4, 5)), None);
-        assert_eq!(extract(t, sp(4, 5, 4, 4)), None);
-        assert_eq!(extract(t, sp(3, 2, 4, 1)), so("\ng"));
-        assert_eq!(extract(t, sp(3, 2, 6, 1)), None);
-        assert_eq!(extract(t, sp(3, 3, 4, 1)), None);
+        assert_eq!(extract(t, &sp(1, 1, 1, 4)), so("abc\n"));
+        assert_eq!(extract(t, &sp(1, 1, 2, 2)), so("abc\nde"));
+        assert_eq!(extract(t, &sp(1, 1, 2, 1)), so("abc\nd"));
+        assert_eq!(extract(t, &sp(1, 3, 2, 2)), so("c\nde"));
+        assert_eq!(extract(t, &sp(1, 1, 1, 2)), so("ab"));
+        assert_eq!(extract(t, &sp(1, 1, 1, 1)), so("a"));
+        assert_eq!(extract(t, &sp(1, 1, 1, 1000)), None);
+        assert_eq!(extract(t, &sp(1, 2, 1, 1)), None);
+        assert_eq!(extract(t, &sp(2, 2, 3, 2)), so("e\nf\n"));
+        assert_eq!(extract(t, &sp(3, 1, 1, 1)), None);
+        assert_eq!(extract(t, &sp(2, 1, 1, 4)), None);
+        assert_eq!(extract(t, &sp(2, 2, 2, 2)), so("e"));
+        assert_eq!(extract(t, &sp(3, 2, 3, 2)), so("\n"));
+        assert_eq!(extract(t, &sp(4, 5, 4, 5)), None);
+        assert_eq!(extract(t, &sp(4, 5, 4, 4)), None);
+        assert_eq!(extract(t, &sp(3, 2, 4, 1)), so("\ng"));
+        assert_eq!(extract(t, &sp(3, 2, 6, 1)), None);
+        assert_eq!(extract(t, &sp(3, 3, 4, 1)), None);
     }
 
     #[test]
@@ -238,7 +239,7 @@ mod tests {
 
         let parts = tokens
             .into_iter()
-            .map(|t| extract(code, t.span).unwrap())
+            .map(|t| extract(code, &t.span).unwrap())
             .collect::<Vec<_>>();
 
         assert_eq!(

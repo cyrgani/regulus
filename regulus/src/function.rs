@@ -1,4 +1,4 @@
-use crate::exception::ArgumentError;
+use crate::exception::{ArgumentError, NameError};
 use crate::prelude::*;
 use std::fmt;
 use std::rc::Rc;
@@ -15,9 +15,17 @@ impl FunctionCall {
         if state.exit_unwind_value.is_some() {
             return Ok(Atom::Null);
         }
-        let function = state.get_function(&self.name)?;
-
-        function.call(state, &self.args)
+        let name = &self.name;
+        match state.storage.get(name) {
+            Some(atom) => {
+                if let Atom::Function(func) = atom {
+                    func.clone().call(state, &self.args)
+                } else {
+                    raise!(state, NameError, "`{name}` is not a function!")
+                }
+            }
+            None => raise!(state, NameError, "No function `{name}` found!"),
+        }
     }
 
     /// Returns an approximation of the source code of this function call.

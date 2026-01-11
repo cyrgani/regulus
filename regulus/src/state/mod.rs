@@ -1,6 +1,5 @@
 mod storage;
 
-use crate::exception::NameError;
 use crate::no_path;
 use crate::optimizations::run_optimizations;
 use crate::parsing::{build_program, tokenize};
@@ -55,7 +54,7 @@ impl Default for State {
     }
 }
 
-#[expect(
+#[allow(
     clippy::missing_const_for_fn,
     reason = "type cannot be constructed in const anyway"
 )]
@@ -209,20 +208,6 @@ impl State {
     /// Constructs a new exception with the given error and message at the current point of execution.
     pub fn raise(&self, error: impl Into<String>, msg: impl Into<String>) -> Exception {
         Exception::with_trace(error, msg, &self.backtrace)
-    }
-
-    // TODO: this function is weird
-    pub(crate) fn get_function(&self, name: &str) -> Result<Function> {
-        match self.storage.get(name) {
-            Some(atom) => {
-                if let Atom::Function(func) = atom {
-                    Ok(func.clone())
-                } else {
-                    raise!(self, NameError, "`{name}` is not a function!")
-                }
-            }
-            None => raise!(self, NameError, "No function `{name}` found!"),
-        }
     }
 }
 
