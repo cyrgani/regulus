@@ -43,7 +43,7 @@ pub struct State {
     pub(crate) import_stack: Vec<PathBuf>,
     code: Option<String>,
     next_type_id: i64,
-    optimizations_enabled: bool,
+    pub(crate) optimizations_enabled: bool,
     // make sure this type can never be constructed from outside
     __private: (),
 }

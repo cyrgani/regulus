@@ -110,11 +110,11 @@ functions! {
         let index = atom_to_index(&args[1], state)?;
         match &mut seq {
             StringOrVec::String(s) => {
-                let char = args[2].string_e(state)?;
-                if char.len() != 1 {
+                let ch = args[2].string_e(state)?;
+                if ch.len() != 1 {
                     raise!(state, IndexError, "atom is not a single character")
                 }
-                s.replace_range(index..=index, &char);
+                s.replace_range(index..=index, &ch);
             }
             StringOrVec::Vec(v) => {
                 *v.get_mut(index).ok_or_else(|| {

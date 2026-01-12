@@ -51,7 +51,7 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
         .iter()
         .map(|fn_arg| {
             Ok(FnArgument::new(fn_arg.variable(
-                "Error during definition: invalid args were given!",
+                "invalid function definition: tried to use non-variables as argument names",
                 state,
             )?))
         })
@@ -152,7 +152,7 @@ functions! {
                 "too few arguments passed to `def`: expected at least 2, found {}", args.len()
             );
         };
-        let var = var.variable("Error during function definition: no valid variable was given to define to!", state)?;
+        let var = var.variable("invalid function definition: no valid variable was given to define to", state)?;
 
         state.storage.insert(var, define_function(body, fn_args, state)?);
         Ok(Atom::Null)

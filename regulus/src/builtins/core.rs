@@ -23,7 +23,7 @@ functions! {
     ///
     /// This function has an alias: `assign`.
     "="(2) => |state, args| {
-        let var = args[0].variable("Error during assignment: no variable was given to assign to!", state)?;
+        let var = args[0].variable("invalid assignment: tried to assign to a non-variable", state)?;
         let value = args[1].eval(state)?.into_owned();
         state.storage.insert(var, value);
         Ok(Atom::Null)

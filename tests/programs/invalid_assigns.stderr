@@ -1,0 +1,9 @@
+ArgumentError: invalid assignment: tried to assign to a non-variable
+at programs/invalid_assigns.re:3:24
+at programs/invalid_assigns.re:3:22
+ArgumentError: invalid assignment: tried to assign to a non-variable
+at programs/invalid_assigns.re:4:24
+at programs/invalid_assigns.re:4:22
+ArgumentError: invalid assignment: tried to assign to a non-variable
+at programs/invalid_assigns.re:5:24
+at programs/invalid_assigns.re:5:22

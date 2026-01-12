@@ -31,7 +31,15 @@ pub fn run_test(dir_path: &str, name: &str, optimize: bool) {
     let mut state = State::new()
         .with_source_file(base_path.with_extension(FILE_EXTENSION))
         .expect("fatal error: program file not found");
+
     if optimize {
+        if fs::read_to_string(base_path.with_extension(FILE_EXTENSION))
+            .unwrap()
+            .contains("__builtin_no_test_if_opt")
+        {
+            return;
+        }
+
         state = state.enable_optimizations();
     }
     state.stdin = Box::new(BufReader::new(RwVec(
