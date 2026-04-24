@@ -123,7 +123,11 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
             }
             '"' => {
                 let Ok((end_pos, body)) = take_until(chars.by_ref(), '"') else {
-                    return Err(Exception::unspanned(SyntaxError, "unclosed string literal"));
+                    return Err(Exception::spanned(
+                        SyntaxError,
+                        "unclosed string literal",
+                        &Span::new(char_pos, char_pos, file_path),
+                    ));
                 };
                 add_token(TokenData::Atom(Atom::String(body)), char_pos, end_pos);
             }

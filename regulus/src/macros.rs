@@ -52,7 +52,7 @@ macro_rules! functions {
                 $((
                     $name,
                     $crate::prelude::Function::new(
-                        [$($doc),*].map(|s| s.trim_start()).join("\n"),
+                        [$($doc),*].map(str::trim_start).join("\n"),
                         $crate::make_argc!($argc),
                         $callback,
                     ),

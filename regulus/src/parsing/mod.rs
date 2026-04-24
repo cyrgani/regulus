@@ -8,9 +8,9 @@
 mod positions;
 mod token;
 
-use crate::exception::SyntaxError;
 use crate::parsing::token::Token;
 use crate::prelude::*;
+use crate::{exception::SyntaxError, no_path};
 pub use positions::{Position, Span};
 pub(crate) use token::{TokenData, tokenize};
 
@@ -44,7 +44,14 @@ fn eat_commented_token<'a>(tokens: &mut &'a [Token]) -> Result<(&'a [Token], &'a
         }
     }
 
-    Err(Exception::unspanned(SyntaxError, "missing token"))
+    // this error can only be caused in two ways:
+    // * when parsing an argument list comma, but then the error message is discarded
+    // * by parsing a program with zero non-comment tokens, so a unhelpful span is fine
+    Err(Exception::spanned(
+        SyntaxError,
+        "program contains no non-comment tokens",
+        &Span::new(Position::ONE, Position::ONE, no_path()),
+    ))
 }
 
 /// given `_(foo(), bar(baz()))`, this would take `(foo(), bar(baz()))` (with start paren, with end paren)
@@ -167,6 +174,15 @@ mod tests {
         assert_eq!(
             prog.unwrap_err().to_string(),
             "SyntaxError: expected atom or ident\nat <file>:0:5"
+        );
+    }
+
+    #[test]
+    fn empty_program() {
+        let prog = build_program(tokenize("", no_path()).unwrap());
+        assert_eq!(
+            prog.unwrap_err().to_string(),
+            "SyntaxError: program contains no non-comment tokens\nat <file>:1:1"
         );
     }
 }

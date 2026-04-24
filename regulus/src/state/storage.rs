@@ -96,6 +96,7 @@ impl Storage {
         self.current_scope -= 1;
     }
 
+    #[expect(clippy::missing_panics_doc)]
     pub fn extend_from(&mut self, other: Self) {
         assert_eq!(other.current_scope, 0);
         for (name, value) in other.data {
