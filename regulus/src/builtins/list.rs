@@ -8,13 +8,16 @@ fn atom_to_index(atom: &Atom, state: &State) -> Result<usize> {
 }
 
 functions! {
-    /// Appends the second argument at the back of the list given as first argument and returns
-    /// the new list.
-    "append"(2) => |state, args| {
-        let args = eagerly_evaluate(state, args)?;
-        let mut seq = args[0].list_e(state)?;
-        seq.push(args[1].clone());
-        Ok(Atom::List(seq))
+    /// Insert a value at an index into a list.
+    /// Argument order: list, index, element.
+    /// The index must be positive and not larger than the length of the list.
+    /// That means that inserting at exactly `len(list)` is allowed.
+    "insert"(3) => |state, args| {
+        let mut list = args[0].eval_list(state)?;
+        let index = atom_to_index(&args[1].eval(state)?.into_owned(), state)?;
+        let element = args[2].eval(state)?;
+        list.insert(index, element.into_owned());
+        Ok(Atom::List(list))
     }
     /// Returns the value in the first list argument at the second integer argument.
     /// Raises an exception if the index is out of bounds.

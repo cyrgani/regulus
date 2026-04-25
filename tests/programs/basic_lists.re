@@ -36,3 +36,8 @@ assert_eq(reverse("123"), "321"),
 assert_eq(reverse("12"), "21"),
 assert_eq(reverse("1"), "1"),
 assert_eq(reverse(""), ""),
+
+assert_eq(insert("", 0, 'a'), "a"),
+assert_eq(insert("b", 0, 'a'), "ab"),
+assert_eq(insert("b", 1, 'a'), "ba"),
+assert_eq(insert("bcd", 1, 'a'), "bacd"),

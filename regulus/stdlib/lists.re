@@ -1,5 +1,9 @@
 import(range),
 
+# Appends the second argument at the back of the list given as first argument and returns
+# the new list.
+def(append, l, elem, insert(l, len(l), elem)),
+
 # Applies the second argument function to each element of the first argument list and returns
 # the updated list.
 def(map, seq, function, _(
