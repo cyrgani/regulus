@@ -6,7 +6,7 @@ functions! {
     "doc"(1) => |state, args| {
         let arg = args[0].eval(state)?;
         if let Atom::Function(f) = &*arg {
-            Ok(Atom::String(f.doc().to_string()))
+            Ok(Atom::new_string(f.doc()))
         } else {
             raise!(state, ArgumentError, "`doc` must be called on a function")
         }

@@ -12,7 +12,6 @@ pub enum Atom {
     Char(char),
     Null,
     List(Vec<Self>),
-    String(String),
     Function(Function),
     Object(Object),
 }
@@ -67,9 +66,8 @@ impl Atom {
     pub const CHAR_TY_ID: i64 = 2;
     pub const NULL_TY_ID: i64 = 3;
     pub const LIST_TY_ID: i64 = 4;
-    pub const STRING_TY_ID: i64 = 5;
-    pub const FUNCTION_TY_ID: i64 = 6;
-    pub const MIN_OBJECT_TY_ID: i64 = 7;
+    pub const FUNCTION_TY_ID: i64 = 5;
+    pub const MIN_OBJECT_TY_ID: i64 = 6;
 
     pub const fn ty_id(&self) -> i64 {
         match self {
@@ -78,9 +76,25 @@ impl Atom {
             Self::Char(_) => Self::CHAR_TY_ID,
             Self::Null => Self::NULL_TY_ID,
             Self::List(_) => Self::LIST_TY_ID,
-            Self::String(_) => Self::STRING_TY_ID,
             Self::Function(_) => Self::FUNCTION_TY_ID,
             Self::Object(o) => o.ty_id,
+        }
+    }
+
+    pub fn new_string(s: &str) -> Self {
+        Self::List(s.chars().map(Self::Char).collect())
+    }
+
+    pub fn as_string(&self) -> Option<String> {
+        match self {
+            Self::List(l) => l
+                .iter()
+                .map(|el| match el {
+                    Self::Char(c) => Some(*c),
+                    _ => None,
+                })
+                .collect(),
+            _ => None,
         }
     }
 
@@ -91,9 +105,11 @@ impl Atom {
     }
 
     pub fn stringify(&self) -> String {
+        if let Some(s) = self.as_string() {
+            return format!("\"{s}\"");
+        }
         match self {
-            Self::String(s) => format!("\"{s}\""),
-            Self::Char(c) => format!("\"{c}\""),
+            Self::Char(c) => format!("'{c}'"),
             _ => self.to_string(),
         }
     }
@@ -135,13 +151,15 @@ atom_try_as_variant_methods! {
     bool, bool_e: Bool -> bool;
     char, char_e: Char -> char;
     list, list_e: List -> Vec<Self>;
-    string, string_e: String -> String;
     function, function_e: Function -> Function;
     object, object_e: Object -> Object;
 }
 
 impl fmt::Display for Atom {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(s) = self.as_string() {
+            return write!(f, "{s}");
+        }
         match self {
             Self::Bool(val) => write!(f, "{val}"),
             Self::Function(func) => write!(
@@ -163,7 +181,6 @@ impl fmt::Display for Atom {
                     .join(", ")
             ),
             Self::Null => write!(f, "null"),
-            Self::String(val) => write!(f, "{val}"),
             Self::Object(obj) => {
                 write!(f, "{{")?;
                 let mut ordered = obj.data.iter().collect::<Vec<_>>();

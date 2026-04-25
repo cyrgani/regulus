@@ -4,18 +4,10 @@
 /// ```rust
 /// use regulus::prelude::*;
 /// functions! {
-///     /// Length of a string.
-///     "strlen"(1) => |state, args| {
-///         let len = args[0].eval(state)?.string()?.len();
+///     /// Length of a list.
+///     "len"(1) => |state, args| {
+///         let len = args[0].eval(state)?.list()?.len();
 ///         Ok(Atom::Int(len as i64))
-///     }
-///     /// Concatenate strings.
-///     "strconcat"(_) => |state, args| {
-///         let mut string = String::new();
-///         for arg in args {
-///             string.push_str(&arg.eval(state)?.string()?);
-///         }
-///         Ok(Atom::String(string))
 ///     }
 ///     /// Logical AND.
 ///     "&&"(2) => |state, args| Ok(Atom::Bool(

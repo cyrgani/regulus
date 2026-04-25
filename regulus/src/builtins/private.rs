@@ -77,11 +77,15 @@ functions! {
     }
     /// Adds the two given integers and returns the result, causing an exception in case of overflow.
     "__builtin_int_add"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
-    /// Concatenates the two given strings and returns the result.
-    "__builtin_str_add"(2) => |state, args| {
-        let mut s = args[0].eval_string(state)?;
-        s.push_str(args[1].eval_string(state)?.as_str());
-        Ok(Atom::String(s))
+    /// Concatenates the two given lists and returns the result.
+    "__builtin_list_add"(2) => |state, args| {
+        let mut l = args[0].eval_list(state)?;
+        l.append(&mut args[1].eval_list(state)?);
+        Ok(Atom::List(l))
+    }
+    /// Returns whether the arg is a list of chars.
+    "__builtin_is_char_list"(1) => |state, args| {
+        Ok(Atom::Bool(args[0].eval(state)?.as_string().is_some()))
     }
     /// Subtracts the two given integers and returns the result, causing an exception in case of overflow.
     "__builtin_int_sub"(2) => |state, args| arithmetic_operation(state, args, "-", i64::checked_sub)

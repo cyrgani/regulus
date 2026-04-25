@@ -77,12 +77,20 @@ macro_rules! argument_eval_as_methods {
     };
 }
 
+impl Argument {
+    pub(crate) fn eval_as_string(&self, state: &mut State) -> Result<String> {
+        self.eval(state)?
+            .as_string()
+            .ok_or_else(|| state.raise(TypeError, "{val} is not a list of chars"))
+    }
+}
+
 // method name, atom variant name, rust type
 argument_eval_as_methods! {
     eval_int: Int -> i64;
     eval_bool: Bool -> bool;
+    eval_char: Char -> char;
     eval_list: List -> Vec<Atom>;
-    eval_string: String -> String;
     eval_function: Function -> Function;
     eval_object: Object -> Object;
 }

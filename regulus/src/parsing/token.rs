@@ -130,7 +130,11 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
                         &Span::new(char_pos, char_pos, file_path),
                     ));
                 };
-                add_token(TokenData::Atom(Atom::String(body)), char_pos, end_pos);
+                add_token(
+                    TokenData::Atom(Atom::List(body.chars().map(Atom::Char).collect())),
+                    char_pos,
+                    end_pos,
+                );
             }
             '\'' => {
                 let Ok((end_pos, body)) = take_until(chars.by_ref(), '\'') else {

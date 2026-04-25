@@ -2,12 +2,12 @@ import(type_id),
 
 def(__stl_arith_err, op, error(
     "Arithmetic",
-    append("Unsupported ", op),
+    +("Unsupported ", op),
 )),
 
 # Adds the two values together.
 # If they are both integers, `lhs + rhs` is returned.
-# If they are both strings, their concatenation is returned.
+# If they are both lists, their concatenation is returned.
 # If they are both objects, this calls the `+` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
 def(+, lhs, rhs, _(
@@ -15,8 +15,8 @@ def(+, lhs, rhs, _(
         &&(is_int(lhs), is_int(rhs)),
         __builtin_int_add(lhs, rhs),
         ifelse(
-            &&(is_string(lhs), is_string(rhs)),
-            __builtin_str_add(lhs, rhs),
+            &&(is_list(lhs), is_list(rhs)),
+            __builtin_list_add(lhs, rhs),
             ifelse(
                 &&(is_object(lhs), is_object(rhs)),
                 @(lhs, +, rhs),

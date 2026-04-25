@@ -55,8 +55,8 @@ functions! {
     /// When displaying the error kind, `Error` will be appended implicitly, so the error kind given
     /// here should not end in `Error`, `Exception` or similar.
     "error"(2) => |state, args| {
-        let kind = args[0].eval_string(state)?;
-        let msg = args[1].eval_string(state)?;
+        let kind = args[0].eval_as_string(state)?;
+        let msg = args[1].eval_as_string(state)?;
         Err(state.raise(kind, msg))
     }
     /// Evaluates the given value and returns it.
@@ -65,7 +65,7 @@ functions! {
     "run_or_string_exception"(1) => |state, args| {
         Ok(match args[0].eval(state) {
             Ok(atom) => Cow::into_owned(atom),
-            Err(exc) => Atom::String(exc.to_string())
+            Err(exc) => Atom::new_string(&exc.to_string())
         })
     }
     /// Evaluates the given argument and terminates the program directly.
@@ -86,7 +86,7 @@ functions! {
     ///
     /// TODO: think about imports, test them
     "eval"(1) => |state, args| {
-        let code = args[0].eval_string(state)?;
+        let code = args[0].eval_as_string(state)?;
         let mut state = State::new().with_code(code);
         state.file_directory = Directory::FromEval;
         state.run()
@@ -122,6 +122,6 @@ functions! {
     ///
     /// This is identical to the output of `write`.
     "printable"(1) => |state, args| {
-        Ok(Atom::String(args[0].eval(state)?.to_string()))
+        Ok(Atom::new_string(&args[0].eval(state)?.to_string()))
     }
 }

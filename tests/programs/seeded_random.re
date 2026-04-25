@@ -20,8 +20,8 @@ __builtin_print_catch(randrange(5, 5)),
 __builtin_print_catch(randrange(-1, -1)),
 __builtin_print_catch(randrange(-3, -5)),
 
-assert_eq(choose("Hello, world!"), "d"),
-assert_eq(choose("Hello, world!"), ","),
+assert_eq(choose("Hello, world!"), 'd'),
+assert_eq(choose("Hello, world!"), ','),
 __builtin_print_catch(choose(list())),
 
 =(shuffled_alphabet, "YLIEPKRQBFWVNHSAMCZJXTUDGO"),
