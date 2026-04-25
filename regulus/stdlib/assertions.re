@@ -13,3 +13,11 @@ def(assert_eq, lhs, rhs, ifelse(
     null,
     error("Assertion", strconcat("Equality assertion failed! lhs: `", printable(lhs), "`, rhs: `", printable(rhs), "`!"))
 )),
+
+# Evaluates both arguments and compares then, returning `null` if they are not equal.
+# If not, raise an `AssertionError` exception with a message containing both values.
+def(assert_ne, lhs, rhs, ifelse(
+    ==(lhs, rhs),
+    error("Assertion", strconcat("inequality assertion failed! lhs: `", printable(lhs), "`, rhs: `", printable(rhs), "`")),
+    null,
+)),
