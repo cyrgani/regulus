@@ -69,7 +69,7 @@ macro_rules! argument_eval_as_methods {
                 pub(crate) fn $method_name(&self, state: &mut State) -> Result<$ty> {
                     match self.eval(state)?.into_owned() {
                         Atom::$variant(v) => Ok(v.clone()),
-                        val => raise!(state, TypeError, "{val} is not a {}!", stringify!($variant)),
+                        val => raise!(state, TypeError, "{val} is not a {}", stringify!($variant)),
                     }
                 }
             )*

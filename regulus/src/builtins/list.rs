@@ -118,7 +118,7 @@ functions! {
             }
             StringOrVec::Vec(v) => {
                 *v.get_mut(index).ok_or_else(|| {
-                    state.raise(IndexError, "Unable to insert at index into list!")
+                    state.raise(IndexError, "unable to insert at index into list")
                 })? = args[2].clone();
             }
         }

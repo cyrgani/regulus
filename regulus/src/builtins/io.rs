@@ -15,7 +15,7 @@ functions! {
                     .to_string(),
             )),
             Err(error) => {
-                raise!(state, IoError, "Error while reading input: {error}")
+                raise!(state, IoError, "error while reading input: {error}")
             }
         }
     }

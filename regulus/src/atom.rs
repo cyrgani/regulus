@@ -105,7 +105,7 @@ macro_rules! atom_try_as_variant_methods {
                         Self::$variant(v) => Ok(v.clone()),
                         _ => Err(Exception::unspanned(
                             TypeError,
-                            format!("{self} is not a {}!", stringify!($variant))
+                            format!("{self} is not a {}", stringify!($variant))
                         )),
                     }
                 }
@@ -117,7 +117,7 @@ macro_rules! atom_try_as_variant_methods {
                         _ => raise!(
                             state,
                             TypeError,
-                            "{self} is not a {}!", stringify!($variant)
+                            "{self} is not a {}", stringify!($variant)
                         ),
                     }
                 }
