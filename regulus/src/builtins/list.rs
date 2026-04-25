@@ -65,7 +65,7 @@ functions! {
     /// The first argument is the list, the second the index.
     /// If the index is out of bounds, an exception is raised.
     ///
-    /// Returns the updated sequence.
+    /// Returns the updated list.
     "remove_at"(2) => |state, args| {
         let args = eagerly_evaluate(state, args)?;
         let mut v = args[0].list_e(state)?;

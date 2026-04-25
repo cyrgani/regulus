@@ -13,7 +13,7 @@ def(__stl_char_to_int, c, switch(c,
     '7', 7,
     '8', 8,
     '9', 9,
-    error("Value", strconcat("char is not a digit: `", string(c), "`"))
+    error("Value", strconcat("char is not a digit: `", c, "`"))
 )),
 
 def(__stl_str_to_int, s, _(

@@ -1,8 +1,3 @@
-# TODO: many things here can operate on list and string. consider moving those into `seq.re`, `sequence.re` or similar.
-# TODO: add tests for each version that test both string and list.
-# note: `null` is put here to avoid merging the above comment with the doc comment below.
-null,
-
 import(range),
 
 # Applies the second argument function to each element of the first argument list and returns
@@ -15,12 +10,12 @@ def(map, seq, function, _(
     new_list
 )),
 
-# Returns the first element of the given list or string, raising an exception if it is empty.
+# Returns the first element of the given list, raising an exception if it is empty.
 def(first, seq, _(
     index(seq, 0),
 )),
 
-# Returns the last element of the given list or string, raising an exception if it is empty.
+# Returns the last element of the given list, raising an exception if it is empty.
 def(last, seq, _(
     index(seq, -(len(seq), 1)),
 )),
@@ -38,8 +33,8 @@ def(filter, seq, function, _(
     new_list
 )),
 
-# Swaps the values at two indices of a list or string and returns the new sequence.
-# The arguments are: list or string, first index, second index.
+# Swaps the values at two indices of a list and returns the new sequence.
+# The arguments are: list, first index, second index.
 #
 # The indices may be equal, in which case the returned sequence will not be changed.
 # If the indices are out of bounds or invalid, an exception is raised.
@@ -65,7 +60,7 @@ def(flatten, seq, _(
     new
 )),
 
-# Reverses a string or list.
+# Reverses a list.
 def(reverse, seq, _(
     =(l, len(seq)),
     for_in(

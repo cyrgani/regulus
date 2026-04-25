@@ -1,4 +1,4 @@
-//! Builtin functions which will never have a stable equivalent and are for internal use only.
+//! Builtin functions which are for internal use only.
 
 use crate::exception::{ArgumentError, DivideByZeroError, OverflowError};
 use crate::prelude::*;

@@ -21,7 +21,7 @@ functions! {
                 Atom::Null
             })
         } else {
-            raise!(state, ArgumentError, "`doc` must be called on a function")
+            raise!(state, ArgumentError, "`argc` must be called on a function")
         }
     }
 }

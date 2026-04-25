@@ -138,18 +138,11 @@ functions! {
     }
     /// Returns the type id corresponding to the given value.
     ///
-    /// A type id is a positive integer. Primitive types are currently represented with these IDs
-    /// (note that this may change at any point):
+    /// A type id is a positive integer. Each primitive type has a distinct ID
+    /// (note that its value may change in future versions):
+    /// All objects have arbitrary type ids that are larger than any of the primitive type IDs.
     ///
-    /// * Int: 0
-    /// * Bool: 1
-    /// * Null: 2
-    /// * List: 3
-    /// * String: 4
-    /// * Function: 5
-    /// * Object: 6+ (depending on the type of object).
-    ///
-    /// Instead of manually typing these values, use the constants in the `type_id.re` STL module
+    /// To access them, use the constants in the `type_id.re` STL module
     /// and the `is_*` (`int`, `bool`, ...) family of functions in that module.
     "type_id"(1) => |state, args| {
         Ok(Atom::Int(args[0].eval(state)?.ty_id()))
