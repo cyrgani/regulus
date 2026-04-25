@@ -6,6 +6,7 @@ use crate::prelude::Argument;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::result;
+use std::str::FromStr;
 
 /// A token of source code with location information.
 #[derive(Debug)]
@@ -130,6 +131,26 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
                     ));
                 };
                 add_token(TokenData::Atom(Atom::String(body)), char_pos, end_pos);
+            }
+            '\'' => {
+                let Ok((end_pos, body)) = take_until(chars.by_ref(), '\'') else {
+                    return Err(Exception::spanned(
+                        SyntaxError,
+                        "unclosed char literal",
+                        &Span::new(char_pos, char_pos, file_path),
+                    ));
+                };
+                add_token(
+                    TokenData::Atom(Atom::Char(char::from_str(&body).map_err(|e| {
+                        Exception::spanned(
+                            SyntaxError,
+                            format!("invalid char literal: {e}"),
+                            &Span::new(char_pos, char_pos, file_path.clone()),
+                        )
+                    })?)),
+                    char_pos,
+                    end_pos,
+                );
             }
             '#' => {
                 let (end_pos, body) =

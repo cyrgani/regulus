@@ -1,10 +1,11 @@
 =(INT_TY_ID, 0),
 =(BOOL_TY_ID, 1),
-=(NULL_TY_ID, 2),
-=(LIST_TY_ID, 3),
-=(STRING_TY_ID, 4),
-=(FUNCTION_TY_ID, 5),
-=(MIN_OBJECT_TY_ID, 6),
+=(CHAR_TY_ID, 2),
+=(NULL_TY_ID, 3),
+=(LIST_TY_ID, 4),
+=(STRING_TY_ID, 5),
+=(FUNCTION_TY_ID, 6),
+=(MIN_OBJECT_TY_ID, 7),
 
 # Returns whether the given value is an integer (according to its type id).
 def(is_int, val, __builtin_atom_eq(type_id(val), INT_TY_ID)),

@@ -9,6 +9,7 @@ use std::num::IntErrorKind;
 pub enum Atom {
     Int(i64),
     Bool(bool),
+    Char(char),
     Null,
     List(Vec<Self>),
     String(String),
@@ -28,8 +29,7 @@ impl PartialOrd for Atom {
 }
 
 impl Atom {
-    // TODO: does this need to be public API?
-    pub fn try_from_str(value: &str) -> Result<Option<Self>> {
+    pub(crate) fn try_from_str(value: &str) -> Result<Option<Self>> {
         match value {
             "true" => Ok(Some(Self::Bool(true))),
             "false" => Ok(Some(Self::Bool(false))),
@@ -64,16 +64,18 @@ impl Atom {
 
     pub const INT_TY_ID: i64 = 0;
     pub const BOOL_TY_ID: i64 = 1;
-    pub const NULL_TY_ID: i64 = 2;
-    pub const LIST_TY_ID: i64 = 3;
-    pub const STRING_TY_ID: i64 = 4;
-    pub const FUNCTION_TY_ID: i64 = 5;
-    pub const MIN_OBJECT_TY_ID: i64 = 6;
+    pub const CHAR_TY_ID: i64 = 2;
+    pub const NULL_TY_ID: i64 = 3;
+    pub const LIST_TY_ID: i64 = 4;
+    pub const STRING_TY_ID: i64 = 5;
+    pub const FUNCTION_TY_ID: i64 = 6;
+    pub const MIN_OBJECT_TY_ID: i64 = 7;
 
     pub const fn ty_id(&self) -> i64 {
         match self {
             Self::Int(_) => Self::INT_TY_ID,
             Self::Bool(_) => Self::BOOL_TY_ID,
+            Self::Char(_) => Self::CHAR_TY_ID,
             Self::Null => Self::NULL_TY_ID,
             Self::List(_) => Self::LIST_TY_ID,
             Self::String(_) => Self::STRING_TY_ID,
@@ -91,6 +93,7 @@ impl Atom {
     pub fn stringify(&self) -> String {
         match self {
             Self::String(s) => format!("\"{s}\""),
+            Self::Char(c) => format!("\"{c}\""),
             _ => self.to_string(),
         }
     }
@@ -126,10 +129,11 @@ macro_rules! atom_try_as_variant_methods {
     };
 }
 
-// method name, atom variant name, rust type
+// method names, atom variant name, rust type
 atom_try_as_variant_methods! {
     int, int_e: Int -> i64;
     bool, bool_e: Bool -> bool;
+    char, char_e: Char -> char;
     list, list_e: List -> Vec<Self>;
     string, string_e: String -> String;
     function, function_e: Function -> Function;
@@ -149,6 +153,7 @@ impl fmt::Display for Atom {
                 }
             ),
             Self::Int(val) => write!(f, "{val}"),
+            Self::Char(val) => write!(f, "{val}"),
             Self::List(val) => write!(
                 f,
                 "[{}]",

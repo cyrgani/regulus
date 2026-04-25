@@ -1,0 +1,5 @@
+=(x, 'x'),
+assert_eq(x, 'x'),
+assert_ne(x, 'y'),
+assert_ne('x', "x"),
+#assert_eq("x", list('x')),
