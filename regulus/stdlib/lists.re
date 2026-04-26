@@ -4,6 +4,15 @@ import(range),
 # the new list.
 def(append, l, elem, insert(l, len(l), elem)),
 
+# Replaces an element at a list index with another and returns the updated list.
+# The first argument is the list, the second the index and the third the new value.
+# If the index is out of bounds, an exception is raised.
+def(replace_at, l, idx, elem, _(
+    =(l, remove_at(l, idx)),
+    =(l, insert(l, idx, elem)),
+    l
+)),
+
 # Applies the second argument function to each element of the first argument list and returns
 # the updated list.
 def(map, seq, function, _(

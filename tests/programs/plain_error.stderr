@@ -1,5 +1,5 @@
 
 IndexError: sequence index out of bounds
-at <stl:lists>:19:10
-at <stl:lists>:18:18
+at <stl:lists>:28:10
+at <stl:lists>:27:18
 at programs/plain_error.re:2:6

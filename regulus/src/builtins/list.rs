@@ -50,19 +50,6 @@ functions! {
 
         Ok(Atom::Null)
     }
-    /// Replaces an element at a list index with another.
-    /// The first argument is the list, the second the index and the third the new value.
-    /// If the index is out of bounds, an exception is raised.
-    "replace_at"(3) => |state, args| {
-        let mut v = args[0].eval_list(state)?;
-        let index = args[1].eval_index(state)?;
-        let el = args[2].eval(state)?.into_owned();
-        *v.get_mut(index).ok_or_else(|| {
-            state.raise(IndexError, "unable to insert at index into list")
-        })? = el;
-
-        Ok(Atom::List(v))
-    }
     // TODO: add tests for this
     /// Removes the element at the given list index.
     /// The first argument is the list, the second the index.
