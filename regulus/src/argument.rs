@@ -1,4 +1,5 @@
 use crate::exception::{ArgumentError, NameError, TypeError};
+use crate::list::List;
 use crate::parsing::Span;
 use crate::prelude::*;
 use std::borrow::Cow;
@@ -68,7 +69,7 @@ macro_rules! argument_eval_as_methods {
             $(
                 pub(crate) fn $method_name(&self, state: &mut State) -> Result<$ty> {
                     match self.eval(state)?.into_owned() {
-                        Atom::$variant(v) => Ok(v.clone()),
+                        Atom::$variant(v) => Ok(v),
                         val => raise!(state, TypeError, "{val} is not a {}", stringify!($variant)),
                     }
                 }
@@ -90,7 +91,7 @@ argument_eval_as_methods! {
     eval_int: Int -> i64;
     eval_bool: Bool -> bool;
     eval_char: Char -> char;
-    eval_list: List -> Vec<Atom>;
+    eval_list: List -> List;
     eval_function: Function -> Function;
     eval_object: Object -> Object;
 }

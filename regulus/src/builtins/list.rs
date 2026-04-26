@@ -17,7 +17,7 @@ functions! {
         let mut list = args[0].eval_list(state)?;
         let index = args[1].eval_index(state)?;
         let element = args[2].eval(state)?;
-        list.insert(index, element.into_owned());
+        list.make_mut().insert(index, element.into_owned());
         Ok(Atom::List(list))
     }
     /// Returns the value in the first list argument at the second integer argument.
@@ -43,8 +43,8 @@ functions! {
         let v = args[0].eval_list(state)?;
         let loop_var = args[1].variable("invalid loop variable given to `for_in`", state)?;
         let loop_body = &args[2];
-        for el in v {
-            state.storage.insert(loop_var, el);
+        for el in v.iter() {
+            state.storage.insert(loop_var, el.clone());
             loop_body.eval(state)?;
         }
 
@@ -59,7 +59,7 @@ functions! {
     "remove_at"(2) => |state, args| {
         let mut v = args[0].eval_list(state)?;
         let index = args[1].eval_index(state)?;
-        v.remove(index);
+        v.make_mut().remove(index);
         Ok(Atom::List(v))
     }
 }

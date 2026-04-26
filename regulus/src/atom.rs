@@ -1,4 +1,5 @@
 use crate::exception::{OverflowError, SyntaxError, TypeError};
+use crate::list::List;
 use crate::prelude::*;
 use std::cmp::Ordering;
 use std::collections::HashMap;
@@ -11,7 +12,7 @@ pub enum Atom {
     Bool(bool),
     Char(char),
     Null,
-    List(Vec<Self>),
+    List(List),
     Function(Function),
     Object(Object),
 }
@@ -81,9 +82,14 @@ impl Atom {
         }
     }
 
+    /// Constructs a new `List`.
+    pub fn new_list(v: Vec<Self>) -> Self {
+        Self::List(List::new(v))
+    }
+
     /// Constructs a new string, represented as a `List` of `Char`s.
     pub fn new_string(s: &str) -> Self {
-        Self::List(s.chars().map(Self::Char).collect())
+        Self::new_list(s.chars().map(Self::Char).collect())
     }
 
     /// If this is a `List` in which all elements are `Char`s,
@@ -142,7 +148,7 @@ atom_try_as_variant_methods! {
     int: Int -> i64;
     bool: Bool -> bool;
     char: Char -> char;
-    list: List -> Vec<Self>;
+    list: List -> List;
     function: Function -> Function;
     object: Object -> Object;
 }

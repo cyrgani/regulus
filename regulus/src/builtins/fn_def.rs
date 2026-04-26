@@ -104,7 +104,7 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
                             arg.eval(state)?.into_owned()
                         });
                     }
-                    arg_values.push((signature_arg.clone(), Atom::List(va_list)));
+                    arg_values.push((signature_arg.clone(), Atom::new_list(va_list)));
                 } else {
                     let arg_result = if signature_arg.lazy {
                         make_lazy(args[idx].clone())

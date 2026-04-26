@@ -73,14 +73,14 @@ functions! {
     }
     /// Constructs an empty list.
     "__builtin_new_list"(0) => |_, _| {
-        Ok(Atom::List(vec![]))
+        Ok(Atom::new_list(vec![]))
     }
     /// Adds the two given integers and returns the result, causing an exception in case of overflow.
     "__builtin_int_add"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
     /// Concatenates the two given lists and returns the result.
     "__builtin_list_add"(2) => |state, args| {
         let mut l = args[0].eval_list(state)?;
-        l.append(&mut args[1].eval_list(state)?);
+        l.make_mut().append(args[1].eval_list(state)?.make_mut());
         Ok(Atom::List(l))
     }
     /// Returns whether the arg is a list of chars.

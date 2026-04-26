@@ -17,6 +17,7 @@ mod argument;
 mod atom;
 mod exception;
 mod function;
+mod list;
 mod macros;
 mod optimizations;
 mod parsing;
@@ -36,6 +37,7 @@ pub mod prelude {
         exception::{Exception, Result},
         function::{Function, FunctionBody, FunctionCall},
         functions,
+        list::List,
         parsing::{Position, Span},
         raise, run, run_file,
         state::{State, Storage, WriteHandle},
