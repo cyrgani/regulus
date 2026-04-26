@@ -81,10 +81,14 @@ impl Atom {
         }
     }
 
+    /// Constructs a new string, represented as a `List` of `Char`s.
     pub fn new_string(s: &str) -> Self {
         Self::List(s.chars().map(Self::Char).collect())
     }
 
+    /// If this is a `List` in which all elements are `Char`s,
+    /// this concatenates them into a `String` and returns it.
+    /// Otherwise, it returns `None`.
     pub fn as_string(&self) -> Option<String> {
         match self {
             Self::List(l) => l
@@ -116,7 +120,7 @@ impl Atom {
 }
 
 macro_rules! atom_try_as_variant_methods {
-    ($($method_name: ident, $method_name_e: ident: $variant:ident -> $ty:ty;)*) => {
+    ($($method_name: ident: $variant:ident -> $ty:ty;)*) => {
         impl Atom {
             $(
                 pub fn $method_name(&self) -> Result<$ty> {
@@ -128,31 +132,19 @@ macro_rules! atom_try_as_variant_methods {
                         )),
                     }
                 }
-
-                #[allow(dead_code, reason = "just provided for completeness")]
-                pub(crate) fn $method_name_e(&self, state: &State) -> Result<$ty> {
-                    match self {
-                        Self::$variant(v) => Ok(v.clone()),
-                        _ => raise!(
-                            state,
-                            TypeError,
-                            "{self} is not a {}", stringify!($variant)
-                        ),
-                    }
-                }
             )*
         }
     };
 }
 
-// method names, atom variant name, rust type
+// method name: atom variant name -> rust type;
 atom_try_as_variant_methods! {
-    int, int_e: Int -> i64;
-    bool, bool_e: Bool -> bool;
-    char, char_e: Char -> char;
-    list, list_e: List -> Vec<Self>;
-    function, function_e: Function -> Function;
-    object, object_e: Object -> Object;
+    int: Int -> i64;
+    bool: Bool -> bool;
+    char: Char -> char;
+    list: List -> Vec<Self>;
+    function: Function -> Function;
+    object: Object -> Object;
 }
 
 impl fmt::Display for Atom {
@@ -207,4 +199,26 @@ impl Object {
     pub const fn new(data: HashMap<String, Atom>, ty_id: i64) -> Self {
         Self { data, ty_id }
     }
+}
+
+#[test]
+fn type_id_matches() {
+    macro_rules! t {
+        ($n: ident) => {
+            assert_eq!(
+                run(format!("import(type_id), {}", stringify!($n)))
+                    .unwrap()
+                    .int()
+                    .unwrap(),
+                Atom::$n
+            );
+        };
+    }
+    t!(INT_TY_ID);
+    t!(BOOL_TY_ID);
+    t!(CHAR_TY_ID);
+    t!(NULL_TY_ID);
+    t!(LIST_TY_ID);
+    t!(FUNCTION_TY_ID);
+    t!(MIN_OBJECT_TY_ID);
 }

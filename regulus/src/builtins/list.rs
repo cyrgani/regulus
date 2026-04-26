@@ -1,10 +1,11 @@
-use crate::builtins::eagerly_evaluate;
 use crate::exception::IndexError;
 use crate::prelude::*;
 
-fn atom_to_index(atom: &Atom, state: &State) -> Result<usize> {
-    usize::try_from(atom.int_e(state)?)
-        .map_err(|e| state.raise(IndexError, format!("invalid list index: {e}")))
+impl Argument {
+    fn eval_index(&self, state: &mut State) -> Result<usize> {
+        usize::try_from(self.eval_int(state)?)
+            .map_err(|e| state.raise(IndexError, format!("invalid list index: {e}")))
+    }
 }
 
 functions! {
@@ -14,7 +15,7 @@ functions! {
     /// That means that inserting at exactly `len(list)` is allowed.
     "insert"(3) => |state, args| {
         let mut list = args[0].eval_list(state)?;
-        let index = atom_to_index(&args[1].eval(state)?.into_owned(), state)?;
+        let index = args[1].eval_index(state)?;
         let element = args[2].eval(state)?;
         list.insert(index, element.into_owned());
         Ok(Atom::List(list))
@@ -22,10 +23,9 @@ functions! {
     /// Returns the value in the first list argument at the second integer argument.
     /// Raises an exception if the index is out of bounds.
     "index"(2) => |state, args| {
-        let args = eagerly_evaluate(state, args)?;
-        let index = atom_to_index(&args[1], state)?;
-        args[0]
-            .list_e(state)?
+        let list = args[0].eval_list(state)?;
+        let index = args[1].eval_index(state)?;
+        list
             .get(index)
             .cloned()
             .ok_or_else(|| state.raise(IndexError, "sequence index out of bounds"))
@@ -54,12 +54,12 @@ functions! {
     /// The first argument is the list, the second the index and the third the new value.
     /// If the index is out of bounds, an exception is raised.
     "replace_at"(3) => |state, args| {
-        let args = eagerly_evaluate(state, args)?;
-        let mut v = args[0].list_e(state)?;
-        let index = atom_to_index(&args[1], state)?;
+        let mut v = args[0].eval_list(state)?;
+        let index = args[1].eval_index(state)?;
+        let el = args[2].eval(state)?.into_owned();
         *v.get_mut(index).ok_or_else(|| {
             state.raise(IndexError, "unable to insert at index into list")
-        })? = args[2].clone();
+        })? = el;
 
         Ok(Atom::List(v))
     }
@@ -70,9 +70,8 @@ functions! {
     ///
     /// Returns the updated list.
     "remove_at"(2) => |state, args| {
-        let args = eagerly_evaluate(state, args)?;
-        let mut v = args[0].list_e(state)?;
-        let index = atom_to_index(&args[1], state)?;
+        let mut v = args[0].eval_list(state)?;
+        let index = args[1].eval_index(state)?;
         v.remove(index);
         Ok(Atom::List(v))
     }
