@@ -1,4 +1,4 @@
-use crate::exception::{OverflowError, SyntaxError, TypeError};
+use crate::exception::{OverflowError, SyntaxError};
 use crate::list::List;
 use crate::prelude::*;
 use std::cmp::Ordering;
@@ -29,7 +29,7 @@ impl PartialOrd for Atom {
 }
 
 impl Atom {
-    pub(crate) fn try_from_str(value: &str) -> Result<Option<Self>> {
+    pub(crate) fn try_from_str(value: &str, span: &Span) -> Result<Option<Self>> {
         match value {
             "true" => Ok(Some(Self::Bool(true))),
             "false" => Ok(Some(Self::Bool(false))),
@@ -38,11 +38,12 @@ impl Atom {
                 Ok(int) => Ok(Some(Self::Int(int))),
                 Err(err) => match err.kind() {
                     IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => {
-                        Err(Exception::unspanned(
+                        Err(Exception::spanned(
                             SyntaxError,
                             format!(
                                 "integer {value} cannot be parsed as an integer due to overflow"
                             ),
+                            span,
                         ))
                     }
                     _ => Ok(None),
@@ -129,13 +130,10 @@ macro_rules! atom_try_as_variant_methods {
     ($($method_name: ident: $variant:ident -> $ty:ty;)*) => {
         impl Atom {
             $(
-                pub fn $method_name(&self) -> Result<$ty> {
+                pub fn $method_name(&self) -> Option<$ty> {
                     match self {
-                        Self::$variant(v) => Ok(v.clone()),
-                        _ => Err(Exception::unspanned(
-                            TypeError,
-                            format!("{self} is not a {}", stringify!($variant))
-                        )),
+                        Self::$variant(v) => Some(v.clone()),
+                        _ => None,
                     }
                 }
             )*

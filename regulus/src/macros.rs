@@ -6,13 +6,13 @@
 /// functions! {
 ///     /// Length of a list.
 ///     "len"(1) => |state, args| {
-///         let len = args[0].eval(state)?.list()?.len();
+///         let len = args[0].eval_list(state)?.len();
 ///         Ok(Atom::Int(len as i64))
 ///     }
 ///     /// Logical AND.
 ///     "&&"(2) => |state, args| Ok(Atom::Bool(
-///         args[0].eval(state)?.bool()? &&
-///         args[1].eval(state)?.bool()?
+///         args[0].eval_bool(state)? &&
+///         args[1].eval_bool(state)?
 ///     ))
 ///  }
 /// ```

@@ -103,7 +103,10 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
             ')' | ',' | ' ' | '\n' | '\t' => {
                 if !current.is_empty() {
                     add_token(
-                        match Atom::try_from_str(&current)? {
+                        match Atom::try_from_str(
+                            &current,
+                            &Span::new(char_pos, char_pos, file_path.clone()),
+                        )? {
                             Some(value) => TokenData::Atom(value),
                             None => TokenData::Name(current),
                         },
@@ -167,13 +170,14 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
     }
 
     if !current.is_empty() {
+        let p = last_pos(code);
         add_token(
-            match Atom::try_from_str(&current)? {
+            match Atom::try_from_str(&current, &Span::new(p, p, file_path.clone()))? {
                 Some(value) => TokenData::Atom(value),
                 None => TokenData::Name(current.clone()),
             },
             current_start_pos.unwrap(),
-            last_pos(code),
+            p,
         );
     }
 
