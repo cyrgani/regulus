@@ -1,10 +1,9 @@
-use crate::exception::{OverflowError, SyntaxError};
+use crate::exception::{OverflowError};
 use crate::list::List;
 use crate::prelude::*;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt::{self, Display};
-use std::num::IntErrorKind;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
@@ -29,29 +28,6 @@ impl PartialOrd for Atom {
 }
 
 impl Atom {
-    pub(crate) fn try_from_str(value: &str, span: &Span) -> Result<Option<Self>> {
-        match value {
-            "true" => Ok(Some(Self::Bool(true))),
-            "false" => Ok(Some(Self::Bool(false))),
-            "null" => Ok(Some(Self::Null)),
-            _ => match value.parse::<i64>() {
-                Ok(int) => Ok(Some(Self::Int(int))),
-                Err(err) => match err.kind() {
-                    IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => {
-                        Err(Exception::spanned(
-                            SyntaxError,
-                            format!(
-                                "integer {value} cannot be parsed as an integer due to overflow"
-                            ),
-                            span,
-                        ))
-                    }
-                    _ => Ok(None),
-                },
-            },
-        }
-    }
-
     pub(crate) fn int_from_rust_int<T>(val: T, state: &State) -> Result<Self>
     where
         i64: TryFrom<T>,

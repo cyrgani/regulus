@@ -20,6 +20,10 @@ impl Span {
     pub const fn new(start: Position, end: Position, file: Rc<PathBuf>) -> Self {
         Self { file, start, end }
     }
+
+    pub const fn single(pos: Position, file: Rc<PathBuf>) -> Self {
+        Self::new(pos, pos, file)
+    }
 }
 
 impl Display for Span {

@@ -3,6 +3,7 @@ use crate::exception::{Exception, Result, SyntaxError};
 use crate::parsing::positions::{CharPositions, Position, Span};
 use crate::parsing::syntax_error;
 use crate::prelude::Argument;
+use std::num::IntErrorKind;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::result;
@@ -88,6 +89,13 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
     let mut current_start_pos = None;
 
     while let Some((char_pos, c)) = chars.next() {
+        let syntax_error = |msg| {
+            Err(Exception::spanned(
+                SyntaxError,
+                msg,
+                &Span::single(char_pos, file_path.clone()),
+            ))
+        };
         match c {
             '(' => {
                 if !current.is_empty() {
@@ -103,13 +111,7 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
             ')' | ',' | ' ' | '\n' | '\t' => {
                 if !current.is_empty() {
                     add_token(
-                        match Atom::try_from_str(
-                            &current,
-                            &Span::new(char_pos, char_pos, file_path.clone()),
-                        )? {
-                            Some(value) => TokenData::Atom(value),
-                            None => TokenData::Name(current),
-                        },
+                        try_parse_atom(current, char_pos, &file_path)?,
                         current_start_pos.take().unwrap(),
                         char_pos.one_back(),
                     );
@@ -127,33 +129,18 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
             }
             '"' => {
                 let Ok((end_pos, body)) = take_until(chars.by_ref(), '"') else {
-                    return Err(Exception::spanned(
-                        SyntaxError,
-                        "unclosed string literal",
-                        &Span::new(char_pos, char_pos, file_path),
-                    ));
+                    return syntax_error("unclosed string literal");
                 };
                 add_token(TokenData::Atom(Atom::new_string(&body)), char_pos, end_pos);
             }
             '\'' => {
                 let Ok((end_pos, body)) = take_until(chars.by_ref(), '\'') else {
-                    return Err(Exception::spanned(
-                        SyntaxError,
-                        "unclosed char literal",
-                        &Span::new(char_pos, char_pos, file_path),
-                    ));
+                    return syntax_error("unclosed char literal");
                 };
-                add_token(
-                    TokenData::Atom(Atom::Char(char::from_str(&body).map_err(|e| {
-                        Exception::spanned(
-                            SyntaxError,
-                            format!("invalid char literal: {e}"),
-                            &Span::new(char_pos, char_pos, file_path.clone()),
-                        )
-                    })?)),
-                    char_pos,
-                    end_pos,
-                );
+                match char::from_str(&body) {
+                    Ok(c) => add_token(TokenData::Atom(Atom::Char(c)), char_pos, end_pos),
+                    Err(e) => return syntax_error(&format!("invalid char literal: {e}")),
+                }
             }
             '#' => {
                 let (end_pos, body) =
@@ -172,16 +159,32 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
     if !current.is_empty() {
         let p = last_pos(code);
         add_token(
-            match Atom::try_from_str(&current, &Span::new(p, p, file_path.clone()))? {
-                Some(value) => TokenData::Atom(value),
-                None => TokenData::Name(current.clone()),
-            },
+            try_parse_atom(current, p, &file_path)?,
             current_start_pos.unwrap(),
             p,
         );
     }
 
     Ok(tokens)
+}
+
+fn try_parse_atom(s: String, pos: Position, file_path: &Rc<PathBuf>) -> Result<TokenData> {
+    match s.as_str() {
+        "true" => Ok(TokenData::Atom(Atom::Bool(true))),
+        "false" => Ok(TokenData::Atom(Atom::Bool(false))),
+        "null" => Ok(TokenData::Atom(Atom::Null)),
+        _ => match s.parse::<i64>() {
+            Ok(int) => Ok(TokenData::Atom(Atom::Int(int))),
+            Err(err) => match err.kind() {
+                IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => Err(Exception::spanned(
+                    SyntaxError,
+                    format!("integer {s} cannot be parsed as an integer due to overflow"),
+                    &Span::single(pos, file_path.clone()),
+                )),
+                _ => Ok(TokenData::Name(s)),
+            },
+        },
+    }
 }
 
 fn last_pos(code: &str) -> Position {
