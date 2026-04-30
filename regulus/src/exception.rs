@@ -8,10 +8,6 @@ mod errors {
     pub(crate) const NameError: &str = "Name";
     pub(crate) const SyntaxError: &str = "Syntax";
     pub(crate) const ArgumentError: &str = "Argument";
-    pub(crate) const IndexError: &str = "Index";
-    pub(crate) const IoError: &str = "Io";
-    pub(crate) const ImportError: &str = "Import";
-    pub(crate) const DivideByZeroError: &str = "DivideByZero";
 }
 
 pub(crate) use errors::*;

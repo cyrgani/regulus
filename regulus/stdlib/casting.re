@@ -45,7 +45,7 @@ def(int, val, switch(type_id(val),
     BOOL_TY_ID, ifelse(val, 1, 0),
     CHAR_TY_ID, __stl_char_to_int(val),
     ifelse(
-        __builtin_is_char_list(val),
+        is_char_list(val),
         __stl_str_to_int(val),
         error("Type", strconcat("cannot cast ", printable(val), " to int"))
     ),
@@ -63,7 +63,7 @@ def(string, val, switch(type_id(val),
     NULL_TY_ID, "null",
     CHAR_TY_ID, list(val),
     ifelse(
-        __builtin_is_char_list(val),
+        is_char_list(val),
         val,
         error("Type", strconcat("cannot cast ", printable(val), " to string"))
     ),

@@ -1,4 +1,3 @@
-use crate::exception::ImportError;
 use crate::interned_stdlib::INTERNED_STL;
 use crate::prelude::*;
 use crate::state::Directory;
@@ -13,7 +12,7 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
     if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
         raise!(
             state,
-            ImportError,
+            "Import",
             "invalid characters in import name `{name}`, only a-Z, 0-9 and _ are allowed",
         );
     }
@@ -33,7 +32,7 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
         if import_state.import_stack.contains(&path) {
             raise!(
                 state,
-                ImportError,
+                "Import",
                 "cyclic import of `{name}` at path `{}` detected",
                 path.display()
             );
@@ -46,7 +45,7 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
     } else {
         raise!(
             state,
-            ImportError,
+            "Import",
             "failed to find file for importing `{name}`"
         );
     }
@@ -75,7 +74,7 @@ fn try_resolve_import_in_dir(
     let paths = fs::read_dir(dir_path)
         .map_err(|err| {
             state.raise(
-                ImportError,
+                "Import",
                 format!(
                     "error when reading directory `{}`: {err}",
                     dir_path.display()

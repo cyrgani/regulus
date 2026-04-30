@@ -1,6 +1,6 @@
 //! Builtin functions which are for internal use only.
 
-use crate::exception::{ArgumentError, DivideByZeroError, OverflowError};
+use crate::exception::{ArgumentError, OverflowError};
 use crate::prelude::*;
 use std::cmp::Ordering;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -23,8 +23,8 @@ fn arithmetic_operation(
     if let Some(i) = f(lhs, rhs) {
         Ok(Atom::Int(i))
     } else {
-        if name == "/" && rhs == 0 {
-            raise!(state, DivideByZeroError, "attempted to divide by zero")
+        if (name == "/" || name == "%") && rhs == 0 {
+            raise!(state, "DivideByZero", "attempted to divide by zero")
         }
         raise!(state, OverflowError, "overflow occured during {name}")
     }
@@ -78,10 +78,6 @@ functions! {
         let mut l = args[0].eval_list(state)?;
         l.make_mut().append(args[1].eval_list(state)?.make_mut());
         Ok(Atom::List(l))
-    }
-    /// Returns whether the arg is a list of chars.
-    "__builtin_is_char_list"(1) => |state, args| {
-        Ok(Atom::Bool(args[0].eval(state)?.as_string().is_some()))
     }
     /// Subtracts the two given integers and returns the result, causing an exception in case of overflow.
     "__builtin_int_sub"(2) => |state, args| arithmetic_operation(state, args, "-", i64::checked_sub)

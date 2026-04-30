@@ -1,4 +1,3 @@
-use crate::exception::IoError;
 use crate::prelude::*;
 
 functions! {
@@ -11,10 +10,10 @@ functions! {
             Ok(_) => Ok(Atom::new_string(
                 input
                     .strip_suffix('\n')
-                    .ok_or_else(|| state.raise(IoError, "missing newline after input() call"))?
+                    .ok_or_else(|| state.raise("Io", "missing newline after input() call"))?
             )),
             Err(error) => {
-                raise!(state, IoError, "error while reading input: {error}")
+                raise!(state, "Io", "error while reading input: {error}")
             }
         }
     }

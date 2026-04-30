@@ -23,3 +23,12 @@ def(is_object, val, _(
     =(c, __builtin_atom_cmp(type_id(val), MIN_OBJECT_TY_ID)),
     ||(__builtin_atom_eq(c, 0), __builtin_atom_eq(c, 1))
 )),
+# Returns whether the given value is a list of chars.
+def(is_char_list, val, &&(is_list(val), _(
+    =(valid, true),
+    for_in(val, el, if(
+        !(is_char(el)),
+        =(valid, false),
+    )),
+    valid
+))),
