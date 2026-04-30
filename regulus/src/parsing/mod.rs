@@ -50,7 +50,7 @@ fn eat_commented_token<'a>(tokens: &mut &'a [Token]) -> Result<(&'a [Token], &'a
     Err(Exception::spanned(
         SyntaxError,
         "program contains no non-comment tokens",
-        &Span::new(Position::ONE, Position::ONE, no_path()),
+        &Span::single(Position::ONE, no_path()),
     ))
 }
 

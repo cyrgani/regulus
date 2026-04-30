@@ -21,10 +21,10 @@ impl FunctionCall {
                 if let Atom::Function(func) = atom {
                     func.clone().call(state, &self.args)
                 } else {
-                    raise!(state, NameError, "`{name}` is not a function!")
+                    raise!(state, NameError, "`{name}` is not a function")
                 }
             }
-            None => raise!(state, NameError, "No function `{name}` found!"),
+            None => raise!(state, NameError, "no function `{name}` found"),
         }
     }
 
@@ -43,6 +43,12 @@ impl FunctionCall {
 }
 
 pub type FunctionBody = dyn Fn(&mut State, &[Argument]) -> Result<Atom>;
+
+struct FunctionInner {
+    doc: String,
+    argc: Option<usize>,
+    body: Box<FunctionBody>,
+}
 
 #[derive(Clone)]
 pub struct Function(Rc<FunctionInner>);
@@ -92,12 +98,6 @@ impl Function {
         }
         (self.body())(state, args)
     }
-}
-
-struct FunctionInner {
-    doc: String,
-    argc: Option<usize>,
-    body: Box<FunctionBody>,
 }
 
 // the callback cannot be debugged

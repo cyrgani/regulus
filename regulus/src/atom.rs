@@ -1,4 +1,4 @@
-use crate::exception::{OverflowError};
+use crate::exception::OverflowError;
 use crate::list::List;
 use crate::prelude::*;
 use std::cmp::Ordering;
@@ -22,6 +22,7 @@ impl PartialOrd for Atom {
             (Self::Int(lhs), Self::Int(rhs)) => lhs.partial_cmp(rhs),
             (Self::Bool(lhs), Self::Bool(rhs)) => lhs.partial_cmp(rhs),
             (Self::Null, Self::Null) => Some(Ordering::Equal),
+            // TODO: support Char?
             _ => None,
         }
     }

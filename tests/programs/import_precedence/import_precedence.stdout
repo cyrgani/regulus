@@ -1,5 +1,5 @@
 not random
-expected error: NameError: No function `choose` found!
+expected error: NameError: no function `choose` found
 at programs/import_precedence/import_precedence.re:4:60
 at programs/import_precedence/import_precedence.re:4:53
 at programs/import_precedence/import_precedence.re:4:10
