@@ -124,4 +124,20 @@ functions! {
     "printable"(1) => |state, args| {
         Ok(Atom::new_string(&args[0].eval(state)?.to_string()))
     }
+    /// Iterates over the given list elements.
+    /// The first argument is the list, the second the loop variable name for each element and the
+    /// third is the body that will be run for each of these elements.
+    /// Afterwards, `null` is returned.
+    // TODO: argument order of seq and loop var is confusing
+    "for_in"(3) => |state, args| {
+        let v = args[0].eval_list(state)?;
+        let loop_var = args[1].variable("invalid loop variable given to `for_in`", state)?;
+        let loop_body = &args[2];
+        for el in v.iter() {
+            state.storage.insert(loop_var, el.clone());
+            loop_body.eval(state)?;
+        }
+
+        Ok(Atom::Null)
+    }
 }

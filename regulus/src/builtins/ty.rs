@@ -134,6 +134,7 @@ functions! {
         let mut args = vec![obj_arg.clone()];
         args.extend_from_slice(rest);
         state.current_fn_name = Some(format!("<object>.{method_name}"));
+        state.current_doc_comment = Some(String::new());
         func.call(state, &args)
     }
     /// Returns the type id corresponding to the given value.

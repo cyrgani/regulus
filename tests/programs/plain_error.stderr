@@ -1,5 +1,6 @@
 
-IndexError: sequence index out of bounds
-at <stl:lists>:28:10
-at <stl:lists>:27:18
+IndexError: index 0 out of bounds for list of len 0
+at <stl:lists>:15:38
+at <stl:lists>:54:10
+at <stl:lists>:53:18
 at programs/plain_error.re:2:6

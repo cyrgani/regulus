@@ -71,10 +71,6 @@ functions! {
             None => raise!(state, ArgumentError, "cannot compare {lhs} and {rhs}"),
         }))
     }
-    /// Constructs an empty list.
-    "__builtin_new_list"(0) => |_, _| {
-        Ok(Atom::new_list(vec![]))
-    }
     /// Adds the two given integers and returns the result, causing an exception in case of overflow.
     "__builtin_int_add"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
     /// Concatenates the two given lists and returns the result.

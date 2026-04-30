@@ -1,65 +1,68 @@
 use crate::exception::IndexError;
 use crate::prelude::*;
 
-impl Argument {
-    fn eval_index(&self, state: &mut State) -> Result<usize> {
-        usize::try_from(self.eval_int(state)?)
-            .map_err(|e| state.raise(IndexError, format!("invalid list index: {e}")))
+const NEW_LIST: i64 = 0;
+const LEN: i64 = 1;
+const INDEX: i64 = 2;
+const REMOVE: i64 = 3;
+const INSERT: i64 = 4;
+
+fn builtin_list_api(state: &mut State, args: &[Argument]) -> Result<Atom> {
+    let mode = args[0].eval_int(state).unwrap();
+    
+    let expected_argc = match mode {
+        NEW_LIST => 0,
+        LEN => 1,
+        INDEX | REMOVE => 2,
+        INSERT => 3,
+        _ => panic!("invalid mode {mode}"),
+    };
+    assert_eq!(args.len() - 1, expected_argc, "arg mismatch: mode {mode}: expected {expected_argc}, found {}", args.len() - 1);
+    
+    if mode == NEW_LIST {
+        return Ok(Atom::new_list(vec![]));
+    }
+    
+    let mut list = args[1].eval_list(state)?;
+
+    if mode == LEN {
+        return Atom::int_from_rust_int(list.len(), state);
+    }
+     
+    let index = usize::try_from(args[2].eval_int(state)?)
+        .map_err(|e| state.raise(IndexError, format!("invalid list index: {e}")))?;
+    let index_bound = match mode {
+        INDEX | REMOVE => list.len(),
+        INSERT => list.len() + 1,
+        _ => unreachable!(),
+    };
+    if index >= index_bound {
+        raise!(
+            state,
+            IndexError,
+            "index {index} out of bounds for list of len {}",
+            list.len()
+        );
+    }
+    
+    match mode {
+        INDEX => Ok(list[index].clone()),
+        REMOVE => {
+            list.make_mut().remove(index);
+            Ok(Atom::List(list))
+        }
+        INSERT => {
+            let element = args[3].eval(state)?;
+            list.make_mut().insert(index, element.into_owned());
+            Ok(Atom::List(list))
+        }
+        _ => unreachable!(),
     }
 }
 
 functions! {
-    /// Insert a value at an index into a list.
-    /// Argument order: list, index, element.
-    /// The index must be positive and not larger than the length of the list.
-    /// That means that inserting at exactly `len(list)` is allowed.
-    "insert"(3) => |state, args| {
-        let mut list = args[0].eval_list(state)?;
-        let index = args[1].eval_index(state)?;
-        let element = args[2].eval(state)?;
-        list.make_mut().insert(index, element.into_owned());
-        Ok(Atom::List(list))
-    }
-    /// Returns the value in the first list argument at the second integer argument.
-    /// Raises an exception if the index is out of bounds.
-    "index"(2) => |state, args| {
-        let list = args[0].eval_list(state)?;
-        let index = args[1].eval_index(state)?;
-        list
-            .get(index)
-            .cloned()
-            .ok_or_else(|| state.raise(IndexError, "sequence index out of bounds"))
-    }
-    /// Returns the length of the given list argument.
-    "len"(1) => |state, args| {
-        Atom::int_from_rust_int(args[0].eval_list(state)?.len(), state)
-    }
-    /// Iterates over the given list elements.
-    /// The first argument is the list, the second the loop variable name for each element and the
-    /// third is the body that will be run for each of these elements.
-    /// Afterwards, `null` is returned.
-    // TODO: argument order of seq and loop var is confusing
-    "for_in"(3) => |state, args| {
-        let v = args[0].eval_list(state)?;
-        let loop_var = args[1].variable("invalid loop variable given to `for_in`", state)?;
-        let loop_body = &args[2];
-        for el in v.iter() {
-            state.storage.insert(loop_var, el.clone());
-            loop_body.eval(state)?;
-        }
-
-        Ok(Atom::Null)
-    }
-    // TODO: add tests for this
-    /// Removes the element at the given list index.
-    /// The first argument is the list, the second the index.
-    /// If the index is out of bounds, an exception is raised.
-    ///
-    /// Returns the updated list.
-    "remove_at"(2) => |state, args| {
-        let mut v = args[0].eval_list(state)?;
-        let index = args[1].eval_index(state)?;
-        v.make_mut().remove(index);
-        Ok(Atom::List(v))
+    /// Internal function to implement basic list functionality.
+    "__builtin_list_api"(_) => |state, args| {
+        builtin_list_api(state, args)
     }
 }

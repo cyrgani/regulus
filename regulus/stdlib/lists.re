@@ -1,5 +1,31 @@
 import(range),
 
+# Constructs a new list containing all the given arguments.
+def(list, [elements], _(
+    =(l, __builtin_list_api(0)),
+    for_in(elements, el, =(l, append(l, el))),
+    l
+)),
+
+# Returns the length of the given list.
+def(len, l, __builtin_list_api(1, l)),
+
+# Returns the value in the first list argument at the second integer argument.
+# Raises an exception if the index is out of bounds.
+def(index, l, idx, __builtin_list_api(2, l, idx)),
+
+# Removes the element at the given list index.
+# The first argument is the list, the second the index.
+# If the index is out of bounds, an exception is raised.
+# Returns the updated list.
+def(remove_at, l, idx, __builtin_list_api(3, l, idx)),
+
+# Insert a value at an index into a list.
+# Argument order: list, index, element.
+# The index must be positive and not larger than the length of the list.
+# That means that inserting at exactly `len(list)` is allowed.
+def(insert, l, idx, elem, __builtin_list_api(4, l, idx, elem)),
+
 # Appends the second argument at the back of the list given as first argument and returns
 # the new list.
 def(append, l, elem, insert(l, len(l), elem)),
