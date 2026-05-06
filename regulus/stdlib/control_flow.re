@@ -17,7 +17,7 @@
 # 0 instead of 1:
 #
 # _(
-#     =(x, 0)
+#     =(x, 0),
 #     switch(x,
 #         # replace the value of `x` with 1
 #         _(=(x, 1), 1), print(1),

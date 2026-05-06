@@ -1,6 +1,7 @@
 use crate::exception::{ArgumentError, NameError, SyntaxError, TypeError};
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
+use std::rc::Rc;
 
 fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
     let Some((ident, fields)) = args.split_first() else {
@@ -110,7 +111,9 @@ functions! {
         let mut obj = args[0].eval_object(state)?;
         let field = args[1].variable("`.` takes a field identifier as second argument", state)?;
         let value = args[2].eval(state)?;
-        *obj.data.get_mut(field).ok_or_else(|| state.raise(NameError, format!("object has no field named `{field}`")))? = value.into_owned();
+        *Rc::make_mut(&mut obj.data).get_mut(field).ok_or_else(|| {
+            state.raise(NameError, format!("object has no field named `{field}`"))
+        })? = value.into_owned();
         Ok(Atom::Object(obj))
     }
     /// Calls a method on an object with the given arguments.

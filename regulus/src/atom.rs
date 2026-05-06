@@ -3,7 +3,8 @@ use crate::list::List;
 use crate::prelude::*;
 use std::cmp::Ordering;
 use std::collections::HashMap;
-use std::fmt::{self, Display};
+use std::fmt;
+use std::rc::Rc;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
@@ -32,7 +33,7 @@ impl Atom {
     pub(crate) fn int_from_rust_int<T>(val: T, state: &State) -> Result<Self>
     where
         i64: TryFrom<T>,
-        <i64 as TryFrom<T>>::Error: Display,
+        <i64 as TryFrom<T>>::Error: fmt::Display,
     {
         match i64::try_from(val) {
             Ok(int) => Ok(Self::Int(int)),
@@ -88,7 +89,7 @@ impl Atom {
 
     /// Contructs an object with the type id `i64::MAX` directly.
     /// Useful for (singleton) objects added from outside the language.
-    pub const fn new_object(data: HashMap<String, Self>) -> Self {
+    pub fn new_object(data: HashMap<String, Self>) -> Self {
         Self::Object(Object::new(data, i64::MAX))
     }
 
@@ -172,13 +173,16 @@ impl fmt::Display for Atom {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Object {
-    pub data: HashMap<String, Atom>,
+    pub data: Rc<HashMap<String, Atom>>,
     pub ty_id: i64,
 }
 
 impl Object {
-    pub const fn new(data: HashMap<String, Atom>, ty_id: i64) -> Self {
-        Self { data, ty_id }
+    pub fn new(data: HashMap<String, Atom>, ty_id: i64) -> Self {
+        Self {
+            data: Rc::new(data),
+            ty_id,
+        }
     }
 }
 

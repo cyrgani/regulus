@@ -49,10 +49,6 @@ pub struct Storage {
     pub(crate) current_scope: usize,
 }
 
-#[expect(
-    clippy::missing_const_for_fn,
-    reason = "type is not constructible in const anyway"
-)]
 impl Storage {
     pub fn initial() -> Self {
         Self {

@@ -54,10 +54,6 @@ impl Default for State {
     }
 }
 
-#[allow(
-    clippy::missing_const_for_fn,
-    reason = "type cannot be constructed in const anyway"
-)]
 impl State {
     /// Creates a new state for running a program.
     ///
@@ -199,7 +195,7 @@ impl State {
     }
 
     /// Returns a new type id for a `type` call.
-    pub const fn make_type_id(&mut self) -> i64 {
+    pub fn make_type_id(&mut self) -> i64 {
         let old = self.next_type_id;
         self.next_type_id += 1;
         old

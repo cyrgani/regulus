@@ -10,7 +10,8 @@
     clippy::option_if_let_else,
     clippy::must_use_candidate,
     clippy::redundant_pub_crate,
-    clippy::needless_pass_by_value
+    clippy::needless_pass_by_value,
+    clippy::missing_const_for_fn
 )]
 
 mod argument;

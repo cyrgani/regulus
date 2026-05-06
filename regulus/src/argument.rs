@@ -64,7 +64,6 @@ impl Argument {
 
 macro_rules! argument_eval_as_methods {
     ($($method_name: ident: $variant:ident -> $ty:ty;)*) => {
-        #[allow(dead_code, reason = "all methods just provided for completeness")]
         impl Argument {
             $(
                 pub fn $method_name(&self, state: &mut State) -> Result<$ty> {
