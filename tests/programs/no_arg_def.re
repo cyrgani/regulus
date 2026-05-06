@@ -6,5 +6,5 @@ _(
 
     def(lit, 1),
     assert_eq(lit(), 1),
-    assert(!(==(lit, 1))),
+    assert_ne(lit, 1),
 )

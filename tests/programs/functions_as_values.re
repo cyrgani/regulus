@@ -3,5 +3,5 @@ _(
 
     =(g, f),
     assert_eq(g(2), 3),
-    assert(!(==(g, f))),
+    assert_ne(g, f),
 )

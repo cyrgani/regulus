@@ -5,9 +5,9 @@ _(
 	assert(&&(true, true)),
 	assert_eq(null, null),
 	assert_eq(+(2, 2), *(2, 2)),
-	assert(!(==(print, print))),
-	assert(!(==(print, null))),
-	assert(!(==(string(+(2, 2)), *(2, 2)))),
+	assert_ne(print, print),
+	assert_ne(print, null),
+	assert_ne(string(+(2, 2)), *(2, 2)),
 
     assert(<(1, 2)),
     assert(!(<(1, 1))),

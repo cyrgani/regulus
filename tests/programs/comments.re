@@ -8,10 +8,10 @@ _(
     ),
     assert_eq(a, b),
     assert_eq("a#b", a),
-    assert(!(==("
+    assert_ne("
 #
 #", "
     #
-    #")))
+    #")
     #\n syntax error((((((
 )
