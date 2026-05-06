@@ -178,7 +178,7 @@ fn try_parse_atom(s: String, pos: Position, file_path: &Rc<PathBuf>) -> Result<T
             Err(err) => match err.kind() {
                 IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => Err(Exception::spanned(
                     SyntaxError,
-                    format!("integer {s} cannot be parsed as an integer due to overflow"),
+                    format!("overflowing integer literal: {s}"),
                     &Span::single(pos, file_path.clone()),
                 )),
                 _ => Ok(TokenData::Name(s)),

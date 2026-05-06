@@ -3,7 +3,7 @@
 def(assert, cond, ifelse(
     cond,
     null,
-    error("Assertion", "Assertion failed!")
+    error("Assertion", "assertion failed")
 )),
 
 # Evaluates both arguments and compares then, returning `null` if they are equal.
@@ -11,7 +11,9 @@ def(assert, cond, ifelse(
 def(assert_eq, lhs, rhs, ifelse(
     ==(lhs, rhs),
     null,
-    error("Assertion", strconcat("Equality assertion failed! lhs: `", printable(lhs), "`, rhs: `", printable(rhs), "`!"))
+    error("Assertion", strconcat("equality assertion failed
+    lhs: `", printable(lhs), "`
+    rhs: `", printable(rhs), "`"))
 )),
 
 # Evaluates both arguments and compares then, returning `null` if they are not equal.

@@ -14,7 +14,7 @@ FooError: Bar
 at programs/simple_method.re:30:28
 at programs/simple_method.re:33:24
 at programs/simple_method.re:33:22
-NameError: No variable named `UNDEFINED` found!
+NameError: no variable named `UNDEFINED` found
 at programs/simple_method.re:30:60
 at programs/simple_method.re:34:24
 at programs/simple_method.re:34:22
