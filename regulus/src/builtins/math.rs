@@ -1,4 +1,3 @@
-use crate::exception::{ArgumentError, OverflowError};
 use crate::prelude::*;
 
 fn shift_operation(
@@ -10,14 +9,14 @@ fn shift_operation(
     let lhs = args[0].eval_int(state)?;
     let rhs = u32::try_from(args[1].eval_int(state)?).map_err(|err| {
         state.raise(
-            ArgumentError,
+            "Argument",
             format!("invalid arithmetic argument for `{name}`: `{err}`"),
         )
     })?;
     if let Some(i) = f(lhs, rhs) {
         Ok(Atom::Int(i))
     } else {
-        raise!(state, OverflowError, "{name} operation failed")
+        raise!(state, "Overflow", "{name} operation failed")
     }
 }
 

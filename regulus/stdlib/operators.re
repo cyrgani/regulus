@@ -16,7 +16,7 @@ def(+, lhs, rhs, _(
         __builtin_int_add(lhs, rhs),
         ifelse(
             &&(is_list(lhs), is_list(rhs)),
-            __builtin_list_add(lhs, rhs),
+            extend(lhs, rhs),
             ifelse(
                 &&(is_object(lhs), is_object(rhs)),
                 @(lhs, +, rhs),

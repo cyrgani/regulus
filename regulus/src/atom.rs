@@ -1,4 +1,3 @@
-use crate::exception::OverflowError;
 use crate::list::List;
 use crate::prelude::*;
 use std::cmp::Ordering;
@@ -37,7 +36,7 @@ impl Atom {
     {
         match i64::try_from(val) {
             Ok(int) => Ok(Self::Int(int)),
-            Err(e) => raise!(state, OverflowError, "invalid integer: {e}"),
+            Err(e) => raise!(state, "Overflow", "invalid integer: {e}"),
         }
     }
 

@@ -1,17 +1,6 @@
 use crate::parsing::Span;
 use std::{error, fmt, result};
 
-#[expect(non_upper_case_globals)]
-mod errors {
-    pub(crate) const TypeError: &str = "Type";
-    pub(crate) const OverflowError: &str = "Overflow";
-    pub(crate) const NameError: &str = "Name";
-    pub(crate) const SyntaxError: &str = "Syntax";
-    pub(crate) const ArgumentError: &str = "Argument";
-}
-
-pub(crate) use errors::*;
-
 #[derive(Debug, Clone)]
 pub struct Exception {
     pub msg: String,

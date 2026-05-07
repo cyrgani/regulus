@@ -1,4 +1,3 @@
-use crate::exception::{ArgumentError, NameError};
 use crate::prelude::*;
 use std::fmt;
 use std::rc::Rc;
@@ -21,10 +20,10 @@ impl FunctionCall {
                 if let Atom::Function(func) = atom {
                     func.clone().call(state, &self.args)
                 } else {
-                    raise!(state, NameError, "`{name}` is not a function")
+                    raise!(state, "Name", "`{name}` is not a function")
                 }
             }
-            None => raise!(state, NameError, "no function `{name}` found"),
+            None => raise!(state, "Name", "no function `{name}` found"),
         }
     }
 
@@ -82,18 +81,12 @@ impl Function {
         if let Some(argc) = self.argc() {
             let arg_len = args.len();
             if argc != arg_len {
-                if let Some(current_name) = state.current_fn_name.as_ref() {
-                    raise!(
-                        state,
-                        ArgumentError,
-                        "expected `{argc}` args, found `{arg_len}` args for `{current_name}`",
-                    );
-                }
+                let current_name = state.current_fn_name.as_ref().unwrap();
                 raise!(
                     state,
-                    ArgumentError,
-                    "expected `{argc}` args, found `{arg_len}` args",
-                )
+                    "Argument",
+                    "expected `{argc}` args, found `{arg_len}` args for `{current_name}`",
+                );
             }
         }
         (self.body())(state, args)

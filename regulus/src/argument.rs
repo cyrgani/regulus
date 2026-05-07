@@ -1,4 +1,3 @@
-use crate::exception::{ArgumentError, NameError, TypeError};
 use crate::list::List;
 use crate::parsing::Span;
 use crate::prelude::*;
@@ -29,7 +28,7 @@ impl Argument {
             Self::Atom(atom, _) => Ok(Cow::Borrowed(atom)),
             Self::Variable(var, _) => match state.storage.get(var) {
                 Some(value) => Ok(Cow::Borrowed(value)),
-                None => raise!(state, NameError, "no variable named `{var}` found"),
+                None => raise!(state, "Name", "no variable named `{var}` found"),
             },
         };
         state.backtrace.pop();
@@ -41,7 +40,7 @@ impl Argument {
     pub(crate) fn variable(&self, error_msg: &str, state: &State) -> Result<&str> {
         match self {
             Self::Variable(var, _) => Ok(var),
-            _ => raise!(state, ArgumentError, error_msg),
+            _ => raise!(state, "Argument", error_msg),
         }
     }
 
@@ -69,7 +68,7 @@ macro_rules! argument_eval_as_methods {
                 pub fn $method_name(&self, state: &mut State) -> Result<$ty> {
                     match self.eval(state)?.into_owned() {
                         Atom::$variant(v) => Ok(v),
-                        val => raise!(state, TypeError, "{val} is not a {}", stringify!($variant)),
+                        val => raise!(state, "Type", "{val} is not a {}", stringify!($variant)),
                     }
                 }
             )*
@@ -81,7 +80,7 @@ impl Argument {
     pub fn eval_as_string(&self, state: &mut State) -> Result<String> {
         self.eval(state)?
             .as_string()
-            .ok_or_else(|| state.raise(TypeError, "{val} is not a list of chars"))
+            .ok_or_else(|| state.raise("Type", "{val} is not a list of chars"))
     }
 }
 

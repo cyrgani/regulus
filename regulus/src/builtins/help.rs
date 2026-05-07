@@ -1,4 +1,3 @@
-use crate::exception::ArgumentError;
 use crate::prelude::*;
 
 functions! {
@@ -8,7 +7,7 @@ functions! {
         if let Atom::Function(f) = &*arg {
             Ok(Atom::new_string(f.doc()))
         } else {
-            raise!(state, ArgumentError, "`doc` must be called on a function")
+            raise!(state, "Argument", "`doc` must be called on a function")
         }
     }
     /// Returns the argument count for a function, or `null` if it has none.
@@ -21,7 +20,7 @@ functions! {
                 Atom::Null
             })
         } else {
-            raise!(state, ArgumentError, "`argc` must be called on a function")
+            raise!(state, "Argument", "`argc` must be called on a function")
         }
     }
 }

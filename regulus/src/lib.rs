@@ -7,6 +7,7 @@
 )]
 #![allow(
     clippy::missing_errors_doc,
+    clippy::missing_panics_doc,
     clippy::option_if_let_else,
     clippy::must_use_candidate,
     clippy::redundant_pub_crate,

@@ -8,14 +8,14 @@
 mod positions;
 mod token;
 
+use crate::no_path;
 use crate::parsing::token::Token;
 use crate::prelude::*;
-use crate::{exception::SyntaxError, no_path};
 pub use positions::{Position, Span};
 pub(crate) use token::{TokenData, tokenize};
 
 fn syntax_error<T>(msg: impl Into<String>, span: &Span) -> Result<T> {
-    Err(Exception::spanned(SyntaxError, msg, span))
+    Err(Exception::spanned("Syntax", msg, span))
 }
 
 pub fn build_program(tokens: Vec<Token>) -> Result<Argument> {
@@ -48,7 +48,7 @@ fn eat_commented_token<'a>(tokens: &mut &'a [Token]) -> Result<(&'a [Token], &'a
     // * when parsing an argument list comma, but then the error message is discarded
     // * by parsing a program with zero non-comment tokens, so a unhelpful span is fine
     Err(Exception::spanned(
-        SyntaxError,
+        "Syntax",
         "program contains no non-comment tokens",
         &Span::single(Position::ONE, no_path()),
     ))

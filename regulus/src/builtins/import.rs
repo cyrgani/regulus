@@ -97,9 +97,7 @@ fn try_resolve_import_in_stl(name: &str) -> Option<String> {
 functions! {
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the return value of this function
-    "import"(1) => |state, args| {
-        import(state, args)
-    }
+    "import"(1) => import
     /// Imports the prelude from the STL.
     /// This is implicitly done on startup.
     /// Calling this function manually is not supported.

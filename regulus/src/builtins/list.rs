@@ -66,7 +66,5 @@ fn builtin_list_api(state: &mut State, args: &[Argument]) -> Result<Atom> {
 
 functions! {
     /// Internal function to implement basic list functionality.
-    "__builtin_list_api"(_) => |state, args| {
-        builtin_list_api(state, args)
-    }
+    "__builtin_list_api"(_) => builtin_list_api
 }

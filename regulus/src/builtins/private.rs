@@ -1,6 +1,5 @@
 //! Builtin functions which are for internal use only.
 
-use crate::exception::{ArgumentError, OverflowError};
 use crate::prelude::*;
 use std::cmp::Ordering;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -26,7 +25,7 @@ fn arithmetic_operation(
         if (name == "/" || name == "%") && rhs == 0 {
             raise!(state, "DivideByZero", "attempted to divide by zero")
         }
-        raise!(state, OverflowError, "overflow occured during {name}")
+        raise!(state, "Overflow", "overflow occured during {name}")
     }
 }
 
@@ -68,17 +67,11 @@ functions! {
             Some(Ordering::Equal) => 0,
             Some(Ordering::Greater) => 1,
             Some(Ordering::Less) => 2,
-            None => raise!(state, ArgumentError, "cannot compare {lhs} and {rhs}"),
+            None => raise!(state, "Argument", "cannot compare {lhs} and {rhs}"),
         }))
     }
     /// Adds the two given integers and returns the result, causing an exception in case of overflow.
     "__builtin_int_add"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
-    /// Concatenates the two given lists and returns the result.
-    "__builtin_list_add"(2) => |state, args| {
-        let mut l = args[0].eval_list(state)?;
-        l.make_mut().append(args[1].eval_list(state)?.make_mut());
-        Ok(Atom::List(l))
-    }
     /// Subtracts the two given integers and returns the result, causing an exception in case of overflow.
     "__builtin_int_sub"(2) => |state, args| arithmetic_operation(state, args, "-", i64::checked_sub)
     /// Multiplies the two given integers and returns the result, causing an exception in case of overflow.

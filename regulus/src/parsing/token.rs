@@ -1,5 +1,5 @@
 use crate::atom::Atom;
-use crate::exception::{Exception, Result, SyntaxError};
+use crate::exception::{Exception, Result};
 use crate::parsing::positions::{CharPositions, Position, Span};
 use crate::parsing::syntax_error;
 use crate::prelude::Argument;
@@ -91,7 +91,7 @@ pub fn tokenize(code: &str, file_path: Rc<PathBuf>) -> Result<Vec<Token>> {
     while let Some((char_pos, c)) = chars.next() {
         let syntax_error = |msg| {
             Err(Exception::spanned(
-                SyntaxError,
+                "Syntax",
                 msg,
                 &Span::single(char_pos, file_path.clone()),
             ))
@@ -177,7 +177,7 @@ fn try_parse_atom(s: String, pos: Position, file_path: &Rc<PathBuf>) -> Result<T
             Ok(int) => Ok(TokenData::Atom(Atom::Int(int))),
             Err(err) => match err.kind() {
                 IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => Err(Exception::spanned(
-                    SyntaxError,
+                    "Syntax",
                     format!("overflowing integer literal: {s}"),
                     &Span::single(pos, file_path.clone()),
                 )),

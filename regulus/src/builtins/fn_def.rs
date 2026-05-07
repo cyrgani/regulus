@@ -1,4 +1,3 @@
-use crate::exception::ArgumentError;
 use crate::prelude::*;
 use std::borrow::Cow;
 
@@ -67,7 +66,7 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
         } else {
             raise!(
                 state,
-                ArgumentError,
+                "Argument",
                 "variadic argument must be the last of the fn arguments"
             );
         }
@@ -82,7 +81,7 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
             if args.len() < min_required_args && argc.is_none() {
                 raise!(
                     state,
-                    ArgumentError,
+                    "Argument",
                     "too few arguments to variadic function: expected at least {min_required_args}, found {}",
                     args.len()
                 );
@@ -148,7 +147,7 @@ functions! {
         let [var, fn_args @ .., body] = args else {
             raise!(
                 state,
-                ArgumentError,
+                "Argument",
                 "too few arguments passed to `def`: expected at least 2, found {}", args.len()
             );
         };
@@ -165,7 +164,7 @@ functions! {
     /// Values defined in the function are scoped and cannot be accessed outside of the function body.
     "fn"(_) => |state, args| {
         let Some((body, fn_args)) = args.split_last() else {
-            raise!(state, ArgumentError, "`fn` invocation is missing body");
+            raise!(state, "Argument", "`fn` invocation is missing body");
         };
         define_function(body, fn_args, state)
     }
