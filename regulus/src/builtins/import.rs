@@ -56,10 +56,10 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
         state.exit_unwind_value = Some(exit_unwind_value);
         return Ok(Atom::Null);
     }
-    let atom = atom?;
+    atom?;
     state.storage.extend_from(import_state.storage);
 
-    Ok(atom)
+    Ok(Atom::Null)
 }
 
 /// Returns:
@@ -92,6 +92,7 @@ fn try_resolve_import_in_dir(
 
 functions! {
     /// Imports a file, either from the stl or the local directory.
+    /// Returns `null`.
     /// TODO document the exact algorithm and hierarchy more clearly, also the return value of this function
     "import"(1) => import
     /// Imports the prelude from the STL.

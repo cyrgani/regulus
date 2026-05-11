@@ -81,6 +81,6 @@ functions! {
     /// Calculates the remainder of the two given integers and returns the result,
     /// causing an exception in case of division by zero.
     "__builtin_int_rem"(2) => |state, args| arithmetic_operation(state, args, "%", i64::checked_rem)
-    /// Hack since string escape code do not exist yet.
+    /// Hack since string escape codes do not exist yet.
     "__builtin_cr"(0) => |_, _| Ok(Atom::Char('\r'))
 }

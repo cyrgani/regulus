@@ -22,15 +22,15 @@ pub fn build_program(tokens: Vec<Token>) -> Result<Argument> {
     let mut cursor = tokens.as_slice();
     let arg = build_subprogram(&mut cursor)?;
 
-    if let Some(t) = without_comments(cursor).next() {
+    if let Some(t) = next_non_comment(cursor) {
         return syntax_error("trailing unparsed tokens detected", &t.span);
     }
 
     Ok(arg)
 }
 
-fn without_comments(tokens: &[Token]) -> impl DoubleEndedIterator<Item = &Token> {
-    tokens.iter().filter(|t| !t.is_comment())
+fn next_non_comment(tokens: &[Token]) -> Option<&Token> {
+    tokens.iter().find(|t| !t.is_comment())
 }
 
 /// Returns all comments before the first non-comment token, then the token itself.
@@ -103,41 +103,41 @@ fn build_subprogram(tokens: &mut &[Token]) -> Result<Argument> {
     }
     let name = first_token.to_name()?;
 
-    if let Some(Token {
+    let Some(Token {
         data: TokenData::LeftParen,
         span: left_paren_span,
-    }) = without_comments(tokens).next()
-    {
-        let (right_paren_span, rest) = extract_within_parens(tokens)?;
-        let mut args = vec![];
+    }) = next_non_comment(tokens)
+    else {
+        return Ok(Argument::Variable(name, first_token.span.clone()));
+    };
 
-        while without_comments(tokens).next().is_some() {
-            args.push(build_subprogram(tokens)?);
+    let (right_paren_span, rest) = extract_within_parens(tokens)?;
+    let mut args = vec![];
 
-            let Ok((_, comma)) = eat_commented_token(tokens) else {
-                break;
-            };
+    while next_non_comment(tokens).is_some() {
+        args.push(build_subprogram(tokens)?);
 
-            if !comma.is_comma() {
-                return syntax_error("missing comma in argument list", &comma.span);
-            }
+        let Ok((_, comma)) = eat_commented_token(tokens) else {
+            break;
+        };
+
+        if !comma.is_comma() {
+            return syntax_error("missing comma in argument list", &comma.span);
         }
-        *tokens = rest;
-
-        Ok(Argument::FunctionCall(
-            FunctionCall {
-                args,
-                name,
-                doc_comment: concat_doc_comments(doc_comments),
-            },
-            Span {
-                start: left_paren_span.start,
-                ..right_paren_span
-            },
-        ))
-    } else {
-        Ok(Argument::Variable(name, first_token.span.clone()))
     }
+    *tokens = rest;
+
+    Ok(Argument::FunctionCall(
+        FunctionCall {
+            args,
+            name,
+            doc_comment: concat_doc_comments(doc_comments),
+        },
+        Span {
+            start: left_paren_span.start,
+            ..right_paren_span
+        },
+    ))
 }
 
 #[cfg(test)]
