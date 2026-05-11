@@ -6,11 +6,8 @@ functions! {
     "input"(0) => |state, _| {
         let mut input = String::new();
         match state.stdin.read_line(&mut input) {
-            // TODO: consider removing this exception and using `.unwrap_or(&input)` instead
             Ok(_) => Ok(Atom::new_string(
-                input
-                    .strip_suffix('\n')
-                    .ok_or_else(|| state.raise("Io", "missing newline after input() call"))?
+                input.strip_suffix('\n').unwrap_or(&input)
             )),
             Err(error) => {
                 raise!(state, "Io", "error while reading input: {error}")

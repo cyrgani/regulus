@@ -1,1 +1,1 @@
-__builtin_print_catch(input()),
+assert_eq(input(), "foo"),
