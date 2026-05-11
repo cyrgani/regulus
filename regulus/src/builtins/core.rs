@@ -78,9 +78,9 @@ functions! {
     /// TODO: think about imports, test them
     "eval"(1) => |state, args| {
         let code = args[0].eval_as_string(state)?;
-        let mut state = State::new().with_code(code);
-        state.file_directory = Directory::FromEval;
-        state.run()
+        let mut eval_state = State::new().with_code(code);
+        eval_state.file_directory = Directory::FromEval;
+        eval_state.run()
     }
     /// Defines a new variable as global and assigns it the given value.
     "global"(2) => |state, args| {

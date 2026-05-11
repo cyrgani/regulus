@@ -105,6 +105,7 @@ functions! {
         let code = INTERNED_STL.get("prelude").expect("`prelude.re` missing from STL");
         import_state = import_state.with_code(code);
         import_state.set_current_file_path("<stl:prelude>");
+        import_state.optimizations_enabled = state.optimizations_enabled;
         import_state.run()?;
 
         state.storage.extend_from(import_state.storage);

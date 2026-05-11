@@ -10,7 +10,7 @@ fn shift_operation(
     let rhs = u32::try_from(args[1].eval_int(state)?).map_err(|err| {
         state.raise(
             "Argument",
-            format!("invalid arithmetic argument for `{name}`: `{err}`"),
+            format!("shift amount too big for `{name}`: `{err}`"),
         )
     })?;
     if let Some(i) = f(lhs, rhs) {
