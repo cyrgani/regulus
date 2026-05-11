@@ -39,7 +39,7 @@ fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
         }
         import_state = import_state.with_source_file(&path).unwrap();
         import_state.import_stack.push(path);
-    } else if let Some(code) = try_resolve_import_in_stl(name) {
+    } else if let Some(code) = INTERNED_STL.get(name) {
         import_state = import_state.with_code(code);
         import_state.set_current_file_path(format!("<stl:{name}>"));
     } else {
@@ -90,10 +90,6 @@ fn try_resolve_import_in_dir(
     Ok(None)
 }
 
-fn try_resolve_import_in_stl(name: &str) -> Option<String> {
-    INTERNED_STL.get(name).map(ToString::to_string)
-}
-
 functions! {
     /// Imports a file, either from the stl or the local directory.
     /// TODO document the exact algorithm and hierarchy more clearly, also the return value of this function
@@ -105,11 +101,10 @@ functions! {
         if matches!(state.file_directory, Directory::InternedSTL) {
             return Ok(Atom::Null);
         }
-        let name = "prelude";
         let mut import_state = State::new();
-        let code = INTERNED_STL.get(name).expect("`prelude.re` missing from STL");
+        let code = INTERNED_STL.get("prelude").expect("`prelude.re` missing from STL");
         import_state = import_state.with_code(code);
-        import_state.set_current_file_path(format!("<stl:{name}>"));
+        import_state.set_current_file_path("<stl:prelude>");
         import_state.run()?;
 
         state.storage.extend_from(import_state.storage);

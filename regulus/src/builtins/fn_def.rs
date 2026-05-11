@@ -9,23 +9,18 @@ struct FnArgument {
 }
 
 impl FnArgument {
-    fn new(name: impl Into<String>) -> Self {
-        let mut name = name.into();
+    fn new(name: impl AsRef<str>) -> Self {
+        let mut name = name.as_ref();
         let variadic = name.starts_with('[') && name.ends_with(']');
         if variadic {
-            name = name
-                .strip_prefix('[')
-                .unwrap()
-                .strip_suffix(']')
-                .unwrap()
-                .to_string();
+            name = name.strip_prefix('[').unwrap().strip_suffix(']').unwrap();
         }
         let lazy = name.starts_with('$');
         if lazy {
-            name = name.strip_prefix('$').unwrap().to_string();
+            name = name.strip_prefix('$').unwrap();
         }
         Self {
-            name,
+            name: name.to_string(),
             variadic,
             lazy,
         }

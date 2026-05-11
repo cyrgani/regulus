@@ -59,15 +59,6 @@ functions! {
         let msg = args[1].eval_as_string(state)?;
         Err(state.raise(kind, msg))
     }
-    /// Evaluates the given value and returns it.
-    /// If an exception occurs while evaluating the argument, the exception is converted into a
-    /// string and returned instead.
-    "run_or_string_exception"(1) => |state, args| {
-        Ok(match args[0].eval(state) {
-            Ok(atom) => Cow::into_owned(atom),
-            Err(exc) => Atom::new_string(&exc.to_string())
-        })
-    }
     /// Evaluates the given argument and terminates the program directly.
     /// The program will return the given value as its final result.
     ///
@@ -99,19 +90,41 @@ functions! {
         Ok(Atom::Null)
     }
     /// Executes the first argument. If it raises an uncaught exception, runs the second argument.
+    /// This optionally takes an identifier as a third argument. If it is passed, it will be
+    /// assigned the stringified exception message.
     ///
     /// If the second argument also throws an exception, it will not be caught by this call and
     /// propagate further.
     ///
-    /// Returns `null`.
-    ///
-    /// TODO: consider instead returning what the first argument evaluates to (if successfull),
-    ///  otherwise returning the eval of the second arg.
-    "try_except"(2) => |state, args| {
-        if args[0].eval(state).is_err() {
-            args[1].eval(state)?;
+    /// This returns what the first argument evaluates to (if successful),
+    /// otherwise it returns the eval of the second arg.
+    "try_except"(_) => |state, args| {
+        match args {
+            [body, fallback] => {
+                let val = body.eval(state);
+                match val {
+                    Ok(val) => Ok(val),
+                    Err(_) => fallback.eval(state),
+                }.map(Cow::into_owned)
+            }
+            [body, fallback, exception_var] => {
+                let exc_var = exception_var.variable("invalid exception variable given to `try_except`", state)?;
+                let val = body.eval(state);
+                match val {
+                    Ok(val) => Ok(val),
+                    Err(e) => {
+                        state.storage.insert(exc_var, Atom::new_string(&e.to_string()));
+                        fallback.eval(state)
+                    },
+                }.map(Cow::into_owned)
+            }
+            _ => raise!(
+                state,
+                "Argument",
+                "invalid number of args for `try_except`: should be 2 or 3, was {}",
+                args.len()
+            )
         }
-        Ok(Atom::Null)
     }
     // TODO: invent some way for objects to define how they want to be printed.
     // TODO: try then moving this to the STL

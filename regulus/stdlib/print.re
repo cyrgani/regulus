@@ -5,6 +5,10 @@ import(range),
 =(endl, "
 "),
 
+# A string consisting of one carriage return character.
+# TODO: this constant is a hack used because writing "\r" in a regulus string does not produce a newline yet
+=(cr, __builtin_cr()),
+
 # Evaluates all given arguments and prints them to stdout.
 # All arguments are separated with a single space.
 # No trailing space is added after the last element.
@@ -19,4 +23,4 @@ def(print, [args], _(
         if(!=(i, -(l, 1)), write(" "))
     )),
     write(endl),
-))
+)),

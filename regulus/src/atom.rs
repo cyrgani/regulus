@@ -18,11 +18,14 @@ pub enum Atom {
 
 impl PartialOrd for Atom {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self == other {
+            return Some(Ordering::Equal);
+        }
         match (self, other) {
             (Self::Int(lhs), Self::Int(rhs)) => lhs.partial_cmp(rhs),
             (Self::Bool(lhs), Self::Bool(rhs)) => lhs.partial_cmp(rhs),
             (Self::Null, Self::Null) => Some(Ordering::Equal),
-            // TODO: support Char?
+            (Self::Char(lhs), Self::Char(rhs)) => lhs.partial_cmp(rhs),
             _ => None,
         }
     }
