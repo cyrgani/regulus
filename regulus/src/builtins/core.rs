@@ -1,6 +1,5 @@
 use crate::prelude::*;
 use crate::state::Directory;
-use std::borrow::Cow;
 
 functions! {
     /// Evaluates all given arguments and returns the atom the last argument evaluated to.
@@ -16,7 +15,7 @@ functions! {
             for arg in &args[0..args.len() - 1] {
                 arg.eval(state)?;
             }
-            args[args.len() - 1].eval(state).map(Cow::into_owned)
+            args[args.len() - 1].eval(state)
         }
     }
     /// Assigns the second argument to a variable named like the first argument.
@@ -24,7 +23,7 @@ functions! {
     /// This function has an alias: `assign`.
     "="(2) => |state, args| {
         let var = args[0].variable("invalid assignment: tried to assign to a non-variable", state)?;
-        let value = args[1].eval(state)?.into_owned();
+        let value = args[1].eval(state)?;
         state.storage.insert(var, value);
         Ok(Atom::Null)
     }
@@ -36,7 +35,7 @@ functions! {
             args[1].eval(state)?
         } else {
             args[2].eval(state)?
-        }.into_owned())
+        })
     }
     /// Repeatedly evaluates the first argument as a boolean.
     /// If it evaluates to true, the second argument is evaluated and the same steps begin again.
@@ -66,7 +65,7 @@ functions! {
     ///
     /// If `exit` is reached via an `import`-ed module, it will stop the main program too.
     "exit"(1) => |state, args| {
-        let value = args[0].eval(state).map(Cow::into_owned);
+        let value = args[0].eval(state);
         state.exit_unwind_value = Some(value);
         Ok(Atom::Null)
     }
@@ -85,7 +84,7 @@ functions! {
     /// Defines a new variable as global and assigns it the given value.
     "global"(2) => |state, args| {
         let var = args[0].variable("`global(2)` expects a variable argument", state)?;
-        let atom = args[1].eval(state)?.into_owned();
+        let atom = args[1].eval(state)?;
         state.storage.add_global(var, atom);
         Ok(Atom::Null)
     }
@@ -105,7 +104,7 @@ functions! {
                 match val {
                     Ok(val) => Ok(val),
                     Err(_) => fallback.eval(state),
-                }.map(Cow::into_owned)
+                }
             }
             [body, fallback, exception_var] => {
                 let exc_var = exception_var.variable("invalid exception variable given to `try_except`", state)?;
@@ -116,7 +115,7 @@ functions! {
                         state.storage.insert(exc_var, Atom::new_string(&e.to_string()));
                         fallback.eval(state)
                     },
-                }.map(Cow::into_owned)
+                }
             }
             _ => raise!(
                 state,

@@ -3,24 +3,14 @@ use crate::prelude::*;
 functions! {
     /// Returns the documentation string for a function.
     "doc"(1) => |state, args| {
-        let arg = args[0].eval(state)?;
-        if let Atom::Function(f) = &*arg {
-            Ok(Atom::new_string(f.doc()))
-        } else {
-            raise!(state, "Argument", "`doc` must be called on a function")
-        }
+        Ok(Atom::new_string(args[0].eval_function(state)?.doc()))
     }
     /// Returns the argument count for a function, or `null` if it has none.
     "argc"(1) => |state, args| {
-        let arg = args[0].eval(state)?;
-        if let Atom::Function(f) = &*arg {
-            Ok(if let Some(argc) = f.argc() {
-                Atom::int_from_rust_int(argc, state)?
-            } else {
-                Atom::Null
-            })
+        Ok(if let Some(argc) = args[0].eval_function(state)?.argc() {
+            Atom::int_from_rust_int(argc, state)?
         } else {
-            raise!(state, "Argument", "`argc` must be called on a function")
-        }
+            Atom::Null
+        })
     }
 }

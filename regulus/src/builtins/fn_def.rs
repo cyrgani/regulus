@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use std::borrow::Cow;
 
 #[derive(Clone)]
 struct FnArgument {
@@ -33,7 +32,7 @@ impl FnArgument {
 fn make_lazy(argument: Argument) -> Atom {
     Atom::Function(Function::new("", Some(0), move |state, _| {
         state.storage.current_scope -= 1;
-        let v = argument.eval(state).map(Cow::into_owned);
+        let v = argument.eval(state);
         state.storage.current_scope += 1;
         v
     }))
@@ -95,7 +94,7 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
                         va_list.push(if signature_arg.lazy {
                             make_lazy(arg.clone())
                         } else {
-                            arg.eval(state)?.into_owned()
+                            arg.eval(state)?
                         });
                     }
                     arg_values.push((signature_arg.clone(), Atom::new_list(va_list)));
@@ -103,7 +102,7 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
                     let arg_result = if signature_arg.lazy {
                         make_lazy(args[idx].clone())
                     } else {
-                        args[idx].eval(state)?.into_owned()
+                        args[idx].eval(state)?
                     };
                     arg_values.push((signature_arg.clone(), arg_result));
                 }
@@ -122,7 +121,7 @@ fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Resu
                 }
             }
 
-            let function_result = body.eval(state).map(Cow::into_owned);
+            let function_result = body.eval(state);
             state.storage.end_scope();
 
             function_result

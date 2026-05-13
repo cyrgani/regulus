@@ -1,7 +1,6 @@
 use crate::list::List;
 use crate::parsing::Span;
 use crate::prelude::*;
-use std::borrow::Cow;
 
 #[derive(Debug, Clone)]
 pub enum Argument {
@@ -11,9 +10,9 @@ pub enum Argument {
 }
 
 impl Argument {
-    pub fn eval<'a>(&'a self, state: &'a mut State) -> Result<Cow<'a, Atom>> {
+    pub fn eval(&self, state: &mut State) -> Result<Atom> {
         if state.exit_unwind_value.is_some() {
-            return Ok(Cow::Owned(Atom::Null));
+            return Ok(Atom::Null);
         }
         state.backtrace.push(self.span().clone());
         if let Self::FunctionCall(call, _) = self {
@@ -24,10 +23,10 @@ impl Argument {
             state.current_fn_name = None;
         }
         let res = match self {
-            Self::FunctionCall(call, _) => call.eval(state).map(Cow::Owned),
-            Self::Atom(atom, _) => Ok(Cow::Borrowed(atom)),
+            Self::FunctionCall(call, _) => call.eval(state),
+            Self::Atom(atom, _) => Ok(atom.clone()),
             Self::Variable(var, _) => match state.storage.get(var) {
-                Some(value) => Ok(Cow::Borrowed(value)),
+                Some(value) => Ok(value.clone()),
                 None => raise!(state, "Name", "no variable named `{var}` found"),
             },
         };
@@ -66,7 +65,7 @@ macro_rules! argument_eval_as_methods {
         impl Argument {
             $(
                 pub fn $method_name(&self, state: &mut State) -> Result<$ty> {
-                    match self.eval(state)?.into_owned() {
+                    match self.eval(state)? {
                         Atom::$variant(v) => Ok(v),
                         val => raise!(state, "Type", "{val} is not a {}", stringify!($variant)),
                     }

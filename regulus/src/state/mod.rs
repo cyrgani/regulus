@@ -170,7 +170,7 @@ impl State {
             run_optimizations(&mut program);
         }
 
-        let result = program.eval(self)?.into_owned();
+        let result = program.eval(self)?;
 
         if let Some(exit_unwind_value) = &self.exit_unwind_value {
             return exit_unwind_value.clone();

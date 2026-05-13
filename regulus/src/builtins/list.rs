@@ -57,7 +57,7 @@ fn builtin_list_api(state: &mut State, args: &[Argument]) -> Result<Atom> {
         }
         INSERT => {
             let element = args[3].eval(state)?;
-            list.make_mut().insert(index, element.into_owned());
+            list.make_mut().insert(index, element);
             Ok(Atom::List(list))
         }
         _ => unreachable!(),

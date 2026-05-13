@@ -35,7 +35,7 @@ fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
                     raise!(state, "Syntax", "duplicate `type` field `{name}`");
                 }
                 found_fields.insert(name);
-                defaulted_fields.push((name.clone(), value.eval(state)?.into_owned()));
+                defaulted_fields.push((name.clone(), value.eval(state)?));
             }
             Argument::Variable(name, _) => {
                 if found_fields.contains(name) {
@@ -55,7 +55,7 @@ fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
             let mut fields = required_fields
                 .iter()
                 .zip(args)
-                .map(|(field, arg)| Ok((field.clone(), arg.eval(state)?.into_owned())))
+                .map(|(field, arg)| Ok((field.clone(), arg.eval(state)?)))
                 .collect::<Result<HashMap<String, Atom>>>()?;
             fields.extend(defaulted_fields.clone());
             Ok(Atom::Object(Object::new(fields, ty_id)))
@@ -110,7 +110,7 @@ functions! {
         let value = args[2].eval(state)?;
         *Rc::make_mut(&mut obj.data).get_mut(field).ok_or_else(|| {
             state.raise("Name", format!("object has no field named `{field}`"))
-        })? = value.into_owned();
+        })? = value;
         Ok(Atom::Object(obj))
     }
     /// Calls a method on an object with the given arguments.
