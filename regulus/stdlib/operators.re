@@ -13,7 +13,7 @@ def(__stl_arith_err, op, error(
 def(+, lhs, rhs, _(
     ifelse(
         &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_add(lhs, rhs),
+        __builtin_int_math(0, lhs, rhs),
         ifelse(
             &&(is_list(lhs), is_list(rhs)),
             extend(lhs, rhs),
@@ -33,7 +33,7 @@ def(+, lhs, rhs, _(
 def(-, lhs, rhs, _(
     ifelse(
         &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_sub(lhs, rhs),
+        __builtin_int_math(1, lhs, rhs),
         ifelse(
             &&(is_object(lhs), is_object(rhs)),
             @(lhs, -, rhs),
@@ -49,7 +49,7 @@ def(-, lhs, rhs, _(
 def(*, lhs, rhs, _(
     ifelse(
         &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_mul(lhs, rhs),
+        __builtin_int_math(2, lhs, rhs),
         ifelse(
             &&(is_object(lhs), is_object(rhs)),
             @(lhs, *, rhs),
@@ -65,7 +65,7 @@ def(*, lhs, rhs, _(
 def(/, lhs, rhs, _(
     ifelse(
         &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_div(lhs, rhs),
+        __builtin_int_math(3, lhs, rhs),
         ifelse(
             &&(is_object(lhs), is_object(rhs)),
             @(lhs, /, rhs),
@@ -81,11 +81,27 @@ def(/, lhs, rhs, _(
 def(%, lhs, rhs, _(
     ifelse(
         &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_rem(lhs, rhs),
+        __builtin_int_math(4, lhs, rhs),
         ifelse(
             &&(is_object(lhs), is_object(rhs)),
             @(lhs, %, rhs),
             __stl_arith_err("remainder"),
+        )
+    )
+)),
+
+# Calculates the XOR of the two given values.
+# If they are both integers, `lhs ^ rhs` is returned.
+# If they are both objects, this calls the `^` method of `lhs` with `rhs` as the only argument.
+# Otherwise, this raises an error.
+def(^, lhs, rhs, _(
+    ifelse(
+        &&(is_int(lhs), is_int(rhs)),
+        __builtin_int_xor(lhs, rhs),
+        ifelse(
+            &&(is_object(lhs), is_object(rhs)),
+            @(lhs, ^, rhs),
+            __stl_arith_err("XOR"),
         )
     )
 )),

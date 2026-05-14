@@ -3,9 +3,7 @@ use std::collections::HashMap;
 
 mod core;
 mod fn_def;
-mod help;
 mod import;
-mod io;
 mod list;
 mod math;
 mod private;
@@ -17,9 +15,7 @@ pub fn all_functions() -> HashMap<String, Atom> {
     for module in [
         core::functions(),
         fn_def::functions(),
-        help::functions(),
         import::functions(),
-        io::functions(),
         list::functions(),
         math::functions(),
         private::functions(),

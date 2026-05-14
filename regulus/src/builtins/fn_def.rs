@@ -136,7 +136,7 @@ functions! {
     /// The first argument is the function identifier and the last argument is the function body.
     /// All arguments in between are the names of the function arguments that can be accessed in
     /// the function body.
-    /// Values defined in the function are scoped and cannot be accessed outside of the function body.
+    /// Values defined in the function are scoped and cannot be accessed outside the function body.
     "def"(_) => |state, args| {
         let [var, fn_args @ .., body] = args else {
             raise!(
@@ -155,9 +155,9 @@ functions! {
     /// The last argument is the function body.
     /// All arguments before are the names of the function arguments that can be accessed in
     /// the function body.
-    /// Values defined in the function are scoped and cannot be accessed outside of the function body.
+    /// Values defined in the function are scoped and cannot be accessed outside the function body.
     "fn"(_) => |state, args| {
-        let Some((body, fn_args)) = args.split_last() else {
+        let [fn_args @ .., body] = args else {
             raise!(state, "Argument", "`fn` invocation is missing body");
         };
         define_function(body, fn_args, state)

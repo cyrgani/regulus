@@ -20,6 +20,30 @@ fn shift_operation(
     }
 }
 
+fn builtin_int_math(state: &mut State, args: &[Argument]) -> Result<Atom> {
+    let mode = args[0].eval_int(state).expect("first arg must be an int");
+    let lhs = args[1].eval_int(state)?;
+    let rhs = args[2].eval_int(state)?;
+
+    let (name, op): (&str, fn(i64, i64) -> Option<i64>) = match mode {
+        0 => ("+", i64::checked_add),
+        1 => ("-", i64::checked_sub),
+        2 => ("*", i64::checked_mul),
+        3 => ("/", i64::checked_div),
+        4 => ("%", i64::checked_rem),
+        _ => unreachable!(),
+    };
+
+    if let Some(i) = op(lhs, rhs) {
+        Ok(Atom::Int(i))
+    } else {
+        if (name == "/" || name == "%") && rhs == 0 {
+            raise!(state, "DivideByZero", "attempted to divide by zero")
+        }
+        raise!(state, "Overflow", "overflow occured during {name}")
+    }
+}
+
 // TODO: move most of these to the STL
 functions! {
     /// Shifts the first integer to the left by the second amount of digits,
@@ -28,16 +52,8 @@ functions! {
     /// Shifts the first integer to the right by the second amount of digits,
     /// causing an exception in case of overflow or a negative shift amount.
     ">>"(2) => |state, args| shift_operation(state, args, ">>", i64::checked_shr)
-    /// Evaluates both arguments as booleans and performs short-circuiting OR on them.
-    "||"(2) => |state, args| Ok(Atom::Bool(
-        args[0].eval_bool(state)? ||
-        args[1].eval_bool(state)?
-    ))
-    /// Evaluates both arguments as booleans and performs short-circuiting AND on them.
-    "&&"(2) => |state, args| Ok(Atom::Bool(
-        args[0].eval_bool(state)? &&
-        args[1].eval_bool(state)?
-    ))
-    /// Evaluates both arguments as integers and preforms XOR.
-    "^"(2) => |state, args| Ok(Atom::Int(args[0].eval_int(state)? ^ args[1].eval_int(state)?))
+    /// Internal function for integer math.
+    "__builtin_int_math"(3) => builtin_int_math
+    /// Calculates the XOR of the two given integers and returns the result.
+    "__builtin_int_xor"(2) => |state, args| Ok(Atom::Int(args[0].eval_int(state)? ^ args[1].eval_int(state)?))
 }

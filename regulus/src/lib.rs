@@ -12,7 +12,8 @@
     clippy::must_use_candidate,
     clippy::redundant_pub_crate,
     clippy::needless_pass_by_value,
-    clippy::missing_const_for_fn
+    clippy::missing_const_for_fn,
+    clippy::type_complexity
 )]
 
 mod argument;

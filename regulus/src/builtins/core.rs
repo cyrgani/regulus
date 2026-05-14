@@ -100,16 +100,14 @@ functions! {
     "try_except"(_) => |state, args| {
         match args {
             [body, fallback] => {
-                let val = body.eval(state);
-                match val {
+                match body.eval(state) {
                     Ok(val) => Ok(val),
                     Err(_) => fallback.eval(state),
                 }
             }
             [body, fallback, exception_var] => {
                 let exc_var = exception_var.variable("invalid exception variable given to `try_except`", state)?;
-                let val = body.eval(state);
-                match val {
+                match body.eval(state) {
                     Ok(val) => Ok(val),
                     Err(e) => {
                         state.storage.insert(exc_var, Atom::new_string(&e.to_string()));
@@ -152,4 +150,43 @@ functions! {
 
         Ok(Atom::Null)
     }
+    /// Returns the documentation string for a function.
+    "doc"(1) => |state, args| {
+        Ok(Atom::new_string(args[0].eval_function(state)?.doc()))
+    }
+    /// Returns the argument count for a function, or `null` if it has none.
+    "argc"(1) => |state, args| {
+        Ok(if let Some(argc) = args[0].eval_function(state)?.argc() {
+            Atom::int_from_rust_int(argc, state)?
+        } else {
+            Atom::Null
+        })
+    }
+    /// Takes no arguments and reads from stdin until a newline is entered.
+    /// Returns the read input, excluding the newline, as a string.
+    "input"(0) => |state, _| {
+        let mut input = String::new();
+        match state.stdin.read_line(&mut input) {
+            Ok(_) => Ok(Atom::new_string(
+                input.strip_suffix('\n').unwrap_or(&input)
+            )),
+            Err(error) => {
+                raise!(state, "Io", "error while reading input: {error}")
+            }
+        }
+    }
+    /// Evaluates the given argument and prints it to stdout, without any additional spaces or newline.
+    "write"(1) => |state, args| {
+        let s = args[0].eval(state)?.to_string();
+        state.write_to_stdout(&s);
+        Ok(Atom::Null)
+    }
+    /// Evaluates both arguments as booleans and performs short-circuiting OR on them.
+    "||"(2) => |state, args| Ok(Atom::Bool(
+        args[0].eval_bool(state)? || args[1].eval_bool(state)?
+    ))
+    /// Evaluates both arguments as booleans and performs short-circuiting AND on them.
+    "&&"(2) => |state, args| Ok(Atom::Bool(
+        args[0].eval_bool(state)? && args[1].eval_bool(state)?
+    ))
 }

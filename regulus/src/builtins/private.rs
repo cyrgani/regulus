@@ -10,25 +10,6 @@ fn epoch_duration() -> Duration {
         .expect("internal time error")
 }
 
-fn arithmetic_operation(
-    state: &mut State,
-    args: &[Argument],
-    name: &str,
-    f: fn(i64, i64) -> Option<i64>,
-) -> Result<Atom> {
-    let lhs = args[0].eval_int(state)?;
-    let rhs = args[1].eval_int(state)?;
-
-    if let Some(i) = f(lhs, rhs) {
-        Ok(Atom::Int(i))
-    } else {
-        if (name == "/" || name == "%") && rhs == 0 {
-            raise!(state, "DivideByZero", "attempted to divide by zero")
-        }
-        raise!(state, "Overflow", "overflow occured during {name}")
-    }
-}
-
 functions! {
     /// Evaluates the given argument, extracts the exception and prints it to stderr.
     /// Not meant to be used outside of tests.
@@ -70,17 +51,6 @@ functions! {
             None => raise!(state, "Argument", "cannot compare {lhs} and {rhs}"),
         }))
     }
-    /// Adds the two given integers and returns the result, causing an exception in case of overflow.
-    "__builtin_int_add"(2) => |state, args| arithmetic_operation(state, args, "+", i64::checked_add)
-    /// Subtracts the two given integers and returns the result, causing an exception in case of overflow.
-    "__builtin_int_sub"(2) => |state, args| arithmetic_operation(state, args, "-", i64::checked_sub)
-    /// Multiplies the two given integers and returns the result, causing an exception in case of overflow.
-    "__builtin_int_mul"(2) => |state, args| arithmetic_operation(state, args, "*", i64::checked_mul)
-    /// Divides the two given integers and returns the result, causing an exception in case of division by zero.
-    "__builtin_int_div"(2) => |state, args| arithmetic_operation(state, args, "/", i64::checked_div)
-    /// Calculates the remainder of the two given integers and returns the result,
-    /// causing an exception in case of division by zero.
-    "__builtin_int_rem"(2) => |state, args| arithmetic_operation(state, args, "%", i64::checked_rem)
     /// Hack since string escape codes do not exist yet.
     "__builtin_cr"(0) => |_, _| Ok(Atom::Char('\r'))
 }
