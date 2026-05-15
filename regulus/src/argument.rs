@@ -81,6 +81,10 @@ impl Argument {
             .as_string()
             .ok_or_else(|| state.raise("Type", "{val} is not a list of chars"))
     }
+    
+    pub(crate) fn eval_mode(&self, state: &mut State) -> i64 {
+        self.eval_int(state).expect("expected integer mode argument")
+    }
 }
 
 // method name, atom variant name, rust type

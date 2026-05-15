@@ -78,13 +78,7 @@ impl Atom {
     /// Otherwise, it returns `None`.
     pub fn as_string(&self) -> Option<String> {
         match self {
-            Self::List(l) => l
-                .iter()
-                .map(|el| match el {
-                    Self::Char(c) => Some(*c),
-                    _ => None,
-                })
-                .collect(),
+            Self::List(l) => l.iter().map(Self::char).collect(),
             _ => None,
         }
     }

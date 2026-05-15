@@ -7,7 +7,7 @@ const REMOVE: i64 = 3;
 const INSERT: i64 = 4;
 
 fn builtin_list_api(state: &mut State, args: &[Argument]) -> Result<Atom> {
-    let mode = args[0].eval_int(state).expect("first arg must be an int");
+    let mode = args[0].eval_mode(state);
 
     let expected_argc = match mode {
         NEW_LIST => 0,

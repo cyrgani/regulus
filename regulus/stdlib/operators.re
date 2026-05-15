@@ -97,11 +97,45 @@ def(%, lhs, rhs, _(
 def(^, lhs, rhs, _(
     ifelse(
         &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_xor(lhs, rhs),
+        __builtin_int_math(5, lhs, rhs),
         ifelse(
             &&(is_object(lhs), is_object(rhs)),
             @(lhs, ^, rhs),
             __stl_arith_err("XOR"),
+        )
+    )
+)),
+
+# If both arguments are integers, `lhs << rhs` is returned by
+# shifting the first integer to the left by the second amount of digits,
+# causing an exception in case of overflow or a negative shift amount.
+# If they are both objects, this calls the `<<` method of `lhs` with `rhs` as the only argument.
+# Otherwise, this raises an error.
+def(<<, lhs, rhs, _(
+    ifelse(
+        &&(is_int(lhs), is_int(rhs)),
+        __builtin_int_shift(0, lhs, rhs),
+        ifelse(
+            &&(is_object(lhs), is_object(rhs)),
+            @(lhs, <<, rhs),
+            __stl_arith_err("left shift"),
+        )
+    )
+)),
+
+# If both arguments are integers, `lhs >> rhs` is returned by
+# shifting the first integer to the right by the second amount of digits,
+# causing an exception in case of overflow or a negative shift amount.
+# If they are both objects, this calls the `>>` method of `lhs` with `rhs` as the only argument.
+# Otherwise, this raises an error.
+def(>>, lhs, rhs, _(
+    ifelse(
+        &&(is_int(lhs), is_int(rhs)),
+        __builtin_int_shift(1, lhs, rhs),
+        ifelse(
+            &&(is_object(lhs), is_object(rhs)),
+            @(lhs, >>, rhs),
+            __stl_arith_err("right shift"),
         )
     )
 )),
@@ -176,3 +210,5 @@ def(>, lhs, rhs, ifelse(
     @(lhs, >, rhs),
     __builtin_atom_eq(__builtin_atom_cmp(lhs, rhs), 1)
 )),
+
+# TODO: change these methods so they do not need op(obj, obj) but just op(obj, any_atom) instead
