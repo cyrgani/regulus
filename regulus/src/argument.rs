@@ -77,9 +77,11 @@ macro_rules! argument_eval_as_methods {
 
 impl Argument {
     pub fn eval_as_string(&self, state: &mut State) -> Result<String> {
-        self.eval(state)?
-            .as_string()
-            .ok_or_else(|| state.raise("Type", "{val} is not a list of chars"))
+        let val = self.eval(state)?;
+        match val.as_string() {
+            Some(s) => Ok(s),
+            None => raise!(state, "Type", "{val} is not a list of chars"),
+        }
     }
 
     pub(crate) fn eval_mode(&self, state: &mut State) -> i64 {

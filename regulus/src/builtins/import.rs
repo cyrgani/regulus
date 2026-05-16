@@ -4,7 +4,7 @@ use crate::state::Directory;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
+pub fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
     let name = args[0].variable(
         "`import` argument must be a variable, string syntax was removed",
         state,
@@ -88,11 +88,4 @@ fn try_resolve_import_in_dir(
         }
     }
     Ok(None)
-}
-
-functions! {
-    /// Imports a file, either from the stl or the local directory.
-    /// Returns `null`.
-    /// TODO document the exact algorithm and hierarchy more clearly, also the return value of this function
-    "import"(1) => import
 }

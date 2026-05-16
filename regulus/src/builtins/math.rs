@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-fn builtin_int_shift(state: &mut State, args: &[Argument]) -> Result<Atom> {
+pub fn builtin_int_shift(state: &mut State, args: &[Argument]) -> Result<Atom> {
     let mode = args[0].eval_mode(state);
     let (name, op): (&str, fn(i64, u32) -> Option<i64>) = match mode {
         0 => ("<<", i64::checked_shl),
@@ -22,7 +22,7 @@ fn builtin_int_shift(state: &mut State, args: &[Argument]) -> Result<Atom> {
     }
 }
 
-fn builtin_int_math(state: &mut State, args: &[Argument]) -> Result<Atom> {
+pub fn builtin_int_math(state: &mut State, args: &[Argument]) -> Result<Atom> {
     let mode = args[0].eval_mode(state);
     let lhs = args[1].eval_int(state)?;
     let rhs = args[2].eval_int(state)?;
@@ -45,11 +45,4 @@ fn builtin_int_math(state: &mut State, args: &[Argument]) -> Result<Atom> {
         }
         raise!(state, "Overflow", "overflow occured during {name}")
     }
-}
-
-functions! {
-    /// Internal function for integer math.
-    "__builtin_int_math"(3) => builtin_int_math
-    /// Internal function for integer bit shifts.
-    "__builtin_int_shift"(3) => builtin_int_shift
 }

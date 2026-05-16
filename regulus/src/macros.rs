@@ -40,7 +40,7 @@ macro_rules! functions {
                     $(#[doc = $doc])* $name
                 }
             )*
-            vec![
+            std::vec![
                 $((
                     $name,
                     $crate::prelude::Function::new(
