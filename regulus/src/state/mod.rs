@@ -1,5 +1,6 @@
 mod storage;
 
+use crate::interned_stdlib::INTERNED_STL;
 use crate::no_path;
 use crate::optimizations::run_optimizations;
 use crate::parsing::{build_program, tokenize};
@@ -151,7 +152,7 @@ impl State {
         // newlines are needed to avoid interaction with comments
         // and also help with calculating the actual spans (just do line - 1)
         let code = format!(
-            "_(__builtin_prelude_import(),\n{}\n)",
+            "_(\n{}\n)",
             self.code
                 .as_ref()
                 .expect("setting the source code is required")
@@ -170,6 +171,7 @@ impl State {
             run_optimizations(&mut program);
         }
 
+        self.import_prelude();
         let result = program.eval(self)?;
 
         if let Some(exit_unwind_value) = &self.exit_unwind_value {
@@ -177,6 +179,22 @@ impl State {
         }
 
         Ok(result)
+    }
+
+    fn import_prelude(&mut self) {
+        if matches!(self.file_directory, Directory::InternedSTL) {
+            return;
+        }
+        let mut import_state = Self::new();
+        let code = INTERNED_STL
+            .get("prelude")
+            .expect("`prelude.re` missing from STL");
+        import_state = import_state.with_code(code);
+        import_state.set_current_file_path("<stl:prelude>");
+        import_state.optimizations_enabled = self.optimizations_enabled;
+        import_state.run().expect("prelude import failed");
+
+        self.storage.extend_from(import_state.storage);
     }
 
     /// Writes the given string to stdout, without any extra newline.

@@ -13,6 +13,10 @@ impl List {
     pub fn make_mut(&mut self) -> &mut Vec<Atom> {
         Rc::make_mut(&mut self.0)
     }
+
+    pub fn into_inner(self) -> Vec<Atom> {
+        Rc::unwrap_or_clone(self.0)
+    }
 }
 
 impl Deref for List {
