@@ -81,6 +81,20 @@ impl Function {
         }
         (self.body())(state, args)
     }
+
+    pub(crate) fn wrap_ctor(self, field: &str, value: Atom) -> Self {
+        let doc = self.doc().to_owned();
+        let field = field.to_owned();
+        Self::new(doc, self.argc(), move |state, args| {
+            let mut obj = self
+                .clone()
+                .call(state, args)?
+                .object()
+                .ok_or_else(|| state.raise("Type", "expected a type constructor"))?;
+            obj.data_mut().insert(field.clone(), value.clone());
+            Ok(Atom::Object(obj))
+        })
+    }
 }
 
 // the callback cannot be debugged

@@ -1,3 +1,5 @@
 __builtin_print_catch(type(A, a, b, a)),
 type(B, B),
 type(C, c, C),
+default_value(C, c, 0),
+default_value(C, c, 0),

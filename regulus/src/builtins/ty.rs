@@ -1,6 +1,6 @@
+use crate::builtins::fn_def::define_function;
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
-use std::rc::Rc;
 
 fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
     let Some((ident, fields)) = args.split_first() else {
@@ -66,34 +66,37 @@ fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
     Ok(Atom::Null)
 }
 
+fn impl_(state: &mut State, args: &[Argument]) -> Result<Atom> {
+    let [type_ident, field, fn_args @ .., body] = args else {
+        raise!(state, "Argument", "too few arguments passed to `impl`");
+    };
+    let type_ident =
+        type_ident.variable("`impl` takes a type identifier as first argument", state)?;
+    let field = field.variable(
+        "`default_value` takes a field identifier as second argument",
+        state,
+    )?;
+
+    let func = define_function(body, fn_args, state)?;
+    let old_ctor = state.get_function(type_ident)?;
+    let new_ctor = old_ctor.wrap_ctor(field, func);
+    state.storage.insert(type_ident, Atom::Function(new_ctor));
+
+    Ok(Atom::Null)
+}
+
 fn default_value(state: &mut State, args: &[Argument]) -> Result<Atom> {
     let type_ident = args[0].variable(
         "`default_value` takes a type identifier as first argument",
         state,
     )?;
-    let field = args[1]
-        .variable(
-            "`default_value` takes a field identifier as second argument",
-            state,
-        )?
-        .to_owned();
+    let field = args[1].variable(
+        "`default_value` takes a field identifier as second argument",
+        state,
+    )?;
     let value = args[2].eval(state)?;
     let old_ctor = state.get_function(type_ident)?;
-    let doc = old_ctor.doc().to_owned();
-    let new_ctor = Function::new(doc, old_ctor.argc(), move |state, args| {
-        let mut obj = old_ctor
-            .clone()
-            .call(state, args)?
-            .object()
-            .ok_or_else(|| {
-                state.raise(
-                    "Type",
-                    "`default_value` should take a type constructor as first arg",
-                )
-            })?;
-        obj.data_mut().insert(field.clone(), value.clone());
-        Ok(Atom::Object(obj))
-    });
+    let new_ctor = old_ctor.wrap_ctor(field, value);
     state.storage.insert(type_ident, Atom::Function(new_ctor));
 
     Ok(Atom::Null)
@@ -118,7 +121,6 @@ functions! {
     /// Get the value of a field of an object.
     ///
     /// The first argument is the object, the second is its name as a variable.
-    /// TODO: consider allowing the second to also be an arg that evals to Atom::String?
     ///
     /// If the field does not exist on the object, an exception is raised.
     ///
@@ -134,14 +136,13 @@ functions! {
     ///
     /// If the field does not exist on the object, an exception is raised.
     /// TODO: think if it should be allowed to add fields with this that did not exist before or not
-    /// TODO: consider allowing the second to also be an arg that evals to Atom::String?
     ///
     /// This function has an alias: `setattr`.
     "->"(3) => |state, args| {
         let mut obj = args[0].eval_object(state)?;
         let field = args[1].variable("`.` takes a field identifier as second argument", state)?;
         let value = args[2].eval(state)?;
-        *Rc::make_mut(&mut obj.data).get_mut(field).ok_or_else(|| {
+        *obj.data_mut().get_mut(field).ok_or_else(|| {
             state.raise("Name", format!("object has no field named `{field}`"))
         })? = value;
         Ok(Atom::Object(obj))
@@ -184,4 +185,7 @@ functions! {
     /// Experimental function to replace `=` invocations used as `type` arguments.
     /// Arguments: type name, field name, value.
     "default_value"(3) => default_value
+    /// Experimental function to replace `=` invocations used as `type` arguments.
+    /// Arguments: type name, method name, method args (usually starting with `self`), method body.
+    "impl"(_) => impl_
 }

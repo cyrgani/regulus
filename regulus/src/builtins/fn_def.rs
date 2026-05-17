@@ -38,7 +38,7 @@ fn make_lazy(argument: Argument) -> Atom {
     }))
 }
 
-fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Result<Atom> {
+pub fn define_function(body: &Argument, fn_args: &[Argument], state: &State) -> Result<Atom> {
     let body = body.clone();
     let function_arg_names = fn_args
         .iter()
