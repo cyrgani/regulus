@@ -66,6 +66,39 @@ fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
     Ok(Atom::Null)
 }
 
+fn default_value(state: &mut State, args: &[Argument]) -> Result<Atom> {
+    let type_ident = args[0].variable(
+        "`default_value` takes a type identifier as first argument",
+        state,
+    )?;
+    let field = args[1]
+        .variable(
+            "`default_value` takes a field identifier as second argument",
+            state,
+        )?
+        .to_owned();
+    let value = args[2].eval(state)?;
+    let old_ctor = state.get_function(type_ident)?;
+    let doc = old_ctor.doc().to_owned();
+    let new_ctor = Function::new(doc, old_ctor.argc(), move |state, args| {
+        let mut obj = old_ctor
+            .clone()
+            .call(state, args)?
+            .object()
+            .ok_or_else(|| {
+                state.raise(
+                    "Type",
+                    "`default_value` should take a type constructor as first arg",
+                )
+            })?;
+        obj.data_mut().insert(field.clone(), value.clone());
+        Ok(Atom::Object(obj))
+    });
+    state.storage.insert(type_ident, Atom::Function(new_ctor));
+
+    Ok(Atom::Null)
+}
+
 functions! {
     /// Defines a new type.
     /// The first argument must be given and is the ident of the type.
@@ -148,4 +181,7 @@ functions! {
     "type_id"(1) => |state, args| {
         Ok(Atom::Int(args[0].eval(state)?.ty_id()))
     }
+    /// Experimental function to replace `=` invocations used as `type` arguments.
+    /// Arguments: type name, field name, value.
+    "default_value"(3) => default_value
 }

@@ -1,0 +1,3 @@
+SyntaxError: duplicate `type` field `a`
+at programs/duplicate_type_field.re:1:27
+at programs/duplicate_type_field.re:1:22

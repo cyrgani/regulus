@@ -18,5 +18,6 @@ assert_eq(*(a, b), Fraction(8, 21)),
 assert_eq(/(a, b), Fraction(14, 12)),
 assert_eq(Fraction(4, 2), Fraction(6, 3)),
 assert_eq(Fraction(3, 2), Fraction(-6, -4)),
+assert_eq(Fraction(0, 1), Fraction(0, 2)),
 
 # TODO: add far more tests, division by zero, overflow, all other functions in the module ...

@@ -180,6 +180,10 @@ impl Object {
             ty_id,
         }
     }
+
+    pub fn data_mut(&mut self) -> &mut HashMap<String, Atom> {
+        Rc::make_mut(&mut self.data)
+    }
 }
 
 #[test]

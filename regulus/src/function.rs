@@ -14,17 +14,7 @@ impl FunctionCall {
         if state.exit_unwind_value.is_some() {
             return Ok(Atom::Null);
         }
-        let name = &self.name;
-        match state.storage.get(name) {
-            Some(atom) => {
-                if let Atom::Function(func) = atom {
-                    func.clone().call(state, &self.args)
-                } else {
-                    raise!(state, "Name", "`{name}` is not a function")
-                }
-            }
-            None => raise!(state, "Name", "no function `{name}` found"),
-        }
+        state.get_function(&self.name)?.call(state, &self.args)
     }
 
     /// Returns an approximation of the source code of this function call.

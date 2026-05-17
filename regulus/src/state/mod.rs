@@ -223,6 +223,19 @@ impl State {
     pub fn raise(&self, error: impl Into<String>, msg: impl Into<String>) -> Exception {
         Exception::with_trace(error, msg, &self.backtrace)
     }
+
+    pub(crate) fn get_function(&self, name: &str) -> Result<Function> {
+        match self.storage.get(name) {
+            Some(atom) => {
+                if let Atom::Function(func) = atom {
+                    Ok(func.clone())
+                } else {
+                    raise!(self, "Name", "`{name}` is not a function")
+                }
+            }
+            None => raise!(self, "Name", "no function `{name}` found"),
+        }
+    }
 }
 
 /// Helper trait for types that can both be read from and written to.
