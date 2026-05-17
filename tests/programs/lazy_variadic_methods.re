@@ -1,9 +1,8 @@
-type(
-    A,
-    =(foo, fn(self, $x, 0)),
-    =(blubb, fn(self, $x, x())),
-    =(bar, fn(self, [x], assert_eq(len(x), 2))),
-),
+type(A),
+
+impl(A, foo, self, $x, 0),
+impl(A, blubb, self, $x, x()),
+impl(A, bar, self, [x], assert_eq(len(x), 2)),
 
 default_value(A, foo2, fn(self, $x, 0)),
 default_value(A, blubb2, fn(self, $x, x())),

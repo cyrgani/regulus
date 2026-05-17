@@ -1,6 +1,7 @@
-type(I, val, =(+, fn(
+type(I, val),
+impl(I, +,
     self, other, I(+(.(self, val), .(other, val)))
-))),
+),
 
 # regular method call
 =(a, I(2)),

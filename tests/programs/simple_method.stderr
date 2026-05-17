@@ -1,20 +1,20 @@
 NameError: object has no method `nonexistent`
+at programs/simple_method.re:18:24
+at programs/simple_method.re:18:22
+ArgumentError: expected `1` args, found `2` args for `<object>.double`
 at programs/simple_method.re:19:24
 at programs/simple_method.re:19:22
-ArgumentError: expected `1` args, found `2` args for `<object>.double`
+TypeError: 5 is not a Object
 at programs/simple_method.re:20:24
 at programs/simple_method.re:20:22
-TypeError: 5 is not a Object
+ArgumentError: `@` expected the name of a method as second arg
 at programs/simple_method.re:21:24
 at programs/simple_method.re:21:22
-ArgumentError: `@` expected the name of a method as second arg
-at programs/simple_method.re:22:24
-at programs/simple_method.re:22:22
 FooError: Bar
-at programs/simple_method.re:30:28
-at programs/simple_method.re:33:24
-at programs/simple_method.re:33:22
-NameError: no variable named `UNDEFINED` found
-at programs/simple_method.re:30:60
+at programs/simple_method.re:30:23
 at programs/simple_method.re:34:24
 at programs/simple_method.re:34:22
+NameError: no variable named `UNDEFINED` found
+at programs/simple_method.re:31:18
+at programs/simple_method.re:35:24
+at programs/simple_method.re:35:22

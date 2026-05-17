@@ -1,10 +1,9 @@
 type(
     Foo,
     a,
-
-    =(double, fn(self,
-        Foo(*(.(self, a), 2))
-    )),
+),
+impl(Foo, double, self,
+    Foo(*(.(self, a), 2))
 ),
 
 =(b, Foo(3)),
@@ -27,7 +26,9 @@ assert_eq(.(y, a), 10),
 
 # TODO: error on "static" methods (methods that take 0 parameters), since they are not callable with @
 # make sure that errors in methods cause no panics
-type(E, =(f, fn(self, error("Foo", "Bar"))), =(g, fn(self, UNDEFINED))),
+type(E),
+impl(E, f, self, error("Foo", "Bar")),
+impl(E, g, self, UNDEFINED),
 
 =(e, E()),
 __builtin_print_catch(@(e, f)),

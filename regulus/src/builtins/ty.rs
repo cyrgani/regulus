@@ -1,6 +1,6 @@
 use crate::builtins::fn_def::define_function;
 use crate::prelude::*;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
     let Some((ident, fields)) = args.split_first() else {
@@ -9,42 +9,19 @@ fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
     let var = ident.variable("`type` must take a variable as first argument", state)?;
 
     let mut required_fields = vec![];
-    let mut defaulted_fields = vec![];
-    let mut found_fields = HashSet::new();
 
     for field in fields {
-        match field {
-            Argument::Atom(..) => raise!(
+        let Argument::Variable(name, _) = field else {
+            raise!(
                 state,
                 "Syntax",
-                "`type` field arguments should be variables or `=` calls"
-            ),
-            Argument::FunctionCall(call, _) => {
-                // TODO: `def` should be allowed; aliases of `=` should be allowed too.
-                if call.name != "=" {
-                    raise!(state, "Syntax", "defaulted `type` values must use `=`");
-                }
-                let [Argument::Variable(name, _), value] = call.args.as_slice() else {
-                    raise!(
-                        state,
-                        "Syntax",
-                        "defaulted `type` values must have the form `=(name, value)`"
-                    );
-                };
-                if found_fields.contains(name) {
-                    raise!(state, "Syntax", "duplicate `type` field `{name}`");
-                }
-                found_fields.insert(name);
-                defaulted_fields.push((name.clone(), value.eval(state)?));
-            }
-            Argument::Variable(name, _) => {
-                if found_fields.contains(name) {
-                    raise!(state, "Syntax", "duplicate `type` field `{name}`");
-                }
-                found_fields.insert(name);
-                required_fields.push(name.clone());
-            }
+                "`type` field arguments should be variables"
+            )
+        };
+        if required_fields.contains(name) {
+            raise!(state, "Syntax", "duplicate `type` field `{name}`");
         }
+        required_fields.push(name.clone());
     }
     let ty_id = state.make_type_id();
 
@@ -52,12 +29,11 @@ fn type_(state: &mut State, args: &[Argument]) -> Result<Atom> {
         String::new(),
         Some(required_fields.len()),
         move |state, args| {
-            let mut fields = required_fields
+            let fields = required_fields
                 .iter()
                 .zip(args)
                 .map(|(field, arg)| Ok((field.clone(), arg.eval(state)?)))
                 .collect::<Result<HashMap<String, Atom>>>()?;
-            fields.extend(defaulted_fields.clone());
             Ok(Atom::Object(Object::new(fields, ty_id)))
         },
     );
@@ -72,10 +48,7 @@ fn impl_(state: &mut State, args: &[Argument]) -> Result<Atom> {
     };
     let type_ident =
         type_ident.variable("`impl` takes a type identifier as first argument", state)?;
-    let field = field.variable(
-        "`default_value` takes a field identifier as second argument",
-        state,
-    )?;
+    let field = field.variable("`impl` takes a field identifier as second argument", state)?;
 
     let func = define_function(body, fn_args, state)?;
     let old_ctor = state.get_function(type_ident)?;
@@ -105,18 +78,7 @@ fn default_value(state: &mut State, args: &[Argument]) -> Result<Atom> {
 functions! {
     /// Defines a new type.
     /// The first argument must be given and is the ident of the type.
-    /// All further arguments are its fields or its defaulted values.
-    ///
-    /// If the argument is just an identifier, it is a field.
-    /// If it is a function call of the form `=(name, value)`
-    /// (this must be `=` and not `assign` or another alias),
-    /// this adds a field `name` which has the value `value` by default.
-    /// Accordingly, this value must not and can not be set in the constructor.
-    ///
-    /// Methods can be added by using the defaulted value syntax as
-    /// `=(method_name, fn(self, arg1, arg2, function_body()))`.
-    ///
-    /// TODO: In the future, it will probably be supported to use `def` directly for this purpose.
+    /// All further arguments are its fields, given as identifiers.
     "type"(_) => type_
     /// Get the value of a field of an object.
     ///
@@ -182,10 +144,10 @@ functions! {
     "type_id"(1) => |state, args| {
         Ok(Atom::Int(args[0].eval(state)?.ty_id()))
     }
-    /// Experimental function to replace `=` invocations used as `type` arguments.
+    /// Set a field of a type to a default value.
     /// Arguments: type name, field name, value.
     "default_value"(3) => default_value
-    /// Experimental function to replace `=` invocations used as `type` arguments.
-    /// Arguments: type name, method name, method args (usually starting with `self`), method body.
+    /// Defines a method on the given type with similar syntax to `def`.
+    /// Arguments: type name, method name, any number of method args (usually starting with `self`), method body.
     "impl"(_) => impl_
 }
