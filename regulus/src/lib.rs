@@ -100,4 +100,14 @@ mod tests {
             4
         );
     }
+
+    #[test]
+    fn state_reuse_exit() {
+        let mut state = State::new().with_code("exit(2)");
+        assert_eq!(state.run().unwrap(), Atom::Int(2));
+        state = state.with_code("exit(1)");
+        assert_eq!(state.run().unwrap(), Atom::Int(1));
+        state = state.with_code("3");
+        assert_eq!(state.run().unwrap(), Atom::Int(3));
+    }
 }

@@ -33,7 +33,7 @@ pub struct State {
     /// The directory (or pseudo-directory) in which the current program is placed.
     pub(crate) file_directory: Directory,
     pub(crate) current_file_path: Option<PathBuf>,
-    pub(crate) exit_unwind_value: Option<Result<Atom>>,
+    pub(crate) exit_unwind_value: Option<Atom>,
     pub(crate) backtrace: Vec<Span>,
     // TODO: consider merging `current_doc_comment` and `current_fn_name`
     pub(crate) current_doc_comment: Option<String>,
@@ -149,6 +149,8 @@ impl State {
     /// # Panics
     /// Panics if `code` was not set.
     pub fn run(&mut self) -> Result<Atom> {
+        self.exit_unwind_value = None;
+
         // newlines are needed to avoid interaction with comments
         // and also help with calculating the actual spans (just do line - 1)
         let code = format!(
@@ -175,7 +177,7 @@ impl State {
         let result = program.eval(self)?;
 
         if let Some(exit_unwind_value) = &self.exit_unwind_value {
-            return exit_unwind_value.clone();
+            return Ok(exit_unwind_value.clone());
         }
 
         Ok(result)

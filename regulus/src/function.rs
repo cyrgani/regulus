@@ -82,6 +82,8 @@ impl Function {
         (self.body())(state, args)
     }
 
+    /// Assuming that this is a constructor function, this creates a new constructor that
+    /// sets `field` to `value` for all newly constructed objects.
     pub(crate) fn wrap_ctor(self, field: &str, value: Atom) -> Self {
         let doc = self.doc().to_owned();
         let field = field.to_owned();

@@ -61,11 +61,12 @@ functions! {
     /// Evaluates the given argument and terminates the program directly.
     /// The program will return the given value as its final result.
     ///
-    /// Even if the argument causes an exception, it is returned directly too.
+    /// If the argument causes an exception, it is not returned directly
+    /// and the exception may still be caught with `try_except`.
     ///
     /// If `exit` is reached via an `import`-ed module, it will stop the main program too.
     "exit"(1) => |state, args| {
-        let value = args[0].eval(state);
+        let value = args[0].eval(state)?;
         state.exit_unwind_value = Some(value);
         Ok(Atom::Null)
     }
