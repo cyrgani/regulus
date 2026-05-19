@@ -19,10 +19,7 @@ def(is_list, val, __builtin_atom_eq(type_id(val), LIST_TY_ID)),
 # Returns whether the given value is a function (according to its type id).
 def(is_function, val, __builtin_atom_eq(type_id(val), FUNCTION_TY_ID)),
 # Returns whether the given value is an object (according to its type id).
-def(is_object, val, _(
-    =(c, __builtin_atom_cmp(type_id(val), MIN_OBJECT_TY_ID)),
-    ||(__builtin_atom_eq(c, 0), __builtin_atom_eq(c, 1))
-)),
+def(is_object, val, __builtin_atom_cmp(2, type_id(val), MIN_OBJECT_TY_ID)),
 # Returns whether the given value is a list of chars.
 def(is_char_list, val, &&(is_list(val), _(
     =(valid, true),

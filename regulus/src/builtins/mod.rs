@@ -15,6 +15,7 @@ pub fn all_functions() -> HashMap<String, Atom> {
     for module in [
         core::functions(),
         fn_def::functions(),
+        import::functions(),
         private::functions(),
         ty::functions(),
         functions(),
@@ -31,10 +32,6 @@ functions! {
     "__builtin_int_math"(3) => math::builtin_int_math
     /// Internal function for integer bit shifts.
     "__builtin_int_shift"(3) => math::builtin_int_shift
-    /// Imports a file, either from the stl or the local directory.
-    /// Returns `null`.
-    /// TODO document the exact algorithm and hierarchy more clearly
-    "import"(1) => import::import
     /// Internal function to implement basic list functionality.
     "__builtin_list_api"(_) => list::builtin_list_api
 }

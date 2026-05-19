@@ -10,18 +10,16 @@ def(__stl_arith_err, op, error(
 # If they are both lists, their concatenation is returned.
 # If they are both objects, this calls the `+` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
-def(+, lhs, rhs, _(
+def(+, lhs, rhs, ifelse(
+    &&(is_int(lhs), is_int(rhs)),
+    __builtin_int_math(0, lhs, rhs),
     ifelse(
-        &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_math(0, lhs, rhs),
+        &&(is_list(lhs), is_list(rhs)),
+        extend(lhs, rhs),
         ifelse(
-            &&(is_list(lhs), is_list(rhs)),
-            extend(lhs, rhs),
-            ifelse(
-                &&(is_object(lhs), is_object(rhs)),
-                @(lhs, +, rhs),
-                __stl_arith_err("addition"),
-            )
+            &&(is_object(lhs), is_object(rhs)),
+            @(lhs, +, rhs),
+            __stl_arith_err("addition"),
         )
     )
 )),
@@ -30,15 +28,13 @@ def(+, lhs, rhs, _(
 # If they are both integers, `lhs - rhs` is returned.
 # If they are both objects, this calls the `-` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
-def(-, lhs, rhs, _(
+def(-, lhs, rhs, ifelse(
+    &&(is_int(lhs), is_int(rhs)),
+    __builtin_int_math(1, lhs, rhs),
     ifelse(
-        &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_math(1, lhs, rhs),
-        ifelse(
-            &&(is_object(lhs), is_object(rhs)),
-            @(lhs, -, rhs),
-            __stl_arith_err("subtraction"),
-        )
+        &&(is_object(lhs), is_object(rhs)),
+        @(lhs, -, rhs),
+        __stl_arith_err("subtraction"),
     )
 )),
 
@@ -46,15 +42,13 @@ def(-, lhs, rhs, _(
 # If they are both integers, `lhs * rhs` is returned.
 # If they are both objects, this calls the `*` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
-def(*, lhs, rhs, _(
+def(*, lhs, rhs, ifelse(
+    &&(is_int(lhs), is_int(rhs)),
+    __builtin_int_math(2, lhs, rhs),
     ifelse(
-        &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_math(2, lhs, rhs),
-        ifelse(
-            &&(is_object(lhs), is_object(rhs)),
-            @(lhs, *, rhs),
-            __stl_arith_err("multiplication"),
-        )
+        &&(is_object(lhs), is_object(rhs)),
+        @(lhs, *, rhs),
+        __stl_arith_err("multiplication"),
     )
 )),
 
@@ -62,15 +56,13 @@ def(*, lhs, rhs, _(
 # If they are both integers, `lhs / rhs` is returned (rounded to an integer), raising an error if `rhs` is 0.
 # If they are both objects, this calls the `/` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
-def(/, lhs, rhs, _(
+def(/, lhs, rhs, ifelse(
+    &&(is_int(lhs), is_int(rhs)),
+    __builtin_int_math(3, lhs, rhs),
     ifelse(
-        &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_math(3, lhs, rhs),
-        ifelse(
-            &&(is_object(lhs), is_object(rhs)),
-            @(lhs, /, rhs),
-            __stl_arith_err("division"),
-        )
+        &&(is_object(lhs), is_object(rhs)),
+        @(lhs, /, rhs),
+        __stl_arith_err("division"),
     )
 )),
 
@@ -78,15 +70,13 @@ def(/, lhs, rhs, _(
 # If they are both integers, `lhs % rhs` is returned, raising an error if `rhs` is 0.
 # If they are both objects, this calls the `%` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
-def(%, lhs, rhs, _(
+def(%, lhs, rhs, ifelse(
+    &&(is_int(lhs), is_int(rhs)),
+    __builtin_int_math(4, lhs, rhs),
     ifelse(
-        &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_math(4, lhs, rhs),
-        ifelse(
-            &&(is_object(lhs), is_object(rhs)),
-            @(lhs, %, rhs),
-            __stl_arith_err("remainder"),
-        )
+        &&(is_object(lhs), is_object(rhs)),
+        @(lhs, %, rhs),
+        __stl_arith_err("remainder"),
     )
 )),
 
@@ -94,15 +84,13 @@ def(%, lhs, rhs, _(
 # If they are both integers, `lhs ^ rhs` is returned.
 # If they are both objects, this calls the `^` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
-def(^, lhs, rhs, _(
+def(^, lhs, rhs, ifelse(
+    &&(is_int(lhs), is_int(rhs)),
+    __builtin_int_math(5, lhs, rhs),
     ifelse(
-        &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_math(5, lhs, rhs),
-        ifelse(
-            &&(is_object(lhs), is_object(rhs)),
-            @(lhs, ^, rhs),
-            __stl_arith_err("XOR"),
-        )
+        &&(is_object(lhs), is_object(rhs)),
+        @(lhs, ^, rhs),
+        __stl_arith_err("XOR"),
     )
 )),
 
@@ -111,15 +99,13 @@ def(^, lhs, rhs, _(
 # causing an exception in case of overflow or a negative shift amount.
 # If they are both objects, this calls the `<<` method of `lhs` with `rhs` as the only argument.
 # Otherwise, this raises an error.
-def(<<, lhs, rhs, _(
+def(<<, lhs, rhs, ifelse(
+    &&(is_int(lhs), is_int(rhs)),
+    __builtin_int_shift(0, lhs, rhs),
     ifelse(
-        &&(is_int(lhs), is_int(rhs)),
-        __builtin_int_shift(0, lhs, rhs),
-        ifelse(
-            &&(is_object(lhs), is_object(rhs)),
-            @(lhs, <<, rhs),
-            __stl_arith_err("left shift"),
-        )
+        &&(is_object(lhs), is_object(rhs)),
+        @(lhs, <<, rhs),
+        __stl_arith_err("left shift"),
     )
 )),
 
@@ -178,7 +164,7 @@ def(!, val, ifelse(
 def(<, lhs, rhs, ifelse(
     &&(is_object(lhs), is_object(rhs)),
     @(lhs, <, rhs),
-    __builtin_atom_eq(__builtin_atom_cmp(lhs, rhs), 2)
+    __builtin_atom_cmp(0, lhs, rhs),
 )),
 
 # Returns whether `lhs` is less than or equal to `rhs`.
@@ -186,10 +172,7 @@ def(<, lhs, rhs, ifelse(
 def(<=, lhs, rhs, ifelse(
     &&(is_object(lhs), is_object(rhs)),
     @(lhs, <=, rhs),
-    _(
-        =(c, __builtin_atom_cmp(lhs, rhs)),
-        ||(__builtin_atom_eq(c, 0), __builtin_atom_eq(c, 2))
-    )
+    __builtin_atom_cmp(1, lhs, rhs)
 )),
 
 # Returns whether `lhs` is greater than or equal to `rhs`.
@@ -197,10 +180,7 @@ def(<=, lhs, rhs, ifelse(
 def(>=, lhs, rhs, ifelse(
     &&(is_object(lhs), is_object(rhs)),
     @(lhs, >=, rhs),
-    _(
-        =(c, __builtin_atom_cmp(lhs, rhs)),
-        ||(__builtin_atom_eq(c, 0), __builtin_atom_eq(c, 1))
-    )
+    __builtin_atom_cmp(2, lhs, rhs)
 )),
 
 # Returns whether `lhs` is greater than `rhs`.
@@ -208,7 +188,7 @@ def(>=, lhs, rhs, ifelse(
 def(>, lhs, rhs, ifelse(
     &&(is_object(lhs), is_object(rhs)),
     @(lhs, >, rhs),
-    __builtin_atom_eq(__builtin_atom_cmp(lhs, rhs), 1)
+    __builtin_atom_cmp(3, lhs, rhs)
 )),
 
 # TODO: change these methods so they do not need op(obj, obj) but just op(obj, any_atom) instead

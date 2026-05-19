@@ -110,4 +110,12 @@ mod tests {
         state = state.with_code("3");
         assert_eq!(state.run().unwrap(), Atom::Int(3));
     }
+
+    #[expect(clippy::neg_cmp_op_on_partial_ord, reason = "that's what the test is about")]
+    #[test]
+    fn atom_not_ord() {
+        assert!(!(Atom::Null < Atom::Int(2)));
+        assert!(!(Atom::Null == Atom::Int(2)));
+        assert!(!(Atom::Null > Atom::Int(2)));
+    }
 }

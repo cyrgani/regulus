@@ -196,7 +196,7 @@ impl State {
         import_state.optimizations_enabled = self.optimizations_enabled;
         import_state.run().expect("prelude import failed");
 
-        self.storage.extend_from(import_state.storage);
+        self.storage.extend_from(import_state.storage, None);
     }
 
     /// Writes the given string to stdout, without any extra newline.

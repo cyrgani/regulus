@@ -1,0 +1,7 @@
+
+NameError: no function `randrange` found
+at <stl:random>:27:21
+at <stl:random>:27:6
+at <stl:random>:26:19
+at programs/import_non_glob.re:3:24
+at programs/import_non_glob.re:3:10

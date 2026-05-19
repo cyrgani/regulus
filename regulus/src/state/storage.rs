@@ -92,9 +92,13 @@ impl Storage {
         self.current_scope -= 1;
     }
 
-    pub fn extend_from(&mut self, other: Self) {
+    /// Add all values from `other` to `self`, possibly prepending `prefix` to each identifier.
+    pub fn extend_from(&mut self, other: Self, prefix: Option<String>) {
         assert_eq!(other.current_scope, 0);
-        for (name, value) in other.data {
+        for (mut name, value) in other.data {
+            if let Some(prefix) = &prefix {
+                name = format!("{prefix}{name}");
+            }
             match value {
                 StoredValue::Global(global) => {
                     self.add_global(name, global);

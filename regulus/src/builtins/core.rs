@@ -66,8 +66,7 @@ functions! {
     ///
     /// If `exit` is reached via an `import`-ed module, it will stop the main program too.
     "exit"(1) => |state, args| {
-        let value = args[0].eval(state)?;
-        state.exit_unwind_value = Some(value);
+        state.exit_unwind_value = Some(args[0].eval(state)?);
         Ok(Atom::Null)
     }
     /// Evaluates the given argument as a string, then treats this string as Regulus code and executes it.

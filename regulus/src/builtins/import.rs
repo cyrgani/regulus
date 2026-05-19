@@ -4,7 +4,7 @@ use crate::state::Directory;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-pub fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
+fn import(state: &mut State, args: &[Argument], glob_import: bool) -> Result<Atom> {
     let name = args[0].variable(
         "`import` argument must be a variable, string syntax was removed",
         state,
@@ -57,7 +57,10 @@ pub fn import(state: &mut State, args: &[Argument]) -> Result<Atom> {
         return Ok(Atom::Null);
     }
     atom?;
-    state.storage.extend_from(import_state.storage);
+    state.storage.extend_from(
+        import_state.storage,
+        if glob_import { None } else { Some(format!("{name}.")) },
+    );
 
     Ok(Atom::Null)
 }
@@ -88,4 +91,20 @@ fn try_resolve_import_in_dir(
         }
     }
     Ok(None)
+}
+
+functions! {
+    /// Imports a file, either from the stl or the local directory.
+    /// All names in the file will be made accessible to the caller without any prefix.
+    /// Returns `null`.
+    // /// See also `module`, which adds such a prefix.
+    /// TODO document the exact algorithm and hierarchy more clearly
+    "import"(1) => |state, args| import(state, args, true)
+    /// Imports a file, either from the stl or the local directory.
+    /// All names in the file will be made accessible to the caller, under the name
+    /// `<imported file>.<name>`, e.g.
+    /// `module(random), random.choose(list(...))`.
+    /// Returns `null`.
+    /// See also `import`, which does not add this prefix.
+    "__wip_module"(1) => |state, args| import(state, args, false)
 }

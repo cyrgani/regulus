@@ -10,6 +10,23 @@ fn epoch_duration() -> Duration {
         .expect("internal time error")
 }
 
+fn builtin_atom_cmp(state: &mut State, args: &[Argument]) -> Result<Atom> {
+    let mode = args[0].eval_mode(state);
+    let lhs = args[1].eval(state)?;
+    let rhs = args[2].eval(state)?;
+    if let Some(o) = lhs.partial_cmp(&rhs) {
+        Ok(Atom::Bool(match mode {
+            0 => o == Ordering::Less,
+            1 => o == Ordering::Less || o == Ordering::Equal,
+            2 => o == Ordering::Greater || o == Ordering::Equal,
+            3 => o == Ordering::Greater,
+            _ => unreachable!(),
+        }))
+    } else {
+        raise!(state, "Argument", "cannot compare {lhs} and {rhs}")
+    }
+}
+
 functions! {
     /// Evaluates the given argument, extracts the exception and prints it to stderr.
     /// Not meant to be used outside of tests.
@@ -36,21 +53,9 @@ functions! {
         Ok(Atom::Bool(args[0].eval(state)? == args[1].eval(state)?))
     }
     /// Compares both arguments.
-    /// Returns:
-    /// * 0 if they are equal
-    /// * 1 if lhs > rhs
-    /// * 2 if lhs < rhs
+    /// Arguments: mode, lhs, rhs.
     /// Raises an exception if the comparison is not supported.
-    "__builtin_atom_cmp"(2) => |state, args| {
-        let lhs = args[0].eval(state)?;
-        let rhs = args[1].eval(state)?;
-        Ok(Atom::Int(match lhs.partial_cmp(&rhs) {
-            Some(Ordering::Equal) => 0,
-            Some(Ordering::Greater) => 1,
-            Some(Ordering::Less) => 2,
-            None => raise!(state, "Argument", "cannot compare {lhs} and {rhs}"),
-        }))
-    }
+    "__builtin_atom_cmp"(3) => builtin_atom_cmp
     /// Hack since string escape codes do not exist yet.
     "__builtin_cr"(0) => |_, _| Ok(Atom::Char('\r'))
 }
