@@ -59,7 +59,11 @@ fn import(state: &mut State, args: &[Argument], glob_import: bool) -> Result<Ato
     atom?;
     state.storage.extend_from(
         import_state.storage,
-        if glob_import { None } else { Some(format!("{name}.")) },
+        if glob_import {
+            None
+        } else {
+            Some(format!("{name}."))
+        },
     );
 
     Ok(Atom::Null)

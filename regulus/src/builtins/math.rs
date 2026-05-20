@@ -9,12 +9,8 @@ pub fn builtin_int_shift(state: &mut State, args: &[Argument]) -> Result<Atom> {
     };
 
     let lhs = args[1].eval_int(state)?;
-    let rhs = u32::try_from(args[2].eval_int(state)?).map_err(|err| {
-        state.raise(
-            "Argument",
-            format!("shift amount too big for `{name}`: `{err}`"),
-        )
-    })?;
+    let rhs = u32::try_from(args[2].eval_int(state)?)
+        .map_err(|_| state.raise("Argument", format!("shift amount too big for `{name}`")))?;
     if let Some(i) = op(lhs, rhs) {
         Ok(Atom::Int(i))
     } else {

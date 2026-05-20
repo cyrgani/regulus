@@ -145,16 +145,20 @@ mod tests {
     use super::*;
     use crate::no_path;
 
+    fn make_program(code: &str) -> Result<Argument> {
+        build_program(tokenize(code, no_path()).expect(""))
+    }
+
     #[test]
     fn extra_parens() {
-        let prog = build_program(tokenize("_((2))", no_path()).unwrap());
+        let prog = make_program("_((2))");
 
         assert_eq!(
             prog.unwrap_err().to_string(),
             "SyntaxError: expected atom or ident\nat <file>:0:3"
         );
 
-        let prog = build_program(tokenize("(print(2)), print(3)", no_path()).unwrap());
+        let prog = make_program("(print(2)), print(3)");
 
         assert_eq!(
             prog.unwrap_err().to_string(),
@@ -164,13 +168,13 @@ mod tests {
 
     #[test]
     fn atom_fn() {
-        let prog = build_program(tokenize("2(4)", no_path()).unwrap());
+        let prog = make_program("2(4)");
         assert_eq!(prog.unwrap().stringify(), "2(4)");
     }
 
     #[test]
     fn two_commas() {
-        let prog = build_program(tokenize("_(4,,4)", no_path()).unwrap());
+        let prog = make_program("_(4,,4)");
         assert_eq!(
             prog.unwrap_err().to_string(),
             "SyntaxError: expected atom or ident\nat <file>:0:5"
@@ -179,7 +183,7 @@ mod tests {
 
     #[test]
     fn empty_program() {
-        let prog = build_program(tokenize("", no_path()).unwrap());
+        let prog = make_program("");
         assert_eq!(
             prog.unwrap_err().to_string(),
             "SyntaxError: program contains no non-comment tokens\nat <file>:1:1"

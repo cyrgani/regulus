@@ -1,0 +1,7 @@
+AssertionError: equality assertion failed
+    lhs: `[0, 1]`
+    rhs: `[0, 1, 2]`
+at <stl:assertions>:14:10
+at <stl:assertions>:11:32
+at programs/redefinition_of__.re:4:32
+at programs/redefinition_of__.re:4:22

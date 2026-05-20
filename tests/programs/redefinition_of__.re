@@ -1,3 +1,4 @@
 =(_, fn(0)),
 import(range),
-assert_eq(..(0, 2), list(0, 1))
+assert_eq(..(0, 2), list(0, 1)),
+__builtin_print_catch(assert_eq(..(0, 2), list(0, 1, 2))),

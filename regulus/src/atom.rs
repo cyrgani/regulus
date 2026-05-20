@@ -1,4 +1,3 @@
-use crate::list::List;
 use crate::prelude::*;
 use std::cmp::Ordering;
 use std::collections::HashMap;

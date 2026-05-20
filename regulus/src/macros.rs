@@ -25,12 +25,6 @@
 /// `Vec<(&'static str, Function)>`.
 #[macro_export]
 macro_rules! functions {
-    // note:
-    //  in the past, `$name` was a `tt` and did not require to be quoted, but:
-    //  this has problems when a name is multiple tokens wide (`&&`, `==` etc.).
-    //  this is because `$name: tt` matches only one token and `$($name: tt)* would cause
-    //  ambiguity errors when matching `(`
-    //  also, `$name: tt` caused issues when trying to match `$(#[$doc: meta])`
     ($(
         $(#[doc = $doc: literal])* $name: literal ($argc: tt) => $callback: expr)
     *) => {

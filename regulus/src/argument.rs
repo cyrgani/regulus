@@ -1,5 +1,3 @@
-use crate::list::List;
-use crate::parsing::Span;
 use crate::prelude::*;
 
 #[derive(Debug, Clone)]

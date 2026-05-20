@@ -7,20 +7,45 @@ It is currently work in progress.
 ```
 import(range),
 
-# sorts the given list in ascending order using bubblesort
-def(bubblesort, seq, _(
+# sorts the given list in ascending order using quicksort
+def(quicksort, seq, _(
     =(l, len(seq)),
-    for_in(range(0, l), i, _(
-        for_in(range(i, l), j, _(
-            =(i_val, index(seq, i)),
-            =(j_val, index(seq, j)),
-            if(>(i_val, j_val), _(
-                =(seq, replace_at(seq, i, j_val)),
-                =(seq, replace_at(seq, j, i_val)),
+    if(>=(l, 2), _(
+        =(pivot_idx, /(l, 2)),
+        =(pivot, index(seq, pivot_idx)),
+        =(left, list()),
+        =(right, list()),
+        for_in(range(0, l), i, _(
+            if(!=(pivot_idx, i), _(
+                =(el, index(seq, i)),
+                ifelse(
+                    <=(el, pivot),
+                    =(left, append(left, el)),
+                    =(right, append(right, el)),
+                )
             ))
-        ))
+        )),
+        =(left, quicksort(left)),
+        =(right, quicksort(right)),
+        =(step, len(left)),
+        for_in(
+            range(0, step),
+            i,
+            =(seq, replace_at(seq, i, index(left, i)))
+        ),
+        =(seq, replace_at(seq, step, pivot)),
+        for_in(
+            range(0, len(right)),
+            i,
+            =(seq, replace_at(
+                seq,
+                +(+(i, 1), step),
+                index(right, i)
+            ))
+        ),
     )),
     seq
-))
+)),
+
 
 ```

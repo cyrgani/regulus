@@ -5,16 +5,17 @@
 * everything else is either a function call, an atom or a variable
 * function call syntax: `FUNCTION_NAME(ARG_1, ARG_2, ...)`
   * functions are commonly called `FUNCTION_NAME(ARGC)`, e.g. `+(2)` or `print(_)` (variable number of arguments allowed) 
-* variable: any identifier that does not contain forbidden characters (including, but not limited to `(`, `)`, `#`, `,`)
+* variable: any identifier that does not contain forbidden characters (including, but not limited to `(`, `)`, `#`, `,`, `'`, `"`)
 * atom: one of:
   * integer: `1`, `-5`, ...
-  * string: `"hello, world"`, ...
+  * char: `'a'`, ...
+  * (string: `"hello, world"`, ...): syntactic sugar for a list of chars
   * null: `null`
   * bool: `true`, `false`
   * (other non-literal atoms: lists, objects, function pointers)
 * all meaningful operations and statements are function calls
 * every program is implicitly wrapped in `_(` and `)` for convenience
-* every program except for the STL itself automatically imports `__builtin_prelude`
+* every program except for the STL itself automatically imports the prelude
 
 ### Builtins
 * are present in every program without having to import them
@@ -22,7 +23,7 @@
 * see `src/builtins` for a list of them
 
 #### Globals
-* constructable with `global(1)`, example `global(x)`
+* constructable with `global(2)`, example `global(x, "value")`
 * can be read and written from anywhere
 * value is shared between all imported modules and function scopes, unlike regular local variables with `=(2)`
 * there is no language mechanism to prevent name collisions at the moment
@@ -35,7 +36,8 @@
 ### Error handling
 * any fallible operation can `raise` an `Exception`
 * exceptions bubble up unless stopped with `catch`
-* note: rust panics in Regulus outside of the `State` API are generally bugs and should be exceptions instead
+* note: rust panics in Regulus outside the `State` API are generally bugs and should be exceptions instead
+  * panics when calling `__builtin*` or `__stl*` functions in an invalid way are not bugs
 
 ### Naming conventions
 * identifiers starting with `__stl` are reserved (this is not enforced though) for internal use in the STL, manipulating them is expected to cause panics or crashes

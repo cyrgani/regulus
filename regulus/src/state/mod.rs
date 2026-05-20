@@ -299,7 +299,7 @@ impl WriteHandle {
                 if last_was_zero {
                     break;
                 }
-                vec.extend_from_slice(&[0; 1024]);
+                vec.extend([0; 1024]);
                 last_was_zero = true;
             } else {
                 last_was_zero = false;

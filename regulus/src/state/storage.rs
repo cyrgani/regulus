@@ -3,7 +3,7 @@ use crate::builtins::all_functions;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 
-pub(crate) enum StoredValue {
+enum StoredValue {
     Global(Atom),
     /// An identifier may refer to any number of atoms within different scopes.
     /// Only the innermost one will be considered, until its scope ends.
@@ -11,14 +11,14 @@ pub(crate) enum StoredValue {
 }
 
 impl StoredValue {
-    pub fn as_atom(&self) -> Option<&Atom> {
+    fn as_atom(&self) -> &Atom {
         match self {
-            Self::Global(a) => Some(a),
-            Self::Locals(v) => v.last().map(|(_, a)| a),
+            Self::Global(a) => a,
+            Self::Locals(v) => &v.last().unwrap().1,
         }
     }
 
-    pub fn update(&mut self, atom: Atom, scope: usize) {
+    fn update(&mut self, atom: Atom, scope: usize) {
         match self {
             Self::Global(a) => *a = atom,
             Self::Locals(vec) => {
@@ -33,7 +33,7 @@ impl StoredValue {
         }
     }
 
-    pub fn reduce_by_scope(&mut self, scope: usize) {
+    fn reduce_by_scope(&mut self, scope: usize) {
         if let Self::Locals(vec) = self
             && let Some(last) = vec.last()
             && last.0 == scope
@@ -41,11 +41,21 @@ impl StoredValue {
             let _ = vec.pop();
         }
     }
+
+    fn is_empty(&self) -> bool {
+        if let Self::Locals(vec) = self
+            && vec.is_empty()
+        {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 // TODO: consider merging this type with `State`
 pub struct Storage {
-    pub(crate) data: HashMap<String, StoredValue>,
+    data: HashMap<String, StoredValue>,
     pub(crate) current_scope: usize,
 }
 
@@ -61,7 +71,7 @@ impl Storage {
     }
 
     pub fn get(&self, name: impl AsRef<str>) -> Option<&Atom> {
-        self.data.get(name.as_ref())?.as_atom()
+        Some(self.data.get(name.as_ref())?.as_atom())
     }
 
     pub fn insert(&mut self, name: impl AsRef<str>, value: Atom) {
@@ -89,6 +99,7 @@ impl Storage {
         for val in self.data.values_mut() {
             val.reduce_by_scope(self.current_scope);
         }
+        self.data.retain(|_, v| !v.is_empty());
         self.current_scope -= 1;
     }
 
@@ -118,10 +129,10 @@ impl Storage {
         }
     }
 
-    pub fn all_data(&self) -> impl Iterator<Item = (String, Atom)> {
+    pub fn all_data(&self) -> impl Iterator<Item = (&String, &Atom)> {
         self.data
             .iter()
-            .filter_map(|(ident, value)| Some((ident.clone(), value.as_atom()?.clone())))
+            .map(|(ident, value)| (ident, value.as_atom()))
     }
 
     pub fn all_globals(&self) -> impl Iterator<Item = (String, Atom)> {

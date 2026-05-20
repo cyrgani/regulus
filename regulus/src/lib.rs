@@ -85,20 +85,9 @@ mod tests {
 
     #[test]
     fn bare_value_program_return() {
-        assert_eq!(
-            State::new().with_code("_(4)").run().unwrap().int().unwrap(),
-            4
-        );
-        assert_eq!(State::new().with_code("4").run().unwrap().int().unwrap(), 4);
-        assert_eq!(
-            State::new()
-                .with_code("=(x, 4), x")
-                .run()
-                .unwrap()
-                .int()
-                .unwrap(),
-            4
-        );
+        assert_eq!(run("_(4)").unwrap().int().unwrap(), 4);
+        assert_eq!(run("4").unwrap().int().unwrap(), 4);
+        assert_eq!(run("=(x, 4), x").unwrap().int().unwrap(), 4);
     }
 
     #[test]
@@ -111,7 +100,10 @@ mod tests {
         assert_eq!(state.run().unwrap(), Atom::Int(3));
     }
 
-    #[expect(clippy::neg_cmp_op_on_partial_ord, reason = "that's what the test is about")]
+    #[expect(
+        clippy::neg_cmp_op_on_partial_ord,
+        reason = "that's what the test is about"
+    )]
     #[test]
     fn atom_not_ord() {
         assert!(!(Atom::Null < Atom::Int(2)));

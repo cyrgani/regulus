@@ -1,8 +1,6 @@
-use crate::atom::Atom;
-use crate::exception::{Exception, Result};
-use crate::parsing::positions::{CharPositions, Position, Span};
+use crate::parsing::positions::CharPositions;
 use crate::parsing::syntax_error;
-use crate::prelude::Argument;
+use crate::prelude::*;
 use std::num::IntErrorKind;
 use std::path::PathBuf;
 use std::rc::Rc;
