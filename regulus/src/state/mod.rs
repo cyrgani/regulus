@@ -193,7 +193,7 @@ impl State {
             .expect("`prelude.re` missing from STL");
         import_state = import_state.with_code(code);
         import_state.set_current_file_path("<stl:prelude>");
-        import_state.optimizations_enabled = self.optimizations_enabled;
+        import_state.optimizations_enabled = true;
         import_state.run().expect("prelude import failed");
 
         self.storage.extend_from(import_state.storage, None);

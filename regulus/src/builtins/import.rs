@@ -25,6 +25,9 @@ fn import(state: &mut State, args: &[Argument], glob_import: bool) -> Result<Ato
     for (global_ident, global_value) in state.storage.all_globals() {
         import_state.storage.add_global(global_ident, global_value);
     }
+    if state.optimizations_enabled {
+        import_state.optimizations_enabled = true;
+    }
 
     if let Directory::Regular(dir_path) = &state.file_directory
         && let Some(path) = try_resolve_import_in_dir(state, name, dir_path)?
@@ -41,6 +44,7 @@ fn import(state: &mut State, args: &[Argument], glob_import: bool) -> Result<Ato
         import_state.import_stack.push(path);
     } else if let Some(code) = INTERNED_STL.get(name) {
         import_state = import_state.with_code(code);
+        import_state.optimizations_enabled = true;
         import_state.set_current_file_path(format!("<stl:{name}>"));
     } else {
         raise!(
