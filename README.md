@@ -13,39 +13,18 @@ def(quicksort, seq, _(
     if(>=(l, 2), _(
         =(pivot_idx, /(l, 2)),
         =(pivot, index(seq, pivot_idx)),
+        =(seq, remove_at(seq, pivot_idx)),
         =(left, list()),
         =(right, list()),
-        for_in(range(0, l), i, _(
-            if(!=(pivot_idx, i), _(
-                =(el, index(seq, i)),
-                ifelse(
-                    <=(el, pivot),
-                    =(left, append(left, el)),
-                    =(right, append(right, el)),
-                )
-            ))
+        for_in(seq, el, ifelse(
+            <=(el, pivot),
+            =(left, append(left, el)),
+            =(right, append(right, el)),
         )),
         =(left, quicksort(left)),
         =(right, quicksort(right)),
-        =(step, len(left)),
-        for_in(
-            range(0, step),
-            i,
-            =(seq, replace_at(seq, i, index(left, i)))
-        ),
-        =(seq, replace_at(seq, step, pivot)),
-        for_in(
-            range(0, len(right)),
-            i,
-            =(seq, replace_at(
-                seq,
-                +(+(i, 1), step),
-                index(right, i)
-            ))
-        ),
+        =(seq, extend(append(left, pivot), right)),
     )),
     seq
 )),
-
-
 ```
