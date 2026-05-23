@@ -3,7 +3,7 @@ import(range),
 
 def(quicksort, seq, _(
     =(l, len(seq)),
-    if(>=(l, 2), _(
+    ifelse(<(l, 2), seq, _(
         =(pivot_idx, /(l, 2)),
         =(pivot, index(seq, pivot_idx)),
         =(seq, remove_at(seq, pivot_idx)),
@@ -16,19 +16,26 @@ def(quicksort, seq, _(
         )),
         =(left, quicksort(left)),
         =(right, quicksort(right)),
-        =(seq, extend(append(left, pivot), right)),
+        extend(append(left, pivot), right),
     )),
-    seq
 )),
 
 # Returns whether the given sequence is sorted in ascending order.
 def(is_sorted, seq, _(
-    =(s, true),
-    if(>=(len(seq), 2),
-        for_in(range(0, -(len(seq), 1)), i, if(
-            >(index(seq, i), index(seq, +(i, 1))),
-            =(s, false)
+    ifelse(<(len(seq), 2), true, _(
+        =(s, true),
+        =(i, 0),
+        =(l, -(len(seq), 1)),
+        =(cur, first(seq)),
+        while(&&(s, !=(i, l)), _(
+            =(i, +(i, 1)),
+            =(next, index(seq, i)),
+            ifelse(
+                >(cur, next),
+                =(s, false),
+                =(cur, next),
+            ),
         )),
-    ),
-    s
+        s
+    )),
 )),

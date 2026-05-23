@@ -191,4 +191,4 @@ def(>, lhs, rhs, ifelse(
     __builtin_atom_cmp(3, lhs, rhs)
 )),
 
-# TODO: change these methods so they do not need op(obj, obj) but just op(obj, any_atom) instead
+# TODO: change these methods so they do not need op(obj, obj) but just op(obj, atom) or maybe even op(atom, obj) instead
