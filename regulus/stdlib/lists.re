@@ -1,11 +1,7 @@
 import(range),
 
 # Constructs a new list containing all the given arguments.
-def(list, [elements], _(
-    =(l, __builtin_list_api(0)),
-    for_in(elements, el, =(l, append(l, el))),
-    l
-)),
+def(list, [elements], elements),
 
 # Returns the length of the given list.
 def(len, l, __builtin_list_api(1, l)),

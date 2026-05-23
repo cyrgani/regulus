@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-const NEW_LIST: i64 = 0;
 const LEN: i64 = 1;
 const INDEX: i64 = 2;
 const REMOVE: i64 = 3;
@@ -10,7 +9,6 @@ pub fn builtin_list_api(state: &mut State, args: &[Argument]) -> Result<Atom> {
     let mode = args[0].eval_mode(state);
 
     let expected_argc = match mode {
-        NEW_LIST => 0,
         LEN => 1,
         INDEX | REMOVE => 2,
         INSERT => 3,
@@ -22,10 +20,6 @@ pub fn builtin_list_api(state: &mut State, args: &[Argument]) -> Result<Atom> {
         "arg mismatch: mode {mode}: expected {expected_argc}, found {}",
         args.len() - 1
     );
-
-    if mode == NEW_LIST {
-        return Ok(Atom::new_list(vec![]));
-    }
 
     let mut list = args[1].eval_list(state)?;
 

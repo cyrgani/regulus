@@ -1,5 +1,5 @@
 
 IndexError: index 0 out of bounds for list of len 0
-at <stl:lists>:15:38
-at <stl:lists>:53:22
+at <stl:lists>:11:38
+at <stl:lists>:49:22
 at programs/plain_error.re:2:6
